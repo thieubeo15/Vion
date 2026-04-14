@@ -1,0 +1,151 @@
+/* src/components/Navbar.css */
+
+.vion-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    font-family: 'Lexend Deca', sans-serif;
+}
+
+/* ================= TẦNG 1: MAIN HEADER ================= */
+.header-main {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80px;
+    padding: 0 40px;
+    gap: 40px;
+}
+
+.header-logo {
+    font-size: 32px;
+    font-weight: 800;
+    color: #111;
+    text-decoration: none;
+    letter-spacing: -1.5px;
+    flex-shrink: 0;
+}
+
+/* THANH TÌM KIẾM THÔNG MINH */
+.search-container {
+    flex: 1;
+    max-width: 700px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input-wrap {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 8px 15px;
+    border: 1px solid transparent;
+    transition: 0.3s;
+}
+
+.search-input-wrap:focus-within {
+    background-color: #fff;
+    border-color: #EE4D2D;
+    box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.1);
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    background: none;
+    outline: none;
+    padding: 5px 10px;
+    font-size: 14px;
+}
+
+.search-tools {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: #666;
+}
+
+.camera-icon {
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.camera-icon:hover {
+    color: #EE4D2D;
+}
+
+/* ACTIONS */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    flex-shrink: 0;
+}
+
+.auth-text {
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.auth-text:hover {
+    color: #EE4D2D;
+}
+
+.action-icon {
+    color: #111;
+    text-decoration: none;
+    position: relative;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: #EE4D2D;
+    color: #fff;
+    font-size: 10px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+}
+
+/* ================= TẦNG 2: SUB NAV (DANH MỤC) ================= */
+.header-sub {
+    border-top: 1px solid #f0f0f0;
+    padding: 12px 0;
+}
+
+.category-nav {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+}
+
+.category-link {
+    text-decoration: none;
+    color: #666;
+    font-size: 13px;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.category-link:hover {
+    color: #111;
+}
+.action-icon:hover {
+    color: #EE4D2D; /* Rê chuột vào icon User hoặc Đăng xuất sẽ đổi màu cam */
+}

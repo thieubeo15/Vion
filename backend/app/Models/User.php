@@ -2,31 +2,47 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $table = 'users';
+    protected $primaryKey = 'UserID';
+    public $timestamps = true;
+
+    protected $fillable = [
+        'Email',
+        'Password',
+        'Role',
+        'FullName',
+        'Phone',
+        'Address',
+    ];
+
+    protected $hidden = [
+        'Password',
+        'remember_token',
+    ];
+
+    public function getAuthPassword()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->Password;
+    }
+
+    public function orders() {
+        return $this->hasMany(Order::class, 'UserID', 'UserID');
+    }
+
+    public function reviews() {
+        return $this->hasMany(Review::class, 'UserID', 'UserID');
+    }
+
+    public function cart() {
+        return $this->hasOne(Cart::class, 'UserID', 'UserID');
     }
 }

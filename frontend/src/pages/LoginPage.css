@@ -1,0 +1,253 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.login-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* HEADER */
+.login-header {
+  height: 70px;
+  padding: 0 8%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: 800;
+  text-decoration: none;
+  color: #111;
+}
+
+.help-link {
+  font-size: 14px;
+  color: #777;
+  text-decoration: none;
+}
+
+.help-link:hover {
+  color: #111;
+}
+
+/* MAIN */
+.login-main {
+  flex: 1;
+  display: flex;
+}
+
+/* LEFT */
+.login-left {
+  flex: 55%;
+  background-image: url('https://images.unsplash.com/photo-1483985988355-763728e1935b');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+}
+
+.left-content {
+  position: relative;
+  color: #fff;
+  padding-left: 10%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.left-content h1 {
+  font-size: 80px;
+  font-weight: 900;
+}
+
+.left-content p {
+  letter-spacing: 3px;
+  margin-top: 10px;
+}
+
+/* RIGHT */
+.login-right {
+  flex: 45%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fafafa;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+  animation: fadeUp 0.5s ease;
+}
+
+.login-box h2 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* ERROR */
+.error-box {
+  height: 40px;
+}
+
+.error {
+  background: #ffe6e6;
+  color: red;
+  padding: 8px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 13px;
+}
+
+/* INPUT */
+.input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 14px 45px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  background: #fafafa;
+}
+
+.input-group input:focus {
+  border-color: #111;
+  background: #fff;
+}
+
+.input-group label {
+  position: absolute;
+  left: 45px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.input-group input:focus + label,
+.input-group input:valid + label {
+  top: 5px;
+  font-size: 11px;
+  color: #111;
+}
+
+.icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+.toggle {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+/* EXTRA */
+.extra {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.extra a {
+  font-size: 13px;
+  color: #007bff;
+  text-decoration: none;
+}
+
+/* BUTTON */
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  background: linear-gradient(135deg, #111, #333);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.login-btn:hover {
+  background: #EE4D2D;
+}
+
+/* DIVIDER */
+.divider {
+  text-align: center;
+  margin: 25px 0;
+  color: #aaa;
+  font-size: 12px;
+}
+
+/* SOCIAL */
+.social {
+  display: flex;
+  gap: 10px;
+}
+
+.social button {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #eee;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.social button:hover {
+  background: #111;
+  color: #fff;
+}
+
+/* REGISTER */
+.register {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.register a {
+  color: #EE4D2D;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/* ANIMATION */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

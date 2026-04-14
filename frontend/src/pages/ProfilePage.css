@@ -1,0 +1,54 @@
+.vion-profile-page { background: #fcfcfc; min-height: 100vh; padding: 50px 0; font-family: 'Lexend Deca', sans-serif; }
+.vion-profile-wrapper { max-width: 1000px; margin: 0 auto; display: flex; gap: 35px; padding: 0 20px; }
+
+/* Sidebar */
+.vion-sidebar { width: 250px; }
+.vion-user-card { display: flex; align-items: center; gap: 15px; padding-bottom: 20px; border-bottom: 1px solid #eee; margin-bottom: 25px; }
+.vion-user-card img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.v-name-sidebar { font-weight: 700; font-size: 15px; margin: 0; color: #111; }
+.v-role-badge { font-size: 11px; color: #EE4D2D; font-weight: 600; margin: 0; }
+
+.vion-nav-list { display: flex; flex-direction: column; gap: 6px; }
+.v-nav-item { display: flex; align-items: center; gap: 12px; padding: 13px 18px; font-size: 14px; cursor: pointer; border-radius: 8px; color: #555; transition: 0.3s; }
+.v-nav-item:hover, .v-nav-item.active { background: #fff; color: #EE4D2D; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+
+/* Nút Admin đặc biệt */
+.admin-btn { background: #fff5f3; border: 1px dashed #EE4D2D; color: #EE4D2D; margin-bottom: 15px; }
+.admin-btn:hover { background: #EE4D2D; color: #fff; }
+
+/* Main Content */
+.vion-profile-main { flex: 1; background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.v-main-header { border-bottom: 1px solid #f1f1f1; padding-bottom: 15px; margin-bottom: 35px; }
+.v-main-header h2 { font-size: 18px; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+
+/* Form */
+.v-form-row { display: flex; margin-bottom: 22px; align-items: center; }
+.v-form-row label { width: 150px; text-align: right; padding-right: 30px; font-size: 14px; color: #666; }
+.v-form-row input, .v-form-row textarea { flex: 1; padding: 11px 16px; border: 1px solid #ddd; border-radius: 6px; outline: none; transition: 0.2s; font-size: 14px; }
+.v-form-row input:focus { border-color: #EE4D2D; box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.05); }
+.v-form-row textarea { height: 90px; resize: none; }
+.v-email-lock { font-weight: 700; color: #333; font-size: 14px; }
+.v-form-footer { padding-left: 150px; margin-top: 30px; }
+
+/* Nút MINI Save */
+.v-btn-mini-save {
+    background: #111; color: #fff; border: none; padding: 10px 30px;
+    font-size: 14px; font-weight: 600; border-radius: 4px; cursor: pointer; transition: 0.3s;
+}
+.v-btn-mini-save:hover { background: #EE4D2D; transform: translateY(-1px); box-shadow: 0 5px 15px rgba(238, 77, 45, 0.2); }
+
+/* Modal & Toast */
+.vion-toast { position: fixed; top: 25px; right: 25px; background: #fff; padding: 15px 25px; border-radius: 8px; display: flex; align-items: center; gap: 10px; z-index: 10001; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-left: 5px solid #22c55e; animation: slide 0.3s ease; }
+.vion-toast.error { border-left-color: #ef4444; }
+
+.vion-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(3px); display: flex; justify-content: center; align-items: center; z-index: 10000; }
+.vion-confirm-card { background: #fff; padding: 35px; border-radius: 12px; width: 380px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+.vion-confirm-card h3 { margin: 15px 0 8px; font-size: 19px; }
+.vion-confirm-card p { font-size: 14px; color: #666; margin-bottom: 25px; }
+.modal-actions { display: flex; gap: 10px; }
+.modal-actions button { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; }
+.btn-no { background: #f3f4f6; color: #4b5563; }
+.btn-yes { background: #EE4D2D; color: #fff; }
+
+@keyframes slide { from { transform: translateX(100%); } to { transform: translateX(0); } }
+.vion-loading-box { height: 80vh; display: flex; justify-content: center; align-items: center; color: #888; }

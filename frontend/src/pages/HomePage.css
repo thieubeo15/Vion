@@ -1,0 +1,296 @@
+/* src/pages/HomePage.css */
+
+.home-page {
+    font-family: 'Lexend Deca', sans-serif;
+    background-color: #f8f8f8; /* Nền xám cực nhẹ để nổi bật các khối trắng */
+    color: #111;
+}
+
+/* ================= 1. HERO BANNER (STYLE PREMIUM) ================= */
+.hero-section {
+    position: relative;
+    height: 85vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background-color: #000;
+}
+
+.hero-bg {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    /* Hiệu ứng zoom nhẹ khi load trang */
+    animation: slowZoom 20s infinite alternate;
+}
+
+@keyframes slowZoom {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    /* Phủ dải màu từ đen sang trong suốt để text bên trái rõ hơn */
+    background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 40px;
+    text-align: left; /* Căn trái cho sang */
+}
+
+.hero-title {
+    font-size: 72px; /* To và đậm chất thời trang */
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    line-height: 1;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.hero-subtitle {
+    font-size: 18px;
+    margin-bottom: 40px;
+    color: rgba(255, 255, 255, 0.8);
+    max-width: 500px;
+    letter-spacing: 1px;
+}
+
+.btn-shop-now {
+    display: inline-block;
+    padding: 18px 50px;
+    background: #EE4D2D; /* Màu cam thương hiệu */
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 2px;
+    transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #EE4D2D;
+}
+
+.btn-shop-now:hover {
+    background: transparent;
+    border-color: #fff;
+    transform: translateY(-5px);
+}
+
+/* ================= 2. GRID DANH MỤC (STYLE SHOPEE/LAZADA) ================= */
+.home-categories {
+    max-width: 1200px;
+    margin: 40px auto;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.category-header {
+    padding: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    border-bottom: 1px solid #f2f2f2;
+}
+
+.category-grid {
+    display: grid;
+    /* 10 cột đều nhau cho danh mục cha */
+    grid-template-columns: repeat(10, 1fr);
+}
+
+.category-item-wrapper {
+    position: relative;
+    border-right: 1px solid #f2f2f2;
+    border-bottom: 1px solid #f2f2f2;
+    transition: 0.3s;
+}
+
+.category-item-wrapper:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.parent-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 25px 10px;
+    text-decoration: none;
+    color: #333;
+}
+
+.icon-box {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 12px;
+}
+
+.icon-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.cat-name {
+    font-size: 13px;
+    text-align: center;
+    line-height: 1.3;
+    font-weight: 500;
+}
+
+/* Menu con bung ra khi trỏ chuột vào */
+.child-popover {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    width: 240px;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+    z-index: 100;
+    display: none;
+    border-radius: 0 8px 8px 0;
+}
+
+.category-item-wrapper:hover .child-popover {
+    display: block;
+}
+
+.popover-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #EE4D2D;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.child-links {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.child-link {
+    text-decoration: none;
+    color: #666;
+    font-size: 13px;
+    transition: 0.2s;
+}
+
+.child-link:hover {
+    color: #EE4D2D;
+    padding-left: 5px;
+}
+
+/* ================= 3. SẢN PHẨM MỚI VỀ ================= */
+.new-arrivals {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+
+.section-title-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #111;
+    padding-bottom: 10px;
+}
+
+.section-title {
+    font-size: 28px;
+    font-weight: 900;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+}
+
+.product-card {
+    text-decoration: none;
+    color: inherit;
+    background: #fff;
+    transition: 0.3s;
+}
+
+.product-img-wrap {
+    position: relative;
+    aspect-ratio: 3/4;
+    overflow: hidden;
+}
+
+.product-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: 0.8s;
+}
+
+.product-card:hover img {
+    transform: scale(1.1);
+}
+
+.quick-view {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #111;
+    color: #fff;
+    text-align: center;
+    padding: 12px 0;
+    font-size: 12px;
+    font-weight: 600;
+    transform: translateY(100%);
+    transition: 0.3s;
+}
+
+.product-card:hover .quick-view {
+    transform: translateY(0);
+}
+
+.product-info {
+    padding: 15px 0;
+}
+
+.p-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.p-price {
+    font-size: 16px;
+    font-weight: 800;
+    color: #EE4D2D;
+}
+
+.vion-loading {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
