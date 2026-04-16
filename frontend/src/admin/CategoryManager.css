@@ -1,0 +1,52 @@
+/* Import font chữ đồng bộ hệ thống */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+.v-admin-card { 
+    background: #fff; 
+    border-radius: 12px; 
+    padding: 25px; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06); 
+    font-family: 'Plus Jakarta Sans', sans-serif; /* Đã đổi phông chữ */
+}
+
+/* Đảm bảo các input và nút bấm cũng ăn theo font mới */
+.v-admin-card input, 
+.v-admin-card select, 
+.v-admin-card button { 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+}
+
+/* Giữ nguyên các phần style cũ của bạn bên dưới */
+.v-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.v-title-box { display: flex; align-items: center; gap: 10px; }
+.v-brand-icon { color: #EE4D2D; }
+.v-title-box h2 { font-size: 19px; font-weight: 800; color: #111; margin: 0; }
+.v-header-tools { display: flex; gap: 12px; }
+.v-search-box { display: flex; align-items: center; background: #f1f3f5; padding: 8px 15px; border-radius: 20px; gap: 8px; width: 220px; }
+.v-search-box input { border: none; background: none; outline: none; font-size: 13px; width: 100%; }
+.v-inline-form { background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #eee; margin-bottom: 30px; }
+.v-edit-active { background: #f0f7ff; border-color: #3b82f6; }
+.v-input-wrapper { display: flex; gap: 12px; align-items: center; }
+.v-input-wrapper input { flex: 2; padding: 11px 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; }
+.v-input-wrapper select { flex: 1; padding: 11px 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; background: #fff; }
+.v-form-btns { display: flex; gap: 8px; }
+.v-btn-add, .v-btn-save { white-space: nowrap; padding: 11px 25px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; transition: 0.3s; }
+.v-btn-add { background: #111; }
+.v-btn-add:hover { background: #EE4D2D; transform: translateY(-2px); }
+.v-btn-save { background: #3b82f6; }
+.v-btn-cancel { background: #6b7280; color: #fff; border: none; padding: 11px; border-radius: 8px; cursor: pointer; }
+.v-refresh-btn { background: none; border: 1px solid #eee; padding: 8px; border-radius: 50%; cursor: pointer; color: #888; }
+.v-table { width: 100%; border-collapse: collapse; }
+.v-table th { text-align: left; padding: 15px; background: #fafafa; border-bottom: 2px solid #eee; color: #999; font-size: 12px; text-transform: uppercase; }
+.v-table td { padding: 12px 15px; border-bottom: 1px solid #f2f2f2; vertical-align: middle; }
+.v-actions { text-align: right !important; padding-right: 25px !important; white-space: nowrap; }
+.v-edit-icon, .v-del-icon { background: none; border: none; padding: 8px; cursor: pointer; border-radius: 6px; transition: 0.2s; display: inline-flex; vertical-align: middle; }
+.v-edit-icon { color: #3b82f6; margin-right: 5px; }
+.v-del-icon { color: #ff4d4f; }
+.v-edit-icon:hover { background: #eff6ff; }
+.v-del-icon:hover { background: #fff1f0; }
+.v-name-main { font-weight: 700; color: #111; font-size: 15px; }
+.v-name-sub { display: flex; align-items: center; gap: 8px; padding-left: 25px; color: #666; font-size: 14px; }
+.v-row-child { background: #fdfdfd; }
+.v-spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

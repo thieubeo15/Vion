@@ -1,0 +1,136 @@
+/* Tổng thể khung Admin */
+.vion-admin-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f4f7fa; /* Màu nền xám nhạt trung tính */
+    font-family: 'Lexend Deca', sans-serif;
+}
+
+/* SIDEBAR BÊN TRÁI */
+.vion-admin-sidebar {
+    width: 260px;
+    background-color: #111; /* Màu đen sang trọng */
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 30px 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+/* Logo Admin */
+.vion-admin-logo {
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 50px;
+    text-align: center;
+    letter-spacing: 2px;
+    cursor: pointer;
+}
+
+.vion-admin-logo span {
+    color: #EE4D2D; /* Màu đỏ thương hiệu Vion */
+}
+
+/* Menu điều hướng */
+.vion-admin-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+/* Các item trong menu */
+.vion-admin-nav a {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 20px;
+    color: #a0a0a0;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.vion-admin-nav a:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Trạng thái Active (Đang chọn) */
+.vion-admin-nav a.active {
+    background-color: #EE4D2D;
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(238, 77, 45, 0.3);
+}
+
+/* Nút Đăng xuất & Phụ trợ phía dưới */
+.vion-logout-btn {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 20px;
+    color: #ff4d4d;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.vion-logout-btn:hover {
+    background: rgba(255, 77, 77, 0.1);
+}
+
+/* NỘI DUNG CHÍNH BÊN PHẢI */
+.vion-admin-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* Thanh Header nhỏ phía trên (nếu cần) */
+.vion-admin-topbar {
+    background: #fff;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    padding: 0 40px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    justify-content: flex-end;
+}
+
+/* Khu vực chứa Ruột (Dashboard/Category/Product) */
+.vion-admin-content {
+    padding: 40px;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive cho màn hình nhỏ */
+@media (max-width: 768px) {
+    .vion-admin-sidebar {
+        width: 80px;
+        padding: 20px 10px;
+    }
+    .vion-admin-sidebar span, .vion-admin-logo span {
+        display: none;
+    }
+    .vion-admin-nav a {
+        justify-content: center;
+        padding: 15px;
+    }
+}

@@ -17,11 +17,6 @@ const HomePage = () => {
                     axios.get(`${API_BASE_URL}/api/categories`),
                     axios.get(`${API_BASE_URL}/api/products`)
                 ]);
-
-                // Log ra để kiểm tra xem dữ liệu có về không (F12 Console)
-                console.log("Dữ liệu danh mục:", catRes.data.data);
-
-                // Quan trọng: Phải lấy .data.data
                 setCategories(catRes.data.data || []);
                 setProducts(prodRes.data.data || []);
                 setLoading(false);
@@ -33,7 +28,7 @@ const HomePage = () => {
         fetchHomeData();
     }, []);
 
-    if (loading) return <div className="vion-loading">Đang chuẩn bị hàng...</div>;
+    if (loading) return <div className="vion-loading">VION ERA ĐANG CHUẨN BỊ...</div>;
 
     return (
         <div className="home-page">
@@ -47,45 +42,66 @@ const HomePage = () => {
                 </div>
             </div>
 
-            {/* 2. DANH MỤC GRID (STYLE SHOPEE) */}
+            {/* 2. DANH MỤC GRID */}
             <section className="home-categories">
                 <div className="container">
-                    <div className="category-header">DANH MỤC</div>
-                    
-                    <div className="category-grid">
-                        {categories.length > 0 ? (
-                            categories.map((cat) => (
-                                <div key={cat.id} className="category-item-wrapper">
-                                    <Link to={`/category/${cat.id}`} className="parent-item">
-                                        <div className="icon-box">
-                                            {/* Chỗ này dùng placeholder nếu bro chưa thêm trường Image vào Resource */}
-                                            <img 
-                                                src={cat.Image ? `${API_BASE_URL}/storage/${cat.Image}` : 'https://via.placeholder.com/100?text=Vion'} 
-                                                alt={cat.name} 
-                                            />
-                                        </div>
-                                        <span className="cat-name">{cat.name}</span>
-                                    </Link>
+                    <div className="category-header">DANH MỤC SẢN PHẨM</div>
+                    <div className="category-text-grid">
+                        {categories.map((cat) => (
+                            <div key={cat.id} className="category-group">
+                                <Link to={`/category/${cat.id}`} className="cat-parent-label">
+                                    {cat.name}
+                                </Link>
+                                {cat.children && cat.children.length > 0 && (
+                                    <div className="cat-child-list">
+                                        {cat.children.map((child) => (
+                                            <Link key={child.id} to={`/category/${child.id}`} className="cat-child-label">
+                                                {child.name}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
 
-                                    {/* HIỆN DANH MỤC CON KHI HOVER */}
-                                    {cat.children && cat.children.length > 0 && (
-                                        <div className="child-popover">
-                                            <div className="popover-title">Gợi ý cho bạn</div>
-                                            <div className="child-links">
-                                                {cat.children.map((child) => (
-                                                    <Link key={child.id} to={`/category/${child.id}`} className="child-link">
-                                                        {child.name}
-                                                    </Link>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+            {/* 3. SẢN PHẨM MỚI */}
+            <section className="new-arrivals">
+                <div className="container">
+                    <div className="section-title-wrapper">
+                        <h2 className="section-title">SẢN PHẨM MỚI</h2>
+                        <Link to="/products" className="view-all-link">XEM TẤT CẢ</Link>
+                    </div>
+                    
+                    <div className="product-grid">
+                        {products.length > 0 ? (
+                            products.slice(0, 8).map((prod) => (
+                                <Link key={prod.id} to={`/product/${prod.id}`} className="product-card">
+                                    <div className="product-img-wrap">
+                                        <img 
+                                            src={prod.main_image ? `${API_BASE_URL}/storage/${prod.main_image}` : 'https://via.placeholder.com/300x400'} 
+                                            alt={prod.name} 
+                                        />
+                                        <div className="quick-view">XEM CHI TIẾT</div>
+                                    </div>
+                                    <div className="product-info">
+                                        <p className="p-name">{prod.name}</p>
+                                        <p className="p-price">
+                                            {prod.variants && prod.variants.length > 0 
+                                                ? Number(prod.variants[0].Price).toLocaleString() 
+                                                : "Liên hệ"}đ
+                                        </p>
+                                        {/* THÊM DÒNG ĐÃ BÁN Ở ĐÂY */}
+                                        <p className="p-sold-count">
+                                            Đã bán {prod.sold_count || 0}
+                                        </p>
+                                    </div>
+                                </Link>
                             ))
                         ) : (
-                            <div style={{padding: '20px', textAlign: 'center', width: '100%'}}>
-                                Không tìm thấy danh mục nào. Kiểm tra Seeder nhé!
-                            </div>
+                            <div className="empty-msg">VION ERA đang cập nhật sản phẩm mới...</div>
                         )}
                     </div>
                 </div>

@@ -8,15 +8,19 @@ use Illuminate\Http\Request;
 use App\Http\Resources\ProductResource;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
     /**
      * Display a listing of the resource.
+     * Sắp xếp sản phẩm mới nhất lên đầu bằng latest()
      */
     public function index()
     {
-        $products = Product::with(['category', 'variants', 'images'])->get();
+        // latest() mặc định sắp xếp theo cột created_at giảm dần
+        $products = Product::with(['category', 'variants', 'images'])->latest()->get();
         return ProductResource::collection($products);
     }
 
@@ -25,13 +29,45 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        $product = Product::create($request->validated());
+        return DB::transaction(function () use ($request) {
+            $productData = $request->only(['Name', 'CategoryID', 'Description']);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Tạo sản phẩm thành công.',
-            'data' => new ProductResource($product)
-        ], 201);
+            // 1. Lưu Ảnh chính
+            if ($request->hasFile('MainImage')) {
+                $path = $request->file('MainImage')->store('products', 'public');
+                $productData['MainImage'] = $path;
+            }
+
+            // 2. Tạo sản phẩm
+            $product = Product::create($productData);
+
+            // 3. Lưu Biến thể (Variants)
+            if ($request->filled('variants')) {
+                $variants = json_decode($request->variants, true);
+                foreach ($variants as $v) {
+                    $product->variants()->create([
+                        'Size'  => $v['size'],
+                        'Color' => $v['color'],
+                        'Price' => $v['price'],
+                        'Stock' => $v['stock'],
+                    ]);
+                }
+            }
+
+            // 4. Lưu Nhiều ảnh phụ (Gallery)
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $img) {
+                    $imgPath = $img->store('products/gallery', 'public');
+                    $product->images()->create(['Url' => $imgPath]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã đăng bán sản phẩm Vion Era thành công!',
+                'data'    => new ProductResource($product->load(['variants', 'images']))
+            ], 201);
+        });
     }
 
     /**

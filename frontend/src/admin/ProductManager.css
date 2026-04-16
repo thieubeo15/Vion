@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+.v-product-admin { 
+    padding: 25px; 
+    background: #fff; /* Đổi về trắng tinh khôi giống bên Danh mục */
+    min-height: 100vh; 
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Header & Search - Đồng bộ kích thước với Category */
+.v-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.v-title { display: flex; align-items: center; gap: 10px; }
+.v-title h1 { font-size: 19px; font-weight: 800; color: #111; margin: 0; } /* Khớp 19px */
+.v-icon-orange { color: #EE4D2D; width: 24px; height: 24px; }
+
+.v-search { 
+    display: flex; align-items: center; background: #f1f3f5; padding: 8px 15px; 
+    border-radius: 20px; gap: 8px; width: 220px; 
+}
+.v-search input { border: none; background: none; outline: none; font-size: 13px; width: 100%; font-family: inherit; }
+
+/* Form Box - Đồng bộ với style Inline Form của Danh mục */
+.v-main-form { 
+    background: #f9f9f9; padding: 15px; border-radius: 10px; 
+    border: 1px solid #eee; margin-bottom: 30px; 
+}
+.v-form-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+.v-input-group label { display: block; font-weight: 700; font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.5px; }
+.v-input-group input, .v-input-group select, .v-input-group textarea {
+    width: 100%; padding: 11px 15px; border: 1px solid #ddd; border-radius: 8px; 
+    font-size: 14px; transition: 0.3s; font-family: inherit; background: #fff;
+}
+.v-input-group input:focus { border-color: #EE4D2D; box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.05); }
+
+/* === PHẦN BIẾN THỂ TỐI ƯU CỠ CHỮ === */
+.v-variant-section { margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
+.v-variant-section h3 { font-size: 15px; font-weight: 800; color: #111; margin-bottom: 15px; }
+
+.v-btn-add-var {
+    background: #fff; border: 1px solid #EE4D2D; color: #EE4D2D; padding: 5px 12px; 
+    border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; 
+    transition: 0.3s; font-family: inherit;
+}
+.v-btn-add-var:hover { background: #EE4D2D; color: #fff; }
+
+.v-variant-header {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 45px; gap: 10px;
+    padding: 5px 0; font-size: 11px; font-weight: 700; color: #bbb; text-transform: uppercase;
+}
+
+.v-variant-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 45px; gap: 10px; margin-bottom: 8px; }
+.v-variant-row input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; font-family: inherit; }
+
+.v-del-var {
+    background: none; border: none; color: #ff4d4f; cursor: pointer; 
+    display: flex; align-items: center; justify-content: center; transition: 0.2s;
+}
+.v-del-var:hover { transform: scale(1.2); }
+
+/* === NÚT ĐĂNG BÁN - ĐỒNG BỘ STYLE === */
+.v-form-footer { display: flex; justify-content: center; margin-top: 25px; gap: 10px; }
+.v-btn-submit { 
+    background: #111; color: #fff; border: none; padding: 11px 45px; 
+    border-radius: 50px; font-weight: 700; cursor: pointer; display: flex; 
+    align-items: center; gap: 8px; transition: 0.3s; font-family: inherit; font-size: 14px;
+}
+.v-btn-submit:hover { background: #EE4D2D; transform: translateY(-1px); }
+
+.v-btn-cancel { 
+    background: #6b7280; color: #fff; border: none; padding: 11px 25px; 
+    border-radius: 50px; font-weight: 700; cursor: pointer; font-family: inherit; font-size: 14px;
+}
+
+/* === TABLE STYLE - ĐỒNG BỘ 100% VỚI CATEGORY === */
+.v-modern-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.v-modern-table th { 
+    text-align: left; padding: 15px; background: #fafafa; 
+    border-bottom: 2px solid #eee; color: #999; font-size: 12px; 
+    text-transform: uppercase; font-weight: 700;
+}
+.v-modern-table td { padding: 12px 15px; border-bottom: 1px solid #f2f2f2; vertical-align: middle; font-size: 14px; }
+
+.v-table-img { width: 45px; height: 60px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.v-prod-name { font-weight: 700; color: #111; font-size: 15px; }
+.v-tag { background: #f0f0f0; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #555; }
+
+/* Thao tác icon */
+.v-actions { text-align: right !important; padding-right: 25px !important; white-space: nowrap; }
+.v-view, .v-edit, .v-del { 
+    background: none; border: none; padding: 8px; cursor: pointer; 
+    border-radius: 6px; transition: 0.2s; display: inline-flex; vertical-align: middle;
+}
+.v-view { color: #10b981; }
+.v-edit { color: #3b82f6; }
+.v-del { color: #ff4d4f; }
+
+.v-view:hover { background: #ecfdf5; }
+.v-edit:hover { background: #eff6ff; }
+.v-del:hover { background: #fff1f0; }
+
+.v-spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+/* --- ĐƯA PHẦN UPLOAD ẢNH VỀ GIAO DIỆN CŨ --- */
+.v-image-uploads { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+    margin-top: 5px;
+}
+
+.v-upload-main, .v-upload-sub {
+    display: flex; 
+    flex-direction: column; /* Icon trên, chữ dưới */
+    align-items: center; 
+    justify-content: center; 
+    gap: 8px; 
+    height: 110px; /* Độ cao cũ */
+    border: 2px dashed #e5e7eb; /* Nét đứt chuyên nghiệp */
+    border-radius: 12px; 
+    cursor: pointer; 
+    transition: 0.3s;
+    color: #888; 
+    font-weight: 600; 
+    font-size: 13px;
+    background: #fff;
+}
+
+/* Hiệu ứng khi di chuột vào */
+.v-upload-main:hover, .v-upload-sub:hover { 
+    border-color: #EE4D2D; 
+    background: #fff8f6; 
+    color: #EE4D2D; 
+}
+
+/* Text phụ hiển thị tên file đã chọn */
+.v-preview-text {
+    font-size: 12px;
+    color: #EE4D2D;
+    margin-top: 5px;
+    font-weight: 600;
+}

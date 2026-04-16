@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\ChatSessionController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AdminController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -25,15 +26,16 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // --- NHÓM API BẮT BUỘC PHẢI ĐĂNG NHẬP (Bảo vệ bằng Sanctum) ---
 Route::middleware('auth:sanctum')->group(function () {
-    
-    // Nút đăng xuất (Chỉ ai có Token mới bấm được)
     Route::post('/logout', [AuthController::class, 'logout']);
-   Route::get('/user', [UserController::class, 'profile']);
+    Route::get('/user', [UserController::class, 'profile']);
     Route::put('/user/update', [UserController::class, 'updateProfile']);
     Route::put('/user/change-password', [UserController::class, 'changePassword']);
-    // (Sau này bạn có thể lôi cái Route Orders hay Carts vào đây để ép khách phải đăng nhập mới được mua hàng)
+    Route::post('/categories', [CategoryController::class, 'store']);
+    Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+    
+    // Chỉ để 1 dòng này thôi
+    Route::get('/admin/stats', [AdminController::class, 'getStats']);
 });
-
 // Mở đường cho các bảng cốt lõi (Sản phẩm, Danh mục)
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('products', ProductController::class);
