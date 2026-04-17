@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom'; // Thêm useNavigate
 import axios from 'axios';
 import { ShoppingCart, ChevronRight, Star, MessageSquare, PackageCheck, X } from 'lucide-react';
+import Swal from 'sweetalert2'; // Thêm SweetAlert2
 import './ProductDetail.css';
 
 const ProductDetail = () => {
     const { id } = useParams();
+    const navigate = useNavigate(); // Khởi tạo điều hướng
     const [product, setProduct] = useState(null);
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [loading, setLoading] = useState(true);
-    
+
     const [selectedImage, setSelectedImage] = useState('');
     const [selectedSize, setSelectedSize] = useState('');
     const [selectedColor, setSelectedColor] = useState('');
@@ -25,10 +27,10 @@ const ProductDetail = () => {
                 const data = res.data.data;
                 setProduct(data);
                 setSelectedImage(data.MainImage || data.main_image);
-                
+
                 if (data.variants?.length > 0) {
-                    setSelectedSize(data.variants[0].Size);
-                    setSelectedColor(data.variants[0].Color);
+                    setSelectedSize(data.variants[0].Size || data.variants[0].size);
+                    setSelectedColor(data.variants[0].Color || data.variants[0].color);
                 }
 
                 const allRes = await axios.get(`${API_BASE_URL}/api/products`);
@@ -46,23 +48,86 @@ const ProductDetail = () => {
     }, [id]);
 
     // Tìm variant đang được chọn
-    const currentVariant = product?.variants?.find(v => v.Size === selectedSize && v.Color === selectedColor);
-    const maxStock = currentVariant?.Stock || 0;
+    const currentVariant = product?.variants?.find(v =>
+        (v.Size === selectedSize || v.size === selectedSize) &&
+        (v.Color === selectedColor || v.color === selectedColor)
+    );
+    const maxStock = currentVariant?.Stock || currentVariant?.stock || 0;
 
-    // Reset quantity nếu nó vượt quá Stock khi đổi variant
-    useEffect(() => {
-        if (quantity > maxStock && maxStock > 0) {
-            setQuantity(maxStock);
-        } else if (maxStock === 0) {
-            setQuantity(0);
-        } else if (quantity === 0 && maxStock > 0) {
-            setQuantity(1);
+    // Logic Xử lý Thêm vào giỏ hàng
+    const handleAddToCart = async () => {
+        const token = localStorage.getItem('vion_token');
+
+        // 1. Kiểm tra đăng nhập
+        if (!token) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Vion Era thông báo',
+                text: 'Bạn cần đăng nhập để thêm sản phẩm vào giỏ nhé!',
+                confirmButtonColor: '#111',
+                confirmButtonText: 'Đăng nhập ngay',
+                showCancelButton: true,
+                cancelButtonText: 'Để sau'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigate('/login');
+                }
+            });
+            return;
         }
-    }, [selectedSize, selectedColor, maxStock]);
+
+        // 2. Kiểm tra variant
+        if (!currentVariant) {
+            Swal.fire('Lỗi', 'Vui lòng chọn đầy đủ Size và Màu sắc!', 'error');
+            return;
+        }
+
+        try {
+            // Gọi API lưu vào DB
+            await axios.post(`${API_BASE_URL}/api/cart/add`, {
+                VariantID: currentVariant.id || currentVariant.VariantID || currentVariant.VariantItemID, // Tùy theo tên cột ID variant của bạn
+                Quantity: quantity
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            // Thông báo thành công
+            window.dispatchEvent(new Event('cartUpdated'));
+            Swal.fire({
+                icon: 'success',
+                title: 'Đã thêm vào giỏ!',
+                text: `Bạn đã thêm ${quantity} sản phẩm vào giỏ hàng.`,
+                showConfirmButton: true,
+                confirmButtonColor: '#111',
+                confirmButtonText: 'Xem giỏ hàng',
+                showCancelButton: true,
+                cancelButtonText: 'Tiếp tục mua sắm'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigate('/cart'); // Chuyển hướng sang trang giỏ hàng
+                }
+            });
+
+        } catch (err) {
+            console.error("Lỗi thêm giỏ hàng:", err);
+            Swal.fire('Thất bại', 'Không thể thêm sản phẩm vào giỏ.Vui lòng thử lại!', 'error');
+        }
+    };
+
+    // Gán lại số lượng khi biến maxStock thay đổi (chọn màu/size khác)
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setQuantity((prevQuantity) => {
+            if (maxStock === 0) return 0;
+            if (prevQuantity > maxStock && maxStock > 0) return maxStock;
+            if (prevQuantity === 0 && maxStock > 0) return 1;
+            return prevQuantity;
+        });
+    }, [maxStock]);
 
     if (loading || !product) return <div className="v-loading">VION ERA ĐANG TẢI...</div>;
 
-    const displayPrice = currentVariant ? currentVariant.Price : (product.variants?.[0]?.Price || 0);
+    const displayPrice = currentVariant ? (currentVariant.Price || currentVariant.price) : (product.variants?.[0]?.Price || 0);
     const averageRating = product.average_rating || 0;
     const reviews = product.reviews || [];
 
@@ -89,12 +154,12 @@ const ProductDetail = () => {
                         </div>
                         <div className="thumb-list">
                             <div className={`thumb-item ${selectedImage === (product.MainImage || product.main_image) ? 'active' : ''}`}
-                                 onClick={() => setSelectedImage(product.MainImage || product.main_image)}>
+                                onClick={() => setSelectedImage(product.MainImage || product.main_image)}>
                                 <img src={`${API_BASE_URL}/storage/${product.MainImage || product.main_image}`} alt="thumb" />
                             </div>
                             {product.images?.map((img, idx) => (
                                 <div key={idx} className={`thumb-item ${selectedImage === img.Url ? 'active' : ''}`}
-                                     onClick={() => setSelectedImage(img.Url)}>
+                                    onClick={() => setSelectedImage(img.Url)}>
                                     <img src={`${API_BASE_URL}/storage/${img.Url}`} alt="thumb" />
                                 </div>
                             ))}
@@ -103,7 +168,7 @@ const ProductDetail = () => {
 
                     <div className="info-section">
                         <h1 className="p-title">{product.Name || product.name}</h1>
-                        
+
                         <div className="p-meta">
                             <div className="p-rating">
                                 <span className="rating-num">{averageRating}</span>
@@ -124,9 +189,9 @@ const ProductDetail = () => {
                         <div className="option-group">
                             <label>Kích thước: <span>{selectedSize}</span></label>
                             <div className="btn-options">
-                                {[...new Set(product.variants?.map(v => v.Size))].filter(Boolean).map(size => (
+                                {[...new Set(product.variants?.map(v => v.Size || v.size))].filter(Boolean).map(size => (
                                     <button key={size} className={selectedSize === size ? 'active' : ''}
-                                            onClick={() => setSelectedSize(size)}>{size}</button>
+                                        onClick={() => setSelectedSize(size)}>{size}</button>
                                 ))}
                             </div>
                         </div>
@@ -134,9 +199,9 @@ const ProductDetail = () => {
                         <div className="option-group">
                             <label>Màu sắc: <span>{selectedColor}</span></label>
                             <div className="btn-options">
-                                {[...new Set(product.variants?.map(v => v.Color))].filter(Boolean).map(color => (
+                                {[...new Set(product.variants?.map(v => v.Color || v.color))].filter(Boolean).map(color => (
                                     <button key={color} className={selectedColor === color ? 'active' : ''}
-                                            onClick={() => setSelectedColor(color)}>{color}</button>
+                                        onClick={() => setSelectedColor(color)}>{color}</button>
                                 ))}
                             </div>
                         </div>
@@ -148,27 +213,30 @@ const ProductDetail = () => {
                                 <button onClick={() => quantity < maxStock && setQuantity(quantity + 1)} disabled={quantity >= maxStock}>+</button>
                             </div>
                             <span className="stock-label">
-  {maxStock > 0 ? `Kho: ${maxStock} sản phẩm` : 'Hết hàng'}
-</span>
+                                {maxStock > 0 ? `Kho: ${maxStock} sản phẩm` : 'Hết hàng'}
+                            </span>
                         </div>
 
                         <div className="action-buttons">
-                            <button className="btn-add-cart" disabled={maxStock === 0}>
+                            {/* GẮN SỰ KIỆN CLICK Ở ĐÂY */}
+                            <button className="btn-add-cart" disabled={maxStock === 0} onClick={handleAddToCart}>
                                 <ShoppingCart size={20} /> THÊM VÀO GIỎ
                             </button>
-                            <button className="btn-buy-now" disabled={maxStock === 0}>MUA NGAY</button>
+                            <button className="btn-buy-now" disabled={maxStock === 0} onClick={handleAddToCart}>MUA NGAY</button>
                         </div>
                     </div>
                 </div>
 
+                {/* Giữ nguyên phần Review và Sản phẩm tương tự bên dưới... */}
                 <div className="bottom-content-grid">
+                    {/* ... code cũ của bạn ... */}
                     <div className="description-left">
                         <h3 className="section-subtitle">Mô tả sản phẩm</h3>
                         <div className="desc-content">
                             {product.Description || product.description || "Đang cập nhật nội dung..."}
                         </div>
                     </div>
-                    
+
                     <div className="reviews-right">
                         <h3 className="section-subtitle">Đánh giá sản phẩm</h3>
                         <div className="review-summary-box">
@@ -188,7 +256,7 @@ const ProductDetail = () => {
                         {reviews.length > 0 ? (
                             reviews.map((rev, i) => (
                                 <div key={i} className="rev-item">
-                                    <div className="rev-user"><b>{rev.user_name}</b> <PackageCheck size={14} color="#27ae60"/></div>
+                                    <div className="rev-user"><b>{rev.user_name}</b> <PackageCheck size={14} color="#27ae60" /></div>
                                     <p>{rev.comment}</p>
                                 </div>
                             ))

@@ -32,6 +32,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/change-password', [UserController::class, 'changePassword']);
     Route::post('/categories', [CategoryController::class, 'store']);
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+
+    Route::get('/my-cart', [CartController::class, 'myCart']);
+    Route::post('/cart/add', [CartController::class, 'addToCart']);
+    
+    // Đổi thành /cart-items (SỐ NHIỀU) để khớp với code React bro đang dùng
+    Route::put('/cart-items/{id}', [CartController::class, 'updateQuantity']);
+    Route::delete('/cart-items/{id}', [CartController::class, 'removeItem']);
+
     
     // Chỉ để 1 dòng này thôi
     Route::get('/admin/stats', [AdminController::class, 'getStats']);
@@ -49,6 +57,8 @@ Route::apiResource('cart-items', CartItemController::class);
 Route::apiResource('orders', OrderController::class);
 Route::apiResource('order-details', OrderDetailController::class);
 Route::apiResource('payments', PaymentController::class);
+
+
 
 // Mở đường cho Người dùng & Tương tác
 Route::apiResource('users', UserController::class);

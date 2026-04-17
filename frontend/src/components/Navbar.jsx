@@ -1,10 +1,11 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Thêm useNavigate
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Search, Camera, ShoppingBag, User, LogOut } from 'lucide-react'; // Thêm icon LogOut
+import axios from 'axios';
 import './Navbar.css';
 
 const Navbar = () => {
-    const navigate = useNavigate();
+    const [cartCount, setCartCount] = useState(0);
 
     // 1. Lấy thông tin user an toàn
     let user = null;
@@ -13,9 +14,34 @@ const Navbar = () => {
         if (userJson && userJson !== 'undefined') {
             user = JSON.parse(userJson);
         }
-    } catch (e) {
+    } catch {
         user = null;
     }
+
+    const loadCartCount = async () => {
+        if (!user) {
+            setCartCount(0);
+            return;
+        }
+        try {
+            const token = localStorage.getItem('vion_token');
+            if(!token) return;
+            const res = await axios.get('http://127.0.0.1:8000/api/my-cart', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const items = res.data.data?.items || [];
+            const count = items.reduce((sum, item) => sum + item.Quantity, 0);
+            setCartCount(count);
+        } catch { } // Bỏ qua lỗi nếu token hết hạn
+    };
+
+    useEffect(() => {
+        loadCartCount();
+        const handleCartChange = () => loadCartCount();
+        window.addEventListener('cartUpdated', handleCartChange);
+        return () => window.removeEventListener('cartUpdated', handleCartChange);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // 2. Hàm Đăng xuất (Quan trọng nè)
     const handleLogout = () => {
@@ -50,7 +76,7 @@ const Navbar = () => {
                     {/* GIỎ HÀNG */}
                     <Link to="/cart" className="action-icon">
                         <ShoppingBag size={24} strokeWidth={1.5} />
-                        <span className="cart-badge">0</span>
+                        <span className="cart-badge">{cartCount}</span>
                     </Link>
 
                     {/* 3. LOGIC ĐĂNG NHẬP / TRANG CÁ NHÂN & ĐĂNG XUẤT */}

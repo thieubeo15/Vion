@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
+import CartPage from './pages/CartPage';
 
 // 2. Nhúng các trang ADMIN
 import AdminLayout from './admin/AdminLayout';
@@ -13,6 +14,8 @@ import AdminDashboard from './admin/AdminDashboard';
 import CategoryManager from './admin/CategoryManager'; // Nhớ kiểm tra đúng file này nhé
 import ProductManager from './admin/ProductManager';
 import ProductDetail from './pages/ProductDetail';
+
+
 
 // Nhúng các linh kiện (Components)
 import Navbar from './components/Navbar';
@@ -51,21 +54,22 @@ function App() {
           {/* --- ROUTE KHÁCH HÀNG --- */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} /> 
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/cart" element={<CartPage />} />
 
-          
+
           {/* --- ROUTE ADMIN (Bố cục lồng nhau) --- */}
           <Route path="/admin" element={<AdminLayout />}>
             {/* Trang mặc định khi vào /admin là Thống kê */}
-            <Route index element={<AdminDashboard />} /> 
+            <Route index element={<AdminDashboard />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="categories" element={<CategoryManager />} />
             <Route path="products" element={<ProductManager />} />
             {/* Sau này thêm Quản lý sản phẩm, đơn hàng vào đây... */}
           </Route>
-          
+
         </Routes>
       </main>
 

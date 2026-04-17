@@ -4,36 +4,67 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
+use App\Models\CartItem;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-    public function index()
+    public function myCart()
     {
-        return response()->json(Cart::with('items.variant')->get());
+        $user = Auth::user();
+        // Lấy giỏ hàng kèm Item -> Variant -> Product
+        $cart = Cart::with(['items.variant.product'])
+                    ->firstOrCreate(['UserID' => $user->UserID]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $cart // Trả về object cart, bên trong có mảng items
+        ]);
     }
 
-    public function store(Request $request)
+    public function addToCart(Request $request)
     {
-        $request->validate(['UserID' => 'required|exists:users,UserID']);
-        
-        // Ensure user only has one cart (or allow multiple if desired)
-        $cart = Cart::firstOrCreate(['UserID' => $request->UserID]);
-        
-        return response()->json($cart, 201);
+        $request->validate([
+            'VariantID' => 'required|exists:product_variants,VariantID',
+            'Quantity'  => 'required|integer|min:1'
+        ]);
+
+        $user = Auth::user();
+        $cart = Cart::firstOrCreate(['UserID' => $user->UserID]);
+
+        $item = CartItem::where('CartID', $cart->CartID)
+                        ->where('VariantID', $request->VariantID)
+                        ->first();
+
+        if ($item) {
+            $item->increment('Quantity', $request->Quantity);
+        } else {
+            $variant = ProductVariant::find($request->VariantID);
+            CartItem::create([
+                'CartID'    => $cart->CartID,
+                'VariantID' => $request->VariantID,
+                'Quantity'  => $request->Quantity,
+                'Price'     => $variant->Price
+            ]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Đã thêm vào giỏ!']);
     }
 
-    public function show($id)
+    public function updateQuantity(Request $request, $id)
     {
-        $cart = Cart::with('items.variant')->find($id);
-        if (!$cart) return response()->json(['message' => 'Not found'], 404);
-        return response()->json($cart);
+        $request->validate(['Quantity' => 'required|integer|min:1']);
+        $item = CartItem::findOrFail($id);
+        $item->update(['Quantity' => $request->Quantity]);
+
+        return response()->json(['success' => true]);
     }
 
-    public function destroy($id)
+    public function removeItem($id)
     {
-        $cart = Cart::find($id);
-        if ($cart) $cart->delete();
-        return response()->json(['message' => 'Deleted']);
+        CartItem::destroy($id);
+        return response()->json(['success' => true, 'message' => 'Đã xóa sản phẩm']);
     }
 }

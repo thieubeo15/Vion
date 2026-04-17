@@ -74,7 +74,7 @@ const ProfilePage = () => {
 
         setIsSaving(true);
         try {
-            const res = await axios.put(`${API_BASE_URL}/api/user/change-password`, passData, {
+            await axios.put(`${API_BASE_URL}/api/user/change-password`, passData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             triggerToast("Đổi mật khẩu thành công! 🔐");

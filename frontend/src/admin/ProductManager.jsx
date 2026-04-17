@@ -43,7 +43,7 @@ const ProductManager = () => {
             };
             flatten(catRes.data.data || []);
             setCategories(flat);
-        } catch (err) { console.error(err); } finally { setLoading(false); }
+        } catch (error) { console.error(error); } finally { setLoading(false); }
     };
 
     const handleViewDetails = (prod) => {
@@ -86,11 +86,6 @@ const ProductManager = () => {
         });
     };
 
-    const handleVariantChange = (index, field, value) => {
-        const newVariants = [...formData.variants];
-        newVariants[index][field] = value;
-        setFormData({ ...formData, variants: newVariants });
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -108,7 +103,7 @@ const ProductManager = () => {
             await axios.post(url, data, config);
             Toast.fire({ icon: 'success', title: 'Thành công!' });
             resetForm(); fetchData();
-        } catch (err) {
+        } catch {
             Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Vui lòng kiểm tra lại!', confirmButtonColor: '#EE4D2D' });
         }
     };
@@ -123,7 +118,7 @@ const ProductManager = () => {
                     await axios.delete(`${API_URL}/products/${id}`, { headers: { Authorization: `Bearer ${token}` } });
                     Toast.fire({ icon: 'success', title: 'Đã xóa sản phẩm' });
                     fetchData();
-                } catch (err) { Swal.fire('Lỗi', 'Thao tác thất bại!', 'error'); }
+                } catch { Swal.fire('Lỗi', 'Thao tác thất bại!', 'error'); }
             }
         });
     };

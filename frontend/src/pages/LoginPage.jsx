@@ -35,7 +35,7 @@ const LoginPage = () => {
             localStorage.setItem('vion_token', response.data.token);
             localStorage.setItem('vion_user', JSON.stringify(response.data.user));
             window.location.href = '/';
-        } catch (err) {
+        } catch {
             // Lỗi từ phía Server (Sai tài khoản/mật khẩu)
             setError('Email hoặc mật khẩu không chính xác.Xin thử lại!');
         } finally {
