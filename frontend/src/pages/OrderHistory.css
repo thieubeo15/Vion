@@ -1,0 +1,55 @@
+/* Thanh Tab */
+.v-order-tabs {
+    display: flex;
+    background: #fff;
+    border-radius: 12px;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.v-tab-item {
+    flex: 1;
+    text-align: center;
+    padding: 15px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #666;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: 0.3s;
+}
+
+.v-tab-item:hover {
+    color: #111;
+    background: #fafafa;
+}
+
+.v-tab-item.active {
+    color: #EE4D2D;
+    border-bottom-color: #EE4D2D;
+    background: #fff8f6;
+}
+
+/* Tùy chỉnh Badge trạng thái */
+.v-status-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 900;
+    padding: 6px 14px;
+    border-radius: 50px;
+    text-transform: uppercase;
+}
+
+/* Màu sắc các trạng thái */
+.v-status-label.pending { background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; }
+.v-status-label.shipping { background: #eff6ff; color: #2563eb; border: 1px solid #dbeafe; }
+.v-status-label.completed { background: #f0fdf4; color: #16a34a; border: 1px solid #dcfce7; }
+.v-status-label.cancelled { background: #fef2f2; color: #dc2626; border: 1px solid #fee2e2; }
+
+/* Empty state */
+.v-empty-order {
+    border: 2px dashed #eee;
+}
+.fw-600 { font-weight: 600; }

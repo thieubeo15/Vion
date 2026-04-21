@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom'; // Thêm useNavigate
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ShoppingCart, ChevronRight, Star, MessageSquare, PackageCheck, X } from 'lucide-react';
-import Swal from 'sweetalert2'; // Thêm SweetAlert2
+import Swal from 'sweetalert2';
 import './ProductDetail.css';
 
 const ProductDetail = () => {
     const { id } = useParams();
-    const navigate = useNavigate(); // Khởi tạo điều hướng
+    const navigate = useNavigate(); 
     const [product, setProduct] = useState(null);
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -47,76 +47,70 @@ const ProductDetail = () => {
         fetchData();
     }, [id]);
 
-    // Tìm variant đang được chọn
     const currentVariant = product?.variants?.find(v =>
         (v.Size === selectedSize || v.size === selectedSize) &&
         (v.Color === selectedColor || v.color === selectedColor)
     );
     const maxStock = currentVariant?.Stock || currentVariant?.stock || 0;
 
-    // Logic Xử lý Thêm vào giỏ hàng
-    const handleAddToCart = async () => {
+    // --- LOGIC XỬ LÝ THÊM GIỎ HÀNG / MUA NGAY ---
+    const handleAddToCart = async (isBuyNow = false) => {
         const token = localStorage.getItem('vion_token');
 
-        // 1. Kiểm tra đăng nhập
         if (!token) {
             Swal.fire({
                 icon: 'info',
                 title: 'Vion Era thông báo',
-                text: 'Bạn cần đăng nhập để thêm sản phẩm vào giỏ nhé!',
+                text: 'Bạn cần đăng nhập để thực hiện thao tác này!',
                 confirmButtonColor: '#111',
                 confirmButtonText: 'Đăng nhập ngay',
                 showCancelButton: true,
                 cancelButtonText: 'Để sau'
             }).then((result) => {
-                if (result.isConfirmed) {
-                    navigate('/login');
-                }
+                if (result.isConfirmed) navigate('/login');
             });
             return;
         }
 
-        // 2. Kiểm tra variant
         if (!currentVariant) {
             Swal.fire('Lỗi', 'Vui lòng chọn đầy đủ Size và Màu sắc!', 'error');
             return;
         }
 
         try {
-            // Gọi API lưu vào DB
             await axios.post(`${API_BASE_URL}/api/cart/add`, {
-                VariantID: currentVariant.id || currentVariant.VariantID || currentVariant.VariantItemID, // Tùy theo tên cột ID variant của bạn
+                VariantID: currentVariant.id || currentVariant.VariantID || currentVariant.VariantItemID,
                 Quantity: quantity
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            // Thông báo thành công
             window.dispatchEvent(new Event('cartUpdated'));
-            Swal.fire({
-                icon: 'success',
-                title: 'Đã thêm vào giỏ!',
-                text: `Bạn đã thêm ${quantity} sản phẩm vào giỏ hàng.`,
-                showConfirmButton: true,
-                confirmButtonColor: '#111',
-                confirmButtonText: 'Xem giỏ hàng',
-                showCancelButton: true,
-                cancelButtonText: 'Tiếp tục mua sắm'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    navigate('/cart'); // Chuyển hướng sang trang giỏ hàng
-                }
-            });
+
+            if (isBuyNow) {
+                // Nếu nhấn MUA NGAY -> Chuyển thẳng đến trang Checkout
+                navigate('/checkout');
+            } else {
+                // Nếu nhấn THÊM VÀO GIỎ -> Hiện thông báo thành công
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Đã thêm vào giỏ!',
+                    text: `Bạn đã thêm ${quantity} sản phẩm vào giỏ hàng.`,
+                    confirmButtonColor: '#111',
+                    confirmButtonText: 'Xem giỏ hàng',
+                    showCancelButton: true,
+                    cancelButtonText: 'Tiếp tục mua sắm'
+                }).then((result) => {
+                    if (result.isConfirmed) navigate('/cart');
+                });
+            }
 
         } catch (err) {
-            console.error("Lỗi thêm giỏ hàng:", err);
-            Swal.fire('Thất bại', 'Không thể thêm sản phẩm vào giỏ.Vui lòng thử lại!', 'error');
+            Swal.fire('Thất bại', 'Không thể thêm sản phẩm. Thử lại nhé!', 'error');
         }
     };
 
-    // Gán lại số lượng khi biến maxStock thay đổi (chọn màu/size khác)
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setQuantity((prevQuantity) => {
             if (maxStock === 0) return 0;
             if (prevQuantity > maxStock && maxStock > 0) return maxStock;
@@ -133,7 +127,6 @@ const ProductDetail = () => {
 
     return (
         <div className="product-detail-page">
-            {/* LIGHTBOX PHÓNG TO ẢNH */}
             {isLightboxOpen && (
                 <div className="lightbox-overlay" onClick={() => setIsLightboxOpen(false)}>
                     <img src={`${API_BASE_URL}/storage/${selectedImage}`} alt="Zoom" className="lightbox-img" />
@@ -218,18 +211,20 @@ const ProductDetail = () => {
                         </div>
 
                         <div className="action-buttons">
-                            {/* GẮN SỰ KIỆN CLICK Ở ĐÂY */}
-                            <button className="btn-add-cart" disabled={maxStock === 0} onClick={handleAddToCart}>
+                            {/* THÊM VÀO GIỎ: Truyền tham số false */}
+                            <button className="btn-add-cart" disabled={maxStock === 0} onClick={() => handleAddToCart(false)}>
                                 <ShoppingCart size={20} /> THÊM VÀO GIỎ
                             </button>
-                            <button className="btn-buy-now" disabled={maxStock === 0} onClick={handleAddToCart}>MUA NGAY</button>
+                            
+                            {/* MUA NGAY: Truyền tham số true */}
+                            <button className="btn-buy-now" disabled={maxStock === 0} onClick={() => handleAddToCart(true)}>
+                                MUA NGAY
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                {/* Giữ nguyên phần Review và Sản phẩm tương tự bên dưới... */}
                 <div className="bottom-content-grid">
-                    {/* ... code cũ của bạn ... */}
                     <div className="description-left">
                         <h3 className="section-subtitle">Mô tả sản phẩm</h3>
                         <div className="desc-content">
@@ -246,11 +241,6 @@ const ProductDetail = () => {
                                     {[...Array(5)].map((_, i) => <Star key={i} size={18} fill={i < averageRating ? "#EE4D2D" : "none"} color="#EE4D2D" />)}
                                 </div>
                             </div>
-                            <div className="rating-filters">
-                                <button className="filter-btn active">Tất Cả ({reviews.length})</button>
-                                <button className="filter-btn">5 Sao (0)</button>
-                                <button className="filter-btn">Có Bình Luận (0)</button>
-                            </div>
                         </div>
 
                         {reviews.length > 0 ? (
@@ -264,7 +254,6 @@ const ProductDetail = () => {
                             <div className="no-rev-box">
                                 <MessageSquare size={32} color="#ccc" />
                                 <p>Chưa có đánh giá nào.</p>
-                                <small>Chỉ khách hàng đã mua mới có thể đánh giá.</small>
                             </div>
                         )}
                     </div>

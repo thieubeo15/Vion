@@ -39,7 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Đổi thành /cart-items (SỐ NHIỀU) để khớp với code React bro đang dùng
     Route::put('/cart-items/{id}', [CartController::class, 'updateQuantity']);
     Route::delete('/cart-items/{id}', [CartController::class, 'removeItem']);
-
+    Route::post('/orders/place', [OrderController::class, 'placeOrder']);
+    Route::get('/my-orders', [OrderController::class, 'myOrders']);
     
     // Chỉ để 1 dòng này thôi
     Route::get('/admin/stats', [AdminController::class, 'getStats']);

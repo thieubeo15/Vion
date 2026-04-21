@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // 1. Thêm useNavigate
 import axios from 'axios';
 import { DollarSign, ShoppingBag, Users, Package, Loader2, ArrowRight } from 'lucide-react';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
+    const navigate = useNavigate(); // 2. Khởi tạo navigate
     const [stats, setStats] = useState({
         totalRevenue: 0,
         totalOrders: 0,
@@ -18,29 +20,27 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         const fetchStats = async () => {
-    try {
-        const res = await axios.get(`${API_BASE_URL}/api/admin/stats`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+            try {
+                const res = await axios.get(`${API_BASE_URL}/api/admin/stats`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
 
-        if (res.data.success && res.data.data) {
-            const serverData = res.data.data;
-            
-            // Map lại tên biến từ snake_case (Laravel) sang camelCase (React)
-            setStats({
-                totalRevenue: serverData.total_revenue,
-                totalOrders: serverData.total_orders,
-                totalCustomers: serverData.total_customers,
-                totalProducts: serverData.total_products, // Giờ nó sẽ nhận được số 2
-                recentOrders: serverData.recent_orders
-            });
-        }
-    } catch (err) {
-        console.error("Lỗi lấy dữ liệu thống kê:", err);
-    } finally {
-        setLoading(false);
-    }
-};
+                if (res.data.success && res.data.data) {
+                    const serverData = res.data.data;
+                    setStats({
+                        totalRevenue: serverData.total_revenue,
+                        totalOrders: serverData.total_orders,
+                        totalCustomers: serverData.total_customers,
+                        totalProducts: serverData.total_products,
+                        recentOrders: serverData.recent_orders
+                    });
+                }
+            } catch (err) {
+                console.error("Lỗi lấy dữ liệu thống kê:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
         if (token) fetchStats();
     }, [token]);
 
@@ -51,7 +51,6 @@ const AdminDashboard = () => {
         </div>
     );
 
-    // FIX: Thêm (stats.totalRevenue || 0) để tránh lỗi toLocaleString
     const cardData = [
         { title: 'Doanh thu', value: `${(stats.totalRevenue || 0).toLocaleString()}đ`, icon: <DollarSign />, color: '#10b981' },
         { title: 'Đơn hàng', value: stats.totalOrders || 0, icon: <ShoppingBag />, color: '#3b82f6' },
@@ -81,7 +80,10 @@ const AdminDashboard = () => {
             <div className="recent-orders-card">
                 <div className="card-header">
                     <h2>Đơn hàng mới nhất</h2>
-                    <button className="view-all-btn">Xem tất cả <ArrowRight size={14} /></button>
+                    {/* 3. SỬA NÚT XEM TẤT CẢ TẠI ĐÂY */}
+                    <button className="view-all-btn" onClick={() => navigate('/admin/orders')}>
+                        Xem tất cả <ArrowRight size={14} />
+                    </button>
                 </div>
                 <div className="table-responsive">
                     <table className="admin-table">
@@ -95,13 +97,14 @@ const AdminDashboard = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {/* FIX: Dùng stats.recentOrders?.length để an toàn */}
                             {stats.recentOrders?.length > 0 ? (
                                 stats.recentOrders.map((order) => (
-                                    <tr key={order.id}>
-                                        <td><strong>#{order.id}</strong></td>
-                                        <td>{order.user?.FullName || 'Ẩn danh'}</td>
-                                        <td>{new Date(order.created_at).toLocaleDateString('vi-VN')}</td>
+                                    // 4. SỬA KEY VÀ CÁC TRƯỜNG DỮ LIỆU HIỂN THỊ
+                                    <tr key={order.OrderID}> 
+                                        <td><strong>#VION-{order.OrderID}</strong></td>
+                                        {/* Hiển thị tên từ cột FullName mà mình đã thêm vào bảng orders */}
+                                        <td>{order.FullName || 'Khách lẻ'}</td> 
+                                        <td>{new Date(order.OrderDate || order.created_at).toLocaleDateString('vi-VN')}</td>
                                         <td>{(Number(order.TotalAmount) || 0).toLocaleString()}đ</td>
                                         <td>
                                             <span className={`status-pill ${(order.Status || 'pending').toLowerCase()}`}>

@@ -17,10 +17,15 @@ class ProductController extends Controller
      * Display a listing of the resource.
      * Sắp xếp sản phẩm mới nhất lên đầu bằng latest()
      */
-    public function index()
+    public function index(Request $request)
     {
-        // latest() mặc định sắp xếp theo cột created_at giảm dần
-        $products = Product::with(['category', 'variants', 'images'])->latest()->get();
+        $query = Product::with(['category', 'variants', 'images'])->latest();
+
+        if ($request->has('category_id')) {
+            $query->where('CategoryID', $request->category_id);
+        }
+
+        $products = $query->get();
         return ProductResource::collection($products);
     }
 

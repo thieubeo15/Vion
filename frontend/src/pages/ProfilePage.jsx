@@ -134,7 +134,9 @@ const ProfilePage = () => {
                         <div className={`v-nav-item ${activeTab === 'password' ? 'active' : ''}`} onClick={() => setActiveTab('password')}>
                             <Lock size={18} /> Đổi mật khẩu
                         </div>
-                        <div className="v-nav-item"><Package size={18} /> Đơn mua của tôi</div>
+                       <div className="v-nav-item" onClick={() => navigate('/orders')}> {/* Bỏ chữ 'my-' đi */}
+    <Package size={18} /> Đơn mua của tôi
+</div>
                     </nav>
                 </aside>
 

@@ -15,6 +15,7 @@ class ProductResource extends JsonResource
             'name' => $this->Name,
             'main_image' => $this->MainImage,
             'description' => $this->Description,
+            'sold_count' => (int) ($this->sold_count ?? 0),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             

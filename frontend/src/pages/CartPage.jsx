@@ -80,7 +80,10 @@ const CartPage = () => {
     const calculateTotal = () => {
         return cartItems
             .filter(item => selectedItems.includes(item.CartItemID || item.id))
-            .reduce((sum, item) => sum + ((item.variant?.Price || 0) * item.Quantity), 0);
+            .reduce((sum, item) => {
+                const price = Number(item.Price || item.price || item.variant?.Price || item.variant?.price || 0);
+                return sum + (price * item.Quantity);
+            }, 0);
     };
 
     if (loading) return (
@@ -122,7 +125,7 @@ const CartPage = () => {
                                         <div className="v-card-details">
                                             <h5 className="v-product-name hover-text-primary">{item.variant?.product?.Name}</h5>
                                             <p className="v-product-meta">Size: {item.variant?.Size} | Màu: {item.variant?.Color}</p>
-                                            <div className="v-price-unit">{Number(item.variant?.Price || 0).toLocaleString()}đ</div>
+                                            <div className="v-price-unit">{Number(item.Price || item.price || item.variant?.Price || item.variant?.price || 0).toLocaleString()}đ</div>
                                         </div>
                                     </div>
                                     <div className="v-qty-selector">
@@ -130,7 +133,7 @@ const CartPage = () => {
                                         <span>{item.Quantity}</span>
                                         <button onClick={() => updateQty(item.CartItemID || item.id, item.Quantity, 1)}><Plus size={14} /></button>
                                     </div>
-                                    <div className="v-card-subtotal">{((item.variant?.Price || 0) * item.Quantity).toLocaleString()}đ</div>
+                                    <div className="v-card-subtotal">{(Number(item.Price || item.price || item.variant?.Price || item.variant?.price || 0) * item.Quantity).toLocaleString()}đ</div>
                                     <button className="v-btn-del" onClick={() => handleRemove(item.CartItemID || item.id)}><Trash2 size={18} /></button>
                                 </div>
                             ))}
@@ -154,9 +157,23 @@ const CartPage = () => {
                         <div className="v-total-divider"></div>
                         <div className="v-bill-row total"><span>TỔNG TIỀN</span><span className="v-final-price">{calculateTotal().toLocaleString()}đ</span></div>
 
-                        <button className="v-btn-checkout" disabled={selectedItems.length === 0}>
-                            <CreditCard size={18} /> THANH TOÁN NGAY
-                        </button>
+                       <button 
+    className="v-btn-checkout" 
+    onClick={() => {
+        if (selectedItems.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Chú ý',
+                text: 'Vui lòng chọn sản phẩm để thanh toán',
+                confirmButtonColor: '#111'
+            });
+            return;
+        }
+        navigate('/checkout', { state: { selectedItems } });
+    }}
+>
+    THANH TOÁN NGAY
+</button>
                         <div className="v-secure-checkout">
                             <ShieldCheck size={14} color="#27ae60" /> Thanh toán an toàn 100%
                         </div>

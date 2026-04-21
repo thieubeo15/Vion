@@ -1,0 +1,47 @@
+.v-checkout-wrapper { font-family: 'Plus Jakarta Sans', sans-serif; color: #111; }
+.v-back-cart { cursor: pointer; color: #888; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 6px; transition: 0.3s; }
+.v-back-cart:hover { color: #EE4D2D; }
+
+.v-section-title { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; }
+
+.v-checkout-form-box { background: #fafafa; padding: 30px; border-radius: 20px; border: 1px solid #f0f0f0; }
+
+.v-input-field label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: #444; margin-bottom: 10px; }
+.v-input-field input, .v-input-field textarea {
+    width: 100%; border: 1.5px solid #eee; padding: 14px 20px; border-radius: 12px; outline: none; transition: 0.3s; font-size: 14px;
+}
+.v-input-field input:focus, .v-input-field textarea:focus { border-color: #111; background: #fff; }
+
+.v-pay-card { 
+    display: flex; align-items: center; padding: 20px; border: 2px solid #eee; border-radius: 15px; 
+    position: relative; transition: 0.3s;
+}
+.v-pay-card.active { border-color: #EE4D2D; background: #fff8f6; color: #EE4D2D; }
+.v-dot-active { width: 10px; height: 10px; background: #EE4D2D; border-radius: 50%; position: absolute; right: 20px; }
+
+/* Bill Card */
+.v-order-bill-card { background: #fff; border: 1px solid #f0f0f0; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+.v-bill-title { font-weight: 800; font-size: 16px; margin-bottom: 20px; letter-spacing: 1px; }
+.v-bill-divider { height: 1px; background: #eee; }
+.v-grand-total { font-size: 26px; font-weight: 900; color: #EE4D2D; letter-spacing: -1px; }
+
+.v-btn-place-order {
+    width: 100%; background: #111; color: #fff; border: none; padding: 18px; border-radius: 50px;
+    font-weight: 800; font-size: 15px; transition: 0.4s; letter-spacing: 1px;
+}
+.v-btn-place-order:hover { background: #EE4D2D; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(238, 77, 45, 0.2); }
+
+.v-security-note { text-align: center; font-size: 11px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+.v-checkout-loading { height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: 800; }
+.v-spin { animation: spin 1s linear infinite; color: #EE4D2D; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Helper classes */
+.fw-700 { font-weight: 700; }
+.fw-800 { font-weight: 800; }
+.fw-900 { font-weight: 900; }
+.fs-12 { font-size: 12px; }
+.fs-14 { font-size: 14px; }
+.fs-15 { font-size: 15px; }
+.fs-16 { font-size: 16px; }

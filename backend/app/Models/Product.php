@@ -45,4 +45,19 @@ class Product extends Model
     {
         return $this->hasMany(Review::class, 'ProductID', 'ProductID'); // Giả sử bảng reviews liên kết tới ProductID
     }
+
+    /**
+     * Lấy danh sách chi tiết đơn hàng (thông qua biến thể) để tính toán lượt bán
+     */
+    public function orderDetails()
+    {
+        return $this->hasManyThrough(
+            OrderDetail::class,
+            ProductVariant::class,
+            'ProductID', // Foreign key trên bảng intermediate (product_variants)
+            'VariantID', // Foreign key trên bảng target (order_details)
+            'ProductID', // Local key trên bảng parent (products)
+            'VariantID'  // Local key trên bảng intermediate (product_variants)
+        );
+    }
 }
