@@ -18,6 +18,7 @@ import ProductDetail from './pages/ProductDetail';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderManager from './admin/OrderManager';
 import OrderHistory from './pages/OrderHistory';
+import BannerManager from './admin/BannerManager';
 
 
 
@@ -75,6 +76,7 @@ function App() {
             <Route path="categories" element={<CategoryManager />} />
             <Route path="products" element={<ProductManager />} />
             <Route path="orders" element={<OrderManager />} />
+            <Route path="banners" element={<BannerManager />} />
             {/* Sau này thêm Quản lý sản phẩm, đơn hàng vào đây... */}
           </Route>
 

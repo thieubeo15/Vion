@@ -9,15 +9,24 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::table('orders', function (Blueprint $table) {
+   public function up(): void
+{
+    Schema::table('orders', function (Blueprint $table) {
+        // Chỉ thêm nếu cột CHƯA tồn tại
+        if (!Schema::hasColumn('orders', 'FullName')) {
             $table->string('FullName')->after('UserID');
+        }
+        if (!Schema::hasColumn('orders', 'Phone')) {
             $table->string('Phone')->after('FullName');
+        }
+        if (!Schema::hasColumn('orders', 'Address')) {
             $table->text('Address')->after('Phone');
-            $table->string('PaymentMethod')->default('COD')->after('Address');
-        });
-    }
+        }
+        if (!Schema::hasColumn('orders', 'PaymentMethod')) {
+            $table->string('PaymentMethod')->default('COD')->after('Status');
+        }
+    });
+}
 
     /**
      * Reverse the migrations.

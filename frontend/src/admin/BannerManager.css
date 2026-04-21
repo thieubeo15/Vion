@@ -1,0 +1,68 @@
+.banner-admin-wrapper {
+    padding: 20px;
+    background: #f8f9fa;
+    min-height: 100vh;
+}
+
+.banner-header h3 {
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.upload-box {
+    background: #fff;
+    padding: 25px;
+    border-radius: 15px;
+    margin-top: 20px;
+}
+
+.btn-upload {
+    background: #111;
+    color: #fff;
+    border: none;
+    width: 15%;
+    padding: 12px;
+    font-weight: 700;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.btn-upload:hover {
+    background: #EE4D2D;
+    transform: translateY(-2px);
+}
+
+.banner-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.banner-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.banner-info {
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-del {
+    background: #fff5f5;
+    color: #ff4d4f;
+    border: 1px solid #ffccc7;
+    padding: 5px 8px;
+    border-radius: 6px;
+}
+
+.btn-del:hover {
+    background: #ff4d4f;
+    color: #fff;
+}

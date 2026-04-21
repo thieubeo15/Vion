@@ -67,19 +67,14 @@ class OrderController extends Controller
 foreach ($selectedItems as $item) {
     $variant = $item->variant;
 
-    // Kiểm tra tồn kho
+    // 1. Kiểm tra tồn kho
     if ($variant->Stock < $item->Quantity) {
         throw new \Exception("Sản phẩm {$variant->product->Name} không đủ tồn kho!");
     }
 
-    // --- ĐOẠN FIX LỖI Ở ĐÂY ---
-    // Lấy giá theo thứ tự ưu tiên: 
-    // 1. Giá trong giỏ hàng ($item->Price)
-    // 2. Nếu (1) null thì lấy giá hiện tại của sản phẩm ($variant->Price)
-    // 3. Nếu vẫn không có thì để 0 (để tránh lỗi database)
     $finalPrice = $item->Price ?? $variant->Price ?? 0;
 
-    // Tạo chi tiết đơn hàng
+    // 2. Tạo chi tiết đơn hàng
     OrderDetail::create([
         'OrderID'   => $order->OrderID,
         'VariantID' => $item->VariantID,
@@ -87,8 +82,12 @@ foreach ($selectedItems as $item) {
         'Price'     => $finalPrice 
     ]);
 
-    // Trừ tồn kho
+    // 3. Trừ tồn kho (Bro đã có)
     $variant->decrement('Stock', $item->Quantity);
+
+    // 4. TĂNG SỐ LƯỢNG ĐÃ BÁN (THÊM DÒNG NÀY NÈ BRO)
+    // Lưu ý: Tăng cho Product chứ không phải Variant, và tăng theo đúng số lượng khách mua
+    $variant->product()->increment('sold_count', $item->Quantity);
 }
 
                 // 3. XÓA GIỎ HÀNG (Làm sạch sau khi mua theo các món đã chọn)

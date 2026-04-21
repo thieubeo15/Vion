@@ -80,7 +80,7 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = Product::with(['category', 'variants', 'images'])->find($id);
+      $product = Product::with(['category', 'variants', 'images', 'reviews.user'])->find($id);
 
         if (!$product) {
             return response()->json([
@@ -109,13 +109,65 @@ class ProductController extends Controller
             ], 404);
         }
 
-        $product->update($request->validated());
+        return DB::transaction(function () use ($request, $product) {
+            $data = $request->validated();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Cập nhật sản phẩm thành công.',
-            'data' => new ProductResource($product)
-        ], 200);
+            // 1. Xử lý Ảnh chính mới (Nếu có upload file mới)
+            if ($request->hasFile('MainImage')) {
+                // Ta có thể xóa ảnh cũ ở Storage::disk('public')->delete($product->MainImage) nếu muốn
+                $path = $request->file('MainImage')->store('products', 'public');
+                $data['MainImage'] = $path;
+            }
+
+            $product->update($data);
+
+            // 2. Cập nhật Biến thể (Variants)
+            if ($request->has('variants')) {
+                $variants = json_decode($request->variants, true);
+                if (is_array($variants)) {
+                    $incomingSignatures = [];
+                    foreach ($variants as $v) {
+                        $variant = $product->variants()
+                            ->where('Size', $v['size'])
+                            ->where('Color', $v['color'])
+                            ->first();
+
+                        if ($variant) {
+                            $variant->update([
+                                'Price' => $v['price'],
+                                'Stock' => $v['stock'],
+                            ]);
+                            $incomingSignatures[] = $variant->VariantID;
+                        } else {
+                            $newVariant = $product->variants()->create([
+                                'Size'  => $v['size'],
+                                'Color' => $v['color'],
+                                'Price' => $v['price'],
+                                'Stock' => $v['stock'],
+                            ]);
+                            $incomingSignatures[] = $newVariant->VariantID;
+                        }
+                    }
+
+                    // Để bảo toàn lịch sử đơn hàng, các variant không còn trong danh sách sẽ bị đặt Stock = 0
+                    $product->variants()->whereNotIn('VariantID', $incomingSignatures)->update(['Stock' => 0]);
+                }
+            }
+
+            // 3. Lưu Thêm ảnh phụ (Gallery)
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $img) {
+                    $imgPath = $img->store('products/gallery', 'public');
+                    $product->images()->create(['Url' => $imgPath]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật sản phẩm thành công.',
+                'data' => new ProductResource($product->load(['variants', 'images']))
+            ], 200);
+        });
     }
 
     /**

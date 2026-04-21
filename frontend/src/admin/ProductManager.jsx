@@ -94,6 +94,14 @@ const ProductManager = () => {
         data.append('CategoryID', formData.CategoryID);
         data.append('Description', formData.Description || '');
         if (formData.MainImage instanceof File) data.append('MainImage', formData.MainImage);
+        
+        // Gửi các ảnh phụ (Gallery)
+        if (formData.additionalImages && formData.additionalImages.length > 0) {
+            formData.additionalImages.forEach(file => {
+                data.append('images[]', file);
+            });
+        }
+
         data.append('variants', JSON.stringify(formData.variants));
         if (isEditing) data.append('_method', 'PUT');
 

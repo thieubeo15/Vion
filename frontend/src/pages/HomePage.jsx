@@ -6,6 +6,7 @@ import './HomePage.css';
 const HomePage = () => {
     const [categories, setCategories] = useState([]);
     const [products, setProducts] = useState([]);
+    const [banners, setBanners] = useState([]); // Thêm state lưu banner
     const [loading, setLoading] = useState(true);
 
     const API_BASE_URL = 'http://127.0.0.1:8000';
@@ -13,12 +14,15 @@ const HomePage = () => {
     useEffect(() => {
         const fetchHomeData = async () => {
             try {
-                const [catRes, prodRes] = await Promise.all([
+                // Gọi thêm API banners
+                const [catRes, prodRes, bannerRes] = await Promise.all([
                     axios.get(`${API_BASE_URL}/api/categories`),
-                    axios.get(`${API_BASE_URL}/api/products`)
+                    axios.get(`${API_BASE_URL}/api/products`),
+                    axios.get(`${API_BASE_URL}/api/banners`) 
                 ]);
                 setCategories(catRes.data.data || []);
                 setProducts(prodRes.data.data || []);
+                setBanners(bannerRes.data || []); // Lưu banner vào state
                 setLoading(false);
             } catch (error) {
                 console.error("Lỗi kết nối API:", error);
@@ -30,19 +34,38 @@ const HomePage = () => {
 
     if (loading) return <div className="vion-loading">VION ERA ĐANG CHUẨN BỊ...</div>;
 
+    // Lấy banner đầu tiên nếu có
+    const currentBanner = banners.length > 0 ? banners[0] : null;
+
     return (
         <div className="home-page">
-            {/* 1. HERO BANNER */}
+            {/* 1. HERO BANNER - CHỈ SỬA KHÚC NÀY */}
             <div className="hero-section">
-                <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1920" className="hero-bg" alt="Banner" />
-                <div className="hero-overlay"></div>
-                <div className="hero-content">
-                    <h1 className="hero-title">VION. ERA 2026</h1>
-                    <Link to="/products" className="btn-shop-now">Khám phá ngay</Link>
-                </div>
+                {currentBanner ? (
+                    // NẾU ADMIN ĐÃ THÊM BANNER THÌ HIỆN CÁI NÀY
+                    <>
+                        <img src={`${API_BASE_URL}/storage/${currentBanner.image_path}`} className="hero-bg" alt="Banner Admin" />
+                        <div className="hero-overlay"></div>
+                        <div className="hero-content">
+                            <h1 className="hero-title">{currentBanner.title || "VION. ERA 2026"}</h1>
+                            <p className="hero-subtitle" style={{color: '#fff', marginBottom: '20px'}}>{currentBanner.subtitle}</p>
+                            <Link to="/products" className="btn-shop-now">Khám phá ngay</Link>
+                        </div>
+                    </>
+                ) : (
+                    // NẾU CHƯA CÓ BANNER TRONG DB THÌ HIỆN MẶC ĐỊNH (ĐỂ WEB KHÔNG TRỐNG)
+                    <>
+                        <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1920" className="hero-bg" alt="Banner Default" />
+                        <div className="hero-overlay"></div>
+                        <div className="hero-content">
+                            <h1 className="hero-title">VION. ERA 2026</h1>
+                            <Link to="/products" className="btn-shop-now">Khám phá ngay</Link>
+                        </div>
+                    </>
+                )}
             </div>
 
-            {/* 2. DANH MỤC GRID */}
+            {/* 2. DANH MỤC GRID - GIỮ NGUYÊN */}
             <section className="home-categories">
                 <div className="container">
                     <div className="category-header">DANH MỤC SẢN PHẨM</div>
@@ -67,7 +90,7 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* 3. SẢN PHẨM MỚI */}
+            {/* 3. SẢN PHẨM MỚI - GIỮ NGUYÊN */}
             <section className="new-arrivals">
                 <div className="container">
                     <div className="section-title-wrapper">
@@ -93,7 +116,6 @@ const HomePage = () => {
                                                 ? Number(prod.variants[0].Price).toLocaleString() 
                                                 : "Liên hệ"}đ
                                         </p>
-                                        {/* THÊM DÒNG ĐÃ BÁN Ở ĐÂY */}
                                         <p className="p-sold-count">
                                             Đã bán {prod.sold_count || 0}
                                         </p>

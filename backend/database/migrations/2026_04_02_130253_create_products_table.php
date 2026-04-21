@@ -17,6 +17,7 @@ return new class extends Migration
     $table->string('Name', 255);
     $table->string('MainImage', 255);
     $table->longText('Description')->nullable();
+    $table->integer('sold_count')->default(0);
     $table->timestamps();
 
     $table->foreign('CategoryID')->references('CategoryID')->on('categories')->onDelete('set null');

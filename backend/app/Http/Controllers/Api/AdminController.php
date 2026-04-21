@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\Order;
+use App\Models\Banner;
 
 class AdminController extends Controller
 {
@@ -34,7 +35,11 @@ class AdminController extends Controller
                     'total_orders' => $totalOrders,
                     'total_customers' => $totalCustomers,
                     'total_products' => $totalProducts,
-                    'recent_orders' => $recentOrders
+                    'total_banners'   => Banner::count(),
+                   'recent_orders' => Order::with(['details.variant.product']) // <--- Cực kỳ quan trọng
+    ->orderBy('OrderDate', 'desc')
+    ->take(5)
+    ->get()
                 ]
             ]);
         } catch (\Exception $e) {

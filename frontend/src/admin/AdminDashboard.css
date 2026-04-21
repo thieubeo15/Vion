@@ -177,3 +177,23 @@
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* Tên sản phẩm mini trong bảng đơn hàng */
+.order-product-item {
+    font-size: 12px;
+    color: #444;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    margin-bottom: 2px;
+}
+
+.fw-700 { font-weight: 700; }
+.fw-800 { font-weight: 800; }
+
+/* Điều chỉnh lại bảng để hiển thị cột sản phẩm rộng hơn */
+.admin-table td {
+    vertical-align: top; /* Căn lề trên cho đẹp khi có nhiều sản phẩm */
+    padding: 15px 12px;
+}

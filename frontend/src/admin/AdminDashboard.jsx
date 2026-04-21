@@ -1,17 +1,15 @@
+// AdminDashboard.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Thêm useNavigate
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { DollarSign, ShoppingBag, Users, Package, Loader2, ArrowRight } from 'lucide-react';
+import { DollarSign, ShoppingBag, Users, Package, Loader2, ArrowRight, Image as ImageIcon } from 'lucide-react';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-    const navigate = useNavigate(); // 2. Khởi tạo navigate
+    const navigate = useNavigate();
     const [stats, setStats] = useState({
-        totalRevenue: 0,
-        totalOrders: 0,
-        totalCustomers: 0,
-        totalProducts: 0,
-        recentOrders: []
+        totalRevenue: 0, totalOrders: 0, totalCustomers: 0, 
+        totalProducts: 0, totalBanners: 0, recentOrders: []
     });
     const [loading, setLoading] = useState(true);
 
@@ -24,55 +22,48 @@ const AdminDashboard = () => {
                 const res = await axios.get(`${API_BASE_URL}/api/admin/stats`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-
-                if (res.data.success && res.data.data) {
-                    const serverData = res.data.data;
+                if (res.data.success) {
                     setStats({
-                        totalRevenue: serverData.total_revenue,
-                        totalOrders: serverData.total_orders,
-                        totalCustomers: serverData.total_customers,
-                        totalProducts: serverData.total_products,
-                        recentOrders: serverData.recent_orders
+                        totalRevenue: res.data.data.total_revenue,
+                        totalOrders: res.data.data.total_orders,
+                        totalCustomers: res.data.data.total_customers,
+                        totalProducts: res.data.data.total_products,
+                        totalBanners: res.data.data.total_banners, // Nhận số banner từ API
+                        recentOrders: res.data.data.recent_orders
                     });
                 }
-            } catch (err) {
-                console.error("Lỗi lấy dữ liệu thống kê:", err);
-            } finally {
-                setLoading(false);
-            }
+            } catch (err) { console.error("Lỗi:", err); }
+            finally { setLoading(false); }
         };
-        if (token) fetchStats();
+        fetchStats();
     }, [token]);
 
-    if (loading) return (
-        <div className="admin-loading">
-            <Loader2 className="spin-icon" />
-            <p>Vion Era đang tải dữ liệu...</p>
-        </div>
-    );
-
     const cardData = [
-        { title: 'Doanh thu', value: `${(stats.totalRevenue || 0).toLocaleString()}đ`, icon: <DollarSign />, color: '#10b981' },
-        { title: 'Đơn hàng', value: stats.totalOrders || 0, icon: <ShoppingBag />, color: '#3b82f6' },
-        { title: 'Khách hàng', value: stats.totalCustomers || 0, icon: <Users />, color: '#f59e0b' },
-        { title: 'Sản phẩm', value: stats.totalProducts || 0, icon: <Package />, color: '#ec4899' },
+        { title: 'Doanh thu', value: `${Number(stats.totalRevenue).toLocaleString()}đ`, icon: <DollarSign />, color: '#10b981', path: '/admin/orders' },
+        { title: 'Đơn hàng', value: stats.totalOrders, icon: <ShoppingBag />, color: '#3b82f6', path: '/admin/orders' },
+        { title: 'Sản phẩm', value: stats.totalProducts, icon: <Package />, color: '#ec4899', path: '/admin/products' },
+        { title: 'Khách hàng', value: stats.totalCustomers, icon: <Users />, color: '#f59e0b', path: '/admin/users' },
+        { title: 'Banner', value: stats.totalBanners, icon: <ImageIcon />, color: '#8b5cf6', path: '/admin/banners' },
     ];
+
+    if (loading) return <div className="admin-loading"><Loader2 className="spin-icon" /> Đang tải...</div>;
 
     return (
         <div className="admin-dashboard-content">
             <div className="dashboard-header">
                 <h1>Tổng quan hệ thống</h1>
-                <p>Cập nhật số liệu thực tế từ Vion Era</p>
+                <p>Quản trị cửa hàng Vion Era</p>
             </div>
 
             <div className="stats-grid">
                 {cardData.map((item, idx) => (
-                    <div className="stat-card" key={idx}>
+                    <div className="stat-card clickable" key={idx} onClick={() => navigate(item.path)}>
                         <div className="stat-icon" style={{ backgroundColor: item.color }}>{item.icon}</div>
                         <div className="stat-text">
                             <h3>{item.title}</h3>
                             <p>{item.value}</p>
                         </div>
+                        <div className="stat-arrow"><ArrowRight size={14} /></div>
                     </div>
                 ))}
             </div>
@@ -80,10 +71,7 @@ const AdminDashboard = () => {
             <div className="recent-orders-card">
                 <div className="card-header">
                     <h2>Đơn hàng mới nhất</h2>
-                    {/* 3. SỬA NÚT XEM TẤT CẢ TẠI ĐÂY */}
-                    <button className="view-all-btn" onClick={() => navigate('/admin/orders')}>
-                        Xem tất cả <ArrowRight size={14} />
-                    </button>
+                    <button className="view-all-btn" onClick={() => navigate('/admin/orders')}>Xem tất cả</button>
                 </div>
                 <div className="table-responsive">
                     <table className="admin-table">
@@ -91,31 +79,40 @@ const AdminDashboard = () => {
                             <tr>
                                 <th>Mã đơn</th>
                                 <th>Khách hàng</th>
-                                <th>Ngày đặt</th>
+                                <th>Sản phẩm đã mua</th> {/* CỘT SP */}
                                 <th>Tổng tiền</th>
                                 <th>Trạng thái</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {stats.recentOrders?.length > 0 ? (
-                                stats.recentOrders.map((order) => (
-                                    // 4. SỬA KEY VÀ CÁC TRƯỜNG DỮ LIỆU HIỂN THỊ
-                                    <tr key={order.OrderID}> 
-                                        <td><strong>#VION-{order.OrderID}</strong></td>
-                                        {/* Hiển thị tên từ cột FullName mà mình đã thêm vào bảng orders */}
-                                        <td>{order.FullName || 'Khách lẻ'}</td> 
-                                        <td>{new Date(order.OrderDate || order.created_at).toLocaleDateString('vi-VN')}</td>
-                                        <td>{(Number(order.TotalAmount) || 0).toLocaleString()}đ</td>
-                                        <td>
-                                            <span className={`status-pill ${(order.Status || 'pending').toLowerCase()}`}>
-                                                {order.Status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr><td colSpan="5" className="empty-table">Chưa có đơn hàng nào.</td></tr>
-                            )}
+                            {stats.recentOrders.map(order => (
+                                <tr key={order.OrderID}>
+                                    <td className="fw-800">#VION-{order.OrderID}</td>
+                                    <td>
+                                        <div className="fw-700">{order.FullName}</div>
+                                        <div className="small text-muted">{order.Phone}</div>
+                                    </td>
+                                   {/* AdminDashboard.jsx - Chỗ render cột Sản phẩm đã mua */}
+{/* Chỗ render cột Sản phẩm đã mua */}
+<td>
+    {order.details && order.details.length > 0 ? (
+        order.details.map((detail, i) => (
+            <div key={i} className="order-product-item">
+                {/* Dùng Name (N viết hoa) vì trong Model Product bro đặt là Name.
+                   Thêm cái d.variant?.product?.name (n thường) cho chắc.
+                */}
+                • {detail.variant?.product?.Name || detail.variant?.product?.name || "Tên SP trống"} 
+                <span className="text-muted"> (x{detail.Quantity})</span>
+            </div>
+        ))
+    ) : (
+        <span className="text-muted">Không có dữ liệu SP</span>
+    )}
+</td>
+                                    <td className="fw-800 text-danger">{Number(order.TotalAmount).toLocaleString()}đ</td>
+                                    <td><span className={`status-pill ${order.Status.toLowerCase()}`}>{order.Status}</span></td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
@@ -123,5 +120,4 @@ const AdminDashboard = () => {
         </div>
     );
 };
-
 export default AdminDashboard;

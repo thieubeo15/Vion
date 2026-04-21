@@ -10,13 +10,13 @@ class Review extends Model
     protected $primaryKey = 'ReviewID';
     public $timestamps = false;
 
-    protected $fillable = [
-        'UserID',
-        'ProductID',
-        'Rating',
-        'Content',
-        'Image'
-    ];
+   protected $fillable = [
+    'UserID', 
+    'ProductID', 
+    'Rating', 
+    'Content', // <--- THÊM CHỮ NÀY VÀO, VIẾT HOA CHỮ C
+    'Image'
+];
 
     public function user()
     {

@@ -24,6 +24,11 @@ class ProductResource extends JsonResource
             // Nếu có Variants, trả về luôn list variant
             'variants' => $this->whenLoaded('variants'),
             'images' => $this->whenLoaded('images'),
+            'reviews' => $this->whenLoaded('reviews', function () {
+                // Sắp xếp reviews mới nhất lên đầu
+                return $this->reviews->sortByDesc('created_at')->values();
+            }),
+            'average_rating' => $this->whenLoaded('reviews') ? round($this->reviews->avg('Rating'), 1) : 0,
         ];
     }
 }

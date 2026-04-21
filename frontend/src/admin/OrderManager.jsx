@@ -86,10 +86,49 @@ const OrderManager = () => {
                                 </td>
                                 <td>
                                     <div className="v-btns">
-                                        <button className="v-btn view" onClick={() => setSelectedOrder(order)}><Eye size={18}/></button>
-                                        <button className="v-btn ship" onClick={() => updateStatus(order.OrderID, 'Shipping')}><Truck size={18}/></button>
-                                        <button className="v-btn done" onClick={() => updateStatus(order.OrderID, 'Completed')}><CheckCircle size={18}/></button>
-                                        <button className="v-btn cancel" onClick={() => updateStatus(order.OrderID, 'Cancelled')}><XCircle size={18}/></button>
+                                        {/* Nút Xem chi tiết: Luôn luôn cho xem */}
+    <button className="v-btn view" onClick={() => setSelectedOrder(order)}>
+        <Eye size={18}/>
+    </button>
+
+    {/* Nút Giao hàng: Chặn nếu đã Hủy hoặc đã Hoàn thành */}
+    <button 
+        className="v-btn ship" 
+        disabled={order.Status === 'Cancelled' || order.Status === 'Completed'} 
+        onClick={() => updateStatus(order.OrderID, 'Shipping')}
+        style={{ 
+            opacity: (order.Status === 'Cancelled' || order.Status === 'Completed') ? 0.4 : 1,
+            cursor: (order.Status === 'Cancelled' || order.Status === 'Completed') ? 'not-allowed' : 'pointer'
+        }}
+    >
+        <Truck size={18}/>
+    </button>
+
+    {/* Nút Hoàn thành: Chặn nếu đã Hủy */}
+    <button 
+        className="v-btn done" 
+        disabled={order.Status === 'Cancelled'} 
+        onClick={() => updateStatus(order.OrderID, 'Completed')}
+        style={{ 
+            opacity: order.Status === 'Cancelled' ? 0.4 : 1,
+            cursor: order.Status === 'Cancelled' ? 'not-allowed' : 'pointer'
+        }}
+    >
+        <CheckCircle size={18}/>
+    </button>
+
+    {/* Nút Hủy: Chặn nếu đã Giao, đã Xong hoặc chính nó đã Hủy */}
+    <button 
+        className="v-btn cancel" 
+        disabled={order.Status === 'Shipping' || order.Status === 'Completed' || order.Status === 'Cancelled'} 
+        onClick={() => updateStatus(order.OrderID, 'Cancelled')}
+        style={{ 
+            opacity: (order.Status === 'Shipping' || order.Status === 'Completed' || order.Status === 'Cancelled') ? 0.4 : 1,
+            cursor: (order.Status === 'Shipping' || order.Status === 'Completed' || order.Status === 'Cancelled') ? 'not-allowed' : 'pointer'
+        }}
+    >
+        <XCircle size={18}/>
+    </button>
                                     </div>
                                 </td>
                             </tr>
