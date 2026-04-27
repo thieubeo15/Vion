@@ -1,22 +1,23 @@
 /* Tổng thể khung Admin */
 .vion-admin-container {
     display: flex;
-    min-height: 100vh;
-    background-color: #f4f7fa; /* Màu nền xám nhạt trung tính */
+    /* Ép khung luôn bằng chiều cao trình duyệt, không thừa không thiếu */
+    height: 100vh; 
+    background-color: #f4f7fa;
     font-family: 'Lexend Deca', sans-serif;
+    overflow: hidden; /* Ngăn trang chính bị cuộn cả dải, chỉ cuộn vùng nội dung */
 }
 
 /* SIDEBAR BÊN TRÁI */
 .vion-admin-sidebar {
     width: 260px;
-    background-color: #111; /* Màu đen sang trọng */
+    min-width: 260px; /* Không cho sidebar bị bóp méo */
+    background-color: #111;
     color: #fff;
     display: flex;
     flex-direction: column;
-    padding: 30px 20px;
-    position: sticky;
-    top: 0;
-    height: 100vh;
+    padding: 30px 0; /* Padding trên dưới, 2 bên để 0 để item Nav full width */
+    height: 100%; /* Chiếm toàn bộ chiều cao container */
     box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
     z-index: 100;
 }
@@ -26,14 +27,15 @@
     font-size: 22px;
     font-weight: 900;
     color: #fff;
-    margin-bottom: 50px;
+    margin-bottom: 40px;
     text-align: center;
     letter-spacing: 2px;
     cursor: pointer;
+    padding: 0 20px;
 }
 
 .vion-admin-logo span {
-    color: #EE4D2D; /* Màu đỏ thương hiệu Vion */
+    color: #EE4D2D;
 }
 
 /* Menu điều hướng */
@@ -41,7 +43,19 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    flex: 1;
+    padding: 0 15px;
+    /* flex: 1 sẽ chiếm toàn bộ khoảng trống còn lại, đẩy Logout xuống đáy */
+    flex: 1; 
+    overflow-y: auto; /* Nếu menu quá dài thì tự cuộn trong sidebar */
+}
+
+/* Tùy chỉnh thanh cuộn nhỏ cho sidebar (nếu cần) */
+.vion-admin-nav::-webkit-scrollbar {
+    width: 4px;
+}
+.vion-admin-nav::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 10px;
 }
 
 /* Các item trong menu */
@@ -49,7 +63,7 @@
     display: flex;
     align-items: center;
     gap: 15px;
-    padding: 14px 20px;
+    padding: 12px 20px;
     color: #a0a0a0;
     text-decoration: none;
     font-size: 14px;
@@ -63,7 +77,6 @@
     background: rgba(255, 255, 255, 0.05);
 }
 
-/* Trạng thái Active (Đang chọn) */
 .vion-admin-nav a.active {
     background-color: #EE4D2D;
     color: #fff;
@@ -71,9 +84,12 @@
     box-shadow: 0 4px 15px rgba(238, 77, 45, 0.3);
 }
 
-/* Nút Đăng xuất & Phụ trợ phía dưới */
+/* Nút Đăng xuất - Cố định ở đáy */
 .vion-logout-btn {
-    margin-top: auto;
+    margin-top: auto; /* Đảm bảo luôn ở dưới cùng */
+    margin-bottom: 10px;
+    margin-left: 15px;
+    margin-right: 15px;
     display: flex;
     align-items: center;
     gap: 15px;
@@ -84,6 +100,7 @@
     font-weight: 600;
     border-radius: 10px;
     transition: 0.3s;
+    border-top: 1px solid #222; /* Tạo đường kẻ tách biệt nhẹ */
 }
 
 .vion-logout-btn:hover {
@@ -95,23 +112,17 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
-}
-
-/* Thanh Header nhỏ phía trên (nếu cần) */
-.vion-admin-topbar {
-    background: #fff;
-    height: 70px;
-    display: flex;
-    align-items: center;
-    padding: 0 40px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-    justify-content: flex-end;
+    height: 100vh;
+    overflow-y: auto; /* Chỉ cuộn vùng nội dung này */
+    overflow-x: auto; /* Hỗ trợ bảng biến thể quá rộng */
 }
 
 /* Khu vực chứa Ruột (Dashboard/Category/Product) */
 .vion-admin-content {
-    padding: 40px;
+    padding: 30px;
+    width: 100%;
+    max-width: 1400px; /* Giới hạn độ rộng để dễ nhìn trên màn hình lớn */
+    margin: 0 auto;
     animation: fadeIn 0.4s ease-out;
 }
 
@@ -121,15 +132,15 @@
 }
 
 /* Responsive cho màn hình nhỏ */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .vion-admin-sidebar {
         width: 80px;
-        padding: 20px 10px;
+        min-width: 80px;
     }
-    .vion-admin-sidebar span, .vion-admin-logo span {
-        display: none;
+    .vion-admin-sidebar span, .vion-admin-logo span, .vion-admin-logo {
+        display: none; /* Ẩn bớt để tiết kiệm diện tích */
     }
-    .vion-admin-nav a {
+    .vion-admin-nav a, .vion-logout-btn {
         justify-content: center;
         padding: 15px;
     }

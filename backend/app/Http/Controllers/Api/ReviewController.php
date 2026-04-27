@@ -46,7 +46,7 @@ public function store(Request $request)
 
         if (!$hasBought) {
             return response()->json([
-                'message' => 'Bro phải mua hàng và nhận hàng rồi mới được đánh giá nhé!'
+                'message' => 'Bạn phải mua hàng và nhận hàng rồi mới được đánh giá nhé!'
             ], 403);
         }
 

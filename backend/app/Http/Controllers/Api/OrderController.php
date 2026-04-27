@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\Auth;
 class OrderController extends Controller
 {
     public function index() {
-        return response()->json(Order::with(['details.variant', 'payment'])->get());
-    }
+        return response()->json(Order::with(['details.variant.product', 'payment'])->orderBy('OrderID', 'desc')->get());
+        }
 
     /**
      * Hàm đặt hàng CHÍNH cho CheckoutPage
