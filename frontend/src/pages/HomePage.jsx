@@ -111,11 +111,23 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* 3. SẢN PHẨM THEO DANH MỤC */}
+            {/* 🚀 3. SẢN PHẨM THEO DANH MỤC (ĐÃ FIX LỌC GỘP CHA + CON) */}
             <section className="category-featured-products container mt-5">
                 {categories.slice(0, 3).map((cat) => {
-                    const catProducts = products.filter(p => p.category_id === cat.id || p.CategoryID === cat.id).slice(0, 4);
+                    // Tạo mảng chứa ID của Cha và tất cả các Con
+                    let validCatIds = [Number(cat.id)];
+                    if (cat.children && cat.children.length > 0) {
+                        const childIds = cat.children.map(child => Number(child.id));
+                        validCatIds = [...validCatIds, ...childIds];
+                    }
+
+                    // Lọc sản phẩm có category_id nằm trong mảng hợp lệ
+                    const catProducts = products.filter(p => 
+                        validCatIds.includes(Number(p.category_id || p.CategoryID))
+                    ).slice(0, 4);
+
                     if (catProducts.length === 0) return null;
+
                     return (
                         <div key={cat.id} className="cat-product-row mb-5">
                             <div className="section-title-wrapper">

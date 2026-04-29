@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, Link, useLocation } from 'react-router-dom'; // 🚀 Thêm useLocation
+import { useParams, Link, useLocation } from 'react-router-dom';
 import './ProductsPage.css';
 
 const ProductsPage = () => {
     const { categoryId } = useParams();
-    const location = useLocation(); // 🚀 Khởi tạo location để lấy query string
+    const location = useLocation(); 
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -17,10 +17,11 @@ const ProductsPage = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // 1. Lấy keyword từ URL (ví dụ: ?search=ao+thun)
+                // 1. Lấy keyword từ URL
                 const queryParams = new URLSearchParams(location.search);
                 const searchKeyword = queryParams.get('search');
 
+                // Lấy toàn bộ danh mục
                 const catRes = await axios.get(`${API_BASE_URL}/api/categories`);
                 const allCats = catRes.data.data || [];
                 setCategories(allCats);
@@ -42,24 +43,40 @@ const ProductsPage = () => {
                     setCurrentCategoryName('Tất cả sản phẩm');
                 }
 
-                // 3. Lấy sản phẩm
-                let prodUrl = `${API_BASE_URL}/api/products`;
-                if (categoryId) prodUrl += `?category_id=${categoryId}`;
-                    
-                const prodRes = await axios.get(prodUrl);
+                // 🚀 3. LẤY TOÀN BỘ SẢN PHẨM TRƯỚC (Không truyền ID vào API nữa)
+                const prodRes = await axios.get(`${API_BASE_URL}/api/products`);
                 let rawProducts = prodRes.data.data || [];
 
-                // 🚀 4. LOGIC LỌC TÌM KIẾM + SẮP XẾP
                 let filteredProducts = [...rawProducts];
 
-                // Nếu có từ khóa search -> Lọc danh sách theo tên
+                // 🚀 4. LOGIC LỌC GỘP (CHA + CON)
+                if (categoryId) {
+                    // Chắc chắn đưa ID hiện tại vào mảng hợp lệ
+                    let validCatIds = [Number(categoryId)];
+
+                    // Tìm xem danh mục hiện tại có phải là CHA không
+                    const selectedParentCat = allCats.find(c => c.id == categoryId);
+                    
+                    // Nếu là CHA và có chứa CON -> Nạp luôn ID của tất cả CON vào mảng
+                    if (selectedParentCat && selectedParentCat.children) {
+                        const childIds = selectedParentCat.children.map(child => Number(child.id));
+                        validCatIds = [...validCatIds, ...childIds];
+                    }
+
+                    // Tiến hành lọc: Giữ lại sp có category_id nằm trong mảng hợp lệ
+                    filteredProducts = filteredProducts.filter(p => 
+                        validCatIds.includes(Number(p.category_id || p.CategoryID))
+                    );
+                }
+
+                // 5. Lọc tìm kiếm theo tên (nếu có)
                 if (searchKeyword) {
                     filteredProducts = filteredProducts.filter(p => 
                         (p.name || p.Name || "").toLowerCase().includes(searchKeyword.toLowerCase())
                     );
                 }
 
-                // Sau đó mới Sắp xếp (Sort)
+                // 6. Sắp xếp (Sort)
                 filteredProducts.sort((a, b) => {
                     const priceA = a.variants?.[0] ? Number(a.variants[0].Price || a.variants[0].price) : 0;
                     const priceB = b.variants?.[0] ? Number(b.variants[0].Price || b.variants[0].price) : 0;
@@ -81,7 +98,7 @@ const ProductsPage = () => {
 
         fetchData();
         window.scrollTo(0, 0);
-    }, [categoryId, sort, location.search]); // 🚀 QUAN TRỌNG: Thêm location.search vào đây
+    }, [categoryId, sort, location.search]);
 
     if (loading) return <div className="vion-loading">ĐANG TẢI...</div>;
 

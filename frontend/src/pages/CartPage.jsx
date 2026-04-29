@@ -56,7 +56,10 @@ const CartPage = () => {
             );
             window.dispatchEvent(new Event('cartUpdated'));
             fetchCart();
-        } catch (err) { console.error("Lỗi update"); }
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || "Không thể cập nhật số lượng!";
+            Swal.fire('Thất bại', errorMessage, 'error');
+        }
     };
 
     const handleRemove = (itemId) => {

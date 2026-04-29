@@ -35,7 +35,10 @@ const ProductDetail = () => {
             }
 
             const allRes = await axios.get(`${API_BASE_URL}/api/products`);
-            const catID = data.category_id || data.CategoryID;
+            
+            // 🚀 BỔ SUNG LẤY ID LỒNG NHAU ĐỂ KHÔNG BỊ RỖNG
+            const catID = data.category_id || data.CategoryID || data.category?.id || data.category?.CategoryID;
+            
             const related = allRes.data.data.filter(p => 
                 (p.category_id === catID || p.CategoryID === catID) && 
                 (p.id !== data.id && p.ProductID !== data.ProductID)
@@ -60,7 +63,7 @@ const ProductDetail = () => {
     );
     const maxStock = currentVariant?.Stock || currentVariant?.stock || 0;
 
-    const handleAddToCart = async (isBuyNow = false) => {
+  const handleAddToCart = async (isBuyNow = false) => {
         const token = localStorage.getItem('vion_token');
         if (!token) {
             Swal.fire({ icon: 'info', title: 'Thông báo', text: 'Vui lòng đăng nhập!', confirmButtonColor: '#111' })
@@ -78,7 +81,10 @@ const ProductDetail = () => {
             window.dispatchEvent(new Event('cartUpdated'));
             if (isBuyNow) navigate('/checkout');
             else Swal.fire('Thành công', 'Đã thêm vào giỏ!', 'success');
-        } catch (err) { Swal.fire('Thất bại', 'Lỗi thêm vào giỏ!', 'error'); }
+        } catch (err) { 
+            const errorMessage = err.response?.data?.message || 'Lỗi thêm vào giỏ!';
+            Swal.fire('Thất bại', errorMessage, 'error'); 
+        }
     };
 
     const handleSubmitReview = async () => {
@@ -102,7 +108,6 @@ const ProductDetail = () => {
         }
     };
 
-    // 🗑️ HÀM XỬ LÝ XÓA REVIEW
     const handleDeleteReview = async (reviewId) => {
         const token = localStorage.getItem('vion_token');
         const result = await Swal.fire({
@@ -135,7 +140,6 @@ const ProductDetail = () => {
     const averageRating = product.average_rating || 0;
     const reviews = product.reviews || [];
 
-    // Lấy thông tin user đang đăng nhập để so sánh quyền xóa
     const storedUser = localStorage.getItem('vion_user');
     const currentUser = storedUser ? JSON.parse(storedUser) : null;
 
@@ -262,7 +266,6 @@ const ProductDetail = () => {
                         </div>
 
                         {reviews.length > 0 ? reviews.map((rev, i) => {
-                            // Kiểm tra xem user đang đăng nhập có phải chủ nhân review không
                             const isOwner = currentUser && (currentUser.id === rev.UserID || currentUser.UserID === rev.UserID);
                             
                             return (
@@ -272,7 +275,6 @@ const ProductDetail = () => {
                                             <b>{rev.user?.FullName || rev.user?.name || "Khách hàng Vion"}</b> 
                                             <PackageCheck size={14} color="#27ae60" style={{ marginLeft: '5px' }} />
                                         </div>
-                                        {/* 🗑️ NÚT XÓA CHIẾN THUẬT */}
                                         {isOwner && (
                                             <button 
                                                 onClick={() => handleDeleteReview(rev.id || rev.ReviewID)}
@@ -287,15 +289,39 @@ const ProductDetail = () => {
                                         {'★'.repeat(rev.Rating)}{'☆'.repeat(5 - rev.Rating)}
                                     </div>
                                     <p style={{ marginTop: '8px', color: '#444' }}>
-    {/* Dùng rev.Content vì JSON của bro trả về tên này */}
-    {rev.Content || "Người dùng không để lại bình luận."}
-</p>
+                                    {rev.Content || "Người dùng không để lại bình luận."}
+                                    </p>
                                     <small className="text-muted" style={{fontSize: '11px'}}>{new Date(rev.created_at).toLocaleDateString('vi-VN')}</small>
                                 </div>
                             );
                         }) : <div className="no-rev-box"><MessageSquare size={32} color="#ccc" /><p>Chưa có đánh giá nào.</p></div>}
                     </div>
                 </div>
+
+                {/* 🚀 GỢI Ý SẢN PHẨM TƯƠNG TỰ ĐƯỢC THÊM VÀO DƯỚI ĐÂY */}
+                <div className="related-section">
+                    <h3 className="section-subtitle" style={{ textAlign: 'center', borderLeft: 'none', paddingLeft: 0 }}>Có thể bạn sẽ thích</h3>
+                    
+                    {relatedProducts.length > 0 ? (
+                        <div className="related-grid">
+                            {relatedProducts.map(relProd => (
+                                <Link key={relProd.id} to={`/product/${relProd.id}`} className="rel-card">
+                                    <div className="rel-img">
+                                        <img src={relProd.main_image ? `${API_BASE_URL}/storage/${relProd.main_image}` : 'https://via.placeholder.com/300x400'} alt={relProd.name} />
+                                    </div>
+                                    <p className="rel-name">{relProd.name}</p>
+                                    <p className="rel-price">
+                                        {relProd.variants?.[0] ? Number(relProd.variants[0].Price || relProd.variants[0].price).toLocaleString() : '0'}đ
+                                    </p>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <p style={{ textAlign: 'center', color: '#888', marginTop: '20px' }}>Hiện chưa có sản phẩm cùng danh mục.</p>
+                    )}
+                </div>
+                {/* KẾT THÚC GỢI Ý */}
+
             </div>
         </div>
     );
