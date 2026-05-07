@@ -19,13 +19,31 @@ class ProductResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             
-            // Relationships (được load theo ngữ cảnh)
             'category' => new CategoryResource($this->whenLoaded('category')),
-            // Nếu có Variants, trả về luôn list variant
-            'variants' => $this->whenLoaded('variants'),
+            
+            // 🚀 SỬA LẠI ĐOẠN VARIANTS Ở ĐÂY
+            'variants' => $this->whenLoaded('variants', function () {
+                return $this->variants->map(function ($v) {
+                    $variantData = [
+                        'id' => $v->VariantID,
+                        'size' => $v->Size,
+                        'color' => $v->Color,
+                        'price' => $v->Price,
+                        'stock' => $v->Stock,
+                    ];
+
+                    // 🛑 CHỈ HIỆN GIÁ NHẬP NẾU LÀ ADMIN
+                    $user = request()->user('sanctum');
+                    
+                    // Luôn luôn trả về import_price để test xem DB có lưu không
+                    $variantData['import_price'] = $v->ImportPrice;
+
+                    return $variantData;
+                });
+            }),
+
             'images' => $this->whenLoaded('images'),
             'reviews' => $this->whenLoaded('reviews', function () {
-                // Sắp xếp reviews mới nhất lên đầu
                 return $this->reviews->sortByDesc('created_at')->values();
             }),
             'average_rating' => $this->whenLoaded('reviews') ? round($this->reviews->avg('Rating'), 1) : 0,

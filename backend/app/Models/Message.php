@@ -11,14 +11,14 @@ class Message extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'SessionID',
+        'UserID',
         'Sender',
         'Content',
         'SentAt'
     ];
 
-    public function session()
+    public function user()
     {
-        return $this->belongsTo(ChatSession::class, 'SessionID', 'SessionID');
+        return $this->belongsTo(User::class, 'UserID', 'UserID');
     }
 }

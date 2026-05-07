@@ -158,7 +158,7 @@ const ProductsPage = () => {
                                         <div className="product-info">
                                             <p className="p-name">{prod.name}</p>
                                             <p className="p-price">
-                                                {prod.variants?.[0] ? Number(prod.variants[0].Price).toLocaleString() : '0'}đ
+                                                {prod.variants?.[0] ? `${Number(prod.variants[0].price || prod.variants[0].Price || 0).toLocaleString()}đ` : '0đ'}
                                             </p>
                                             <p className="p-sold-count">Đã bán {prod.sold_count || 0}</p>
                                         </div>

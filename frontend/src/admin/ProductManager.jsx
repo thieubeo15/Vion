@@ -12,7 +12,7 @@ const ProductManager = () => {
 
     const [formData, setFormData] = useState({
         Name: '', CategoryID: '', Description: '', MainImage: null, additionalImages: [],
-        variants: [{ size: '', color: '', price: '', stock: '' }]
+        variants: [{ size: '', color: '', price: '', stock: '', importPrice: '' }] // Thêm importPrice vào đây
     });
 
     const [isEditing, setIsEditing] = useState(false);
@@ -29,9 +29,10 @@ const ProductManager = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
+            const config = { headers: { Authorization: `Bearer ${token}` } };
             const [prodRes, catRes] = await Promise.all([
-                axios.get(`${API_URL}/products`),
-                axios.get(`${API_URL}/categories`)
+                axios.get(`${API_URL}/products`, config),
+                axios.get(`${API_URL}/categories`, config)
             ]);
             setProducts(prodRes.data.data || []);
             const flat = [];
@@ -65,7 +66,8 @@ const ProductManager = () => {
                             <tr>
                                 <th style="padding: 10px; border-bottom: 1px solid #eee; text-align: left;">Size</th>
                                 <th style="padding: 10px; border-bottom: 1px solid #eee; text-align: left;">Màu</th>
-                                <th style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">Giá</th>
+                                <th style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">Giá bán</th>
+                                <th style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">Giá nhập</th>
                                 <th style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">Kho</th>
                             </tr>
                         </thead>
@@ -75,6 +77,7 @@ const ProductManager = () => {
                                     <td style="padding: 10px; border-bottom: 1px solid #eee;">${v.size || v.Size || '-'}</td>
                                     <td style="padding: 10px; border-bottom: 1px solid #eee;">${v.color || v.Color || '-'}</td>
                                     <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">${Number(v.price || v.Price || 0).toLocaleString()}đ</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">${Number(v.importPrice || v.import_price || v.ImportPrice || 0).toLocaleString()}đ</td>
                                     <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${v.stock || v.Stock || 0}</td>
                                 </tr>
                             `).join('')}
@@ -94,7 +97,7 @@ const ProductManager = () => {
         data.append('CategoryID', formData.CategoryID);
         data.append('Description', formData.Description || '');
         if (formData.MainImage instanceof File) data.append('MainImage', formData.MainImage);
-        
+
         // Gửi các ảnh phụ (Gallery)
         if (formData.additionalImages && formData.additionalImages.length > 0) {
             formData.additionalImages.forEach(file => {
@@ -136,13 +139,19 @@ const ProductManager = () => {
         setFormData({
             Name: prod.name, CategoryID: prod.category_id, Description: prod.description || '',
             MainImage: null, additionalImages: [],
-            variants: prod.variants?.map(v => ({ size: v.size || v.Size, color: v.color || v.Color, price: v.price || v.Price, stock: v.stock || v.Stock })) || []
+            variants: prod.variants?.map(v => ({
+                size: v.size || v.Size,
+                color: v.color || v.Color,
+                price: v.price || v.Price,
+                stock: v.stock || v.Stock,
+                importPrice: v.import_price || v.ImportPrice || '' // Lấy giá vốn từ API
+            })) || []
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const resetForm = () => {
-        setFormData({ Name: '', CategoryID: '', Description: '', MainImage: null, additionalImages: [], variants: [{ size: '', color: '', price: '', stock: '' }] });
+        setFormData({ Name: '', CategoryID: '', Description: '', MainImage: null, additionalImages: [], variants: [{ size: '', color: '', price: '', importPrice: '', stock: '' }] });
         setIsEditing(false); setEditId(null);
     };
 
@@ -165,22 +174,22 @@ const ProductManager = () => {
             <form className="v-inline-form" onSubmit={handleSubmit}>
                 <div className="v-form-grid">
                     <div className="v-col">
-                        <div className="v-input-group"><label>Tên sản phẩm</label><input type="text" value={formData.Name} onChange={(e) => setFormData({...formData, Name: e.target.value})} required placeholder="Hoodie Vion..." /></div>
-                        <div className="v-input-group"><label>Danh mục</label><select value={formData.CategoryID} onChange={(e) => setFormData({...formData, CategoryID: e.target.value})} required><option value="">-- Chọn danh mục --</option>{categories.map(c => <option key={c.id} value={c.id}>{c.display}</option>)}</select></div>
-                        <div className="v-input-group"><label>Mô tả</label><textarea rows="2" value={formData.Description} onChange={(e) => setFormData({...formData, Description: e.target.value})}></textarea></div>
+                        <div className="v-input-group"><label>Tên sản phẩm</label><input type="text" value={formData.Name} onChange={(e) => setFormData({ ...formData, Name: e.target.value })} required placeholder="Hoodie Vion..." /></div>
+                        <div className="v-input-group"><label>Danh mục</label><select value={formData.CategoryID} onChange={(e) => setFormData({ ...formData, CategoryID: e.target.value })} required><option value="">-- Chọn danh mục --</option>{categories.map(c => <option key={c.id} value={c.id}>{c.display}</option>)}</select></div>
+                        <div className="v-input-group"><label>Mô tả</label><textarea rows="2" value={formData.Description} onChange={(e) => setFormData({ ...formData, Description: e.target.value })}></textarea></div>
                     </div>
                     <div className="v-col">
-                        <label style={{fontWeight: 700, fontSize: '11px', color: '#999', textTransform: 'uppercase'}}>Hình ảnh</label>
+                        <label style={{ fontWeight: 700, fontSize: '11px', color: '#999', textTransform: 'uppercase' }}>Hình ảnh</label>
                         <div className="v-image-uploads">
                             <label className="v-upload-main">
                                 <Upload size={22} />
                                 <span>{formData.MainImage ? "Đã chọn ảnh chính" : "Ảnh đại diện"}</span>
-                                <input type="file" hidden onChange={(e) => setFormData({...formData, MainImage: e.target.files[0]})} />
+                                <input type="file" hidden onChange={(e) => setFormData({ ...formData, MainImage: e.target.files[0] })} />
                             </label>
                             <label className="v-upload-sub">
                                 <ImageIcon size={22} />
                                 <span>Ảnh phụ (+{formData.additionalImages.length})</span>
-                                <input type="file" multiple hidden onChange={(e) => setFormData({...formData, additionalImages: [...formData.additionalImages, ...Array.from(e.target.files)]})} />
+                                <input type="file" multiple hidden onChange={(e) => setFormData({ ...formData, additionalImages: [...formData.additionalImages, ...Array.from(e.target.files)] })} />
                             </label>
                         </div>
                     </div>
@@ -188,24 +197,25 @@ const ProductManager = () => {
 
                 <div className="v-variant-section">
                     <div className="v-section-header">
-                        <h3>Biến thể (Size & Màu)</h3>
-                        <button type="button" onClick={() => setFormData({...formData, variants: [...formData.variants, {size:'', color:'', price:'', stock:''}]})} className="v-btn-add-var">+ Thêm dòng</button>
+                        <h3>Biến thể & Giá nhập (Giá vốn)</h3>
+                        <button type="button" onClick={() => setFormData({ ...formData, variants: [...formData.variants, { size: '', color: '', price: '', importPrice: '', stock: '' }] })} className="v-btn-add-var">+ Thêm dòng</button>
                     </div>
-                    <div className="v-variant-header"><span>Size</span><span>Màu</span><span>Giá bán</span><span>Kho</span><span></span></div>
+
                     {formData.variants.map((v, i) => (
                         <div key={i} className="v-variant-row">
-                            <input type="text" placeholder="Size" value={v.size} onChange={(e) => { const n = [...formData.variants]; n[i].size = e.target.value; setFormData({...formData, variants: n}); }} />
-                            <input type="text" placeholder="Màu" value={v.color} onChange={(e) => { const n = [...formData.variants]; n[i].color = e.target.value; setFormData({...formData, variants: n}); }} />
-                            <input type="number" placeholder="Giá" value={v.price} onChange={(e) => { const n = [...formData.variants]; n[i].price = e.target.value; setFormData({...formData, variants: n}); }} />
-                            <input type="number" placeholder="Kho" value={v.stock} onChange={(e) => { const n = [...formData.variants]; n[i].stock = e.target.value; setFormData({...formData, variants: n}); }} />
-                            <button type="button" onClick={() => setFormData({...formData, variants: formData.variants.filter((_, idx) => idx !== i)})} className="v-del-var"><X size={16}/></button>
+                            <input type="text" placeholder="Size" value={v.size} onChange={(e) => { const n = [...formData.variants]; n[i].size = e.target.value; setFormData({ ...formData, variants: n }); }} />
+                            <input type="text" placeholder="Màu" value={v.color} onChange={(e) => { const n = [...formData.variants]; n[i].color = e.target.value; setFormData({ ...formData, variants: n }); }} />
+                            <input type="number" placeholder="Giá bán" value={v.price} onChange={(e) => { const n = [...formData.variants]; n[i].price = e.target.value; setFormData({ ...formData, variants: n }); }} />
+                            <input type="number" placeholder="Giá nhập" value={v.importPrice} onChange={(e) => { const n = [...formData.variants]; n[i].importPrice = e.target.value; setFormData({ ...formData, variants: n }); }} />
+                            <input type="number" placeholder="Kho" value={v.stock} onChange={(e) => { const n = [...formData.variants]; n[i].stock = e.target.value; setFormData({ ...formData, variants: n }); }} />
+                            <button type="button" onClick={() => setFormData({ ...formData, variants: formData.variants.filter((_, idx) => idx !== i) })} className="v-del-var"><X size={16} /></button>
                         </div>
                     ))}
                 </div>
 
                 <div className="v-form-footer">
                     <button type="submit" className="v-btn-submit">
-                        {isEditing ? <><Save size={18}/> LƯU THAY ĐỔI</> : <><Plus size={18}/> ĐĂNG BÁN SẢN PHẨM</>}
+                        {isEditing ? <><Save size={18} /> LƯU THAY ĐỔI</> : <><Plus size={18} /> ĐĂNG BÁN SẢN PHẨM</>}
                     </button>
                     {isEditing && <button type="button" className="v-btn-cancel" onClick={resetForm}>HỦY</button>}
                 </div>
@@ -215,16 +225,16 @@ const ProductManager = () => {
                 <thead><tr><th width="80">Ảnh</th><th>Tên sản phẩm</th><th>Danh mục</th><th className="v-actions">Thao tác</th></tr></thead>
                 <tbody>
                     {loading ? (
-                        <tr><td colSpan="4" style={{textAlign: 'center', padding: '30px'}}><Loader2 className="v-spin" /> Đang tải...</td></tr>
+                        <tr><td colSpan="4" style={{ textAlign: 'center', padding: '30px' }}><Loader2 className="v-spin" /> Đang tải...</td></tr>
                     ) : products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(prod => (
                         <tr key={prod.id}>
                             <td><img src={`http://127.0.0.1:8000/storage/${prod.main_image}`} className="v-table-img" alt="" /></td>
                             <td><div className="v-prod-name">{prod.name}</div></td>
                             <td><span className="v-tag">{prod.category?.name}</span></td>
                             <td className="v-actions">
-                                <button onClick={() => handleViewDetails(prod)} className="v-view" title="Xem nhanh"><Eye size={16}/></button>
-                                <button onClick={() => startEdit(prod)} className="v-edit" title="Sửa"><Edit2 size={16}/></button>
-                                <button onClick={() => handleDelete(prod.id)} className="v-del" title="Xóa"><Trash2 size={16}/></button>
+                                <button onClick={() => handleViewDetails(prod)} className="v-view" title="Xem nhanh"><Eye size={16} /></button>
+                                <button onClick={() => startEdit(prod)} className="v-edit" title="Sửa"><Edit2 size={16} /></button>
+                                <button onClick={() => handleDelete(prod.id)} className="v-del" title="Xóa"><Trash2 size={16} /></button>
                             </td>
                         </tr>
                     ))}

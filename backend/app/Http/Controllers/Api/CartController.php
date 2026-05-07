@@ -20,7 +20,7 @@ class CartController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $cart // Trả về object cart, bên trong có mảng items
+            'data' => $cart
         ]);
     }
 

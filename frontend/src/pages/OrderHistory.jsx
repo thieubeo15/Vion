@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Package, Clock, Truck, CheckCircle, XCircle, ChevronRight, Inbox } from 'lucide-react';
+import Swal from 'sweetalert2';
 import './OrderHistory.css';
 
 const OrderHistory = () => {
@@ -38,9 +39,35 @@ const OrderHistory = () => {
     };
 
     // LOGIC LỌC ĐƠN HÀNG
-    const filteredOrders = filterStatus === 'All' 
-        ? orders 
+    const filteredOrders = filterStatus === 'All'
+        ? orders
         : orders.filter(order => order.Status === filterStatus);
+
+    const handleCancelOrder = async (orderId) => {
+        const confirm = await Swal.fire({
+            title: 'Hủy đơn hàng?',
+            text: 'Bạn chắc chắn muốn hủy đơn hàng này chứ?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Đồng ý hủy',
+            cancelButtonText: 'Không'
+        });
+
+        if (confirm.isConfirmed) {
+            try {
+                await axios.put(`${API_URL}/orders/${orderId}`, { Status: 'Cancelled' }, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                Swal.fire('Thành công!', 'Đơn hàng đã được hủy.', 'success');
+                fetchMyOrders();
+            } catch (err) {
+                console.error("Lỗi khi hủy đơn:", err);
+                Swal.fire('Lỗi!', 'Không thể hủy đơn hàng lúc này.', 'error');
+            }
+        }
+    };
 
     const getStatusIcon = (status) => {
         switch (status) {
@@ -61,8 +88,8 @@ const OrderHistory = () => {
             {/* THANH TAB PHÂN LOẠI */}
             <div className="v-order-tabs shadow-sm mb-4">
                 {tabs.map(tab => (
-                    <div 
-                        key={tab.id} 
+                    <div
+                        key={tab.id}
                         className={`v-tab-item ${filterStatus === tab.id ? 'active' : ''}`}
                         onClick={() => setFilterStatus(tab.id)}
                     >
@@ -70,12 +97,12 @@ const OrderHistory = () => {
                     </div>
                 ))}
             </div>
-            
+
             {filteredOrders.length === 0 ? (
                 <div className="v-empty-order text-center py-5 bg-white rounded-4 shadow-sm">
                     <Inbox size={64} className="text-muted mb-3 opacity-25" />
                     <p className="text-muted fw-600">Không tìm thấy đơn hàng nào trong mục này!</p>
-                    <button className="v-btn-shop mt-3" onClick={() => window.location.href='/'}>MUA SẮM NGAY</button>
+                    <button className="v-btn-shop mt-3" onClick={() => window.location.href = '/'}>MUA SẮM NGAY</button>
                 </div>
             ) : (
                 <div className="v-order-list">
@@ -106,8 +133,18 @@ const OrderHistory = () => {
                                 <div className="v-order-date text-muted fs-12">
                                     Ngày đặt: {new Date(order.OrderDate).toLocaleDateString('vi-VN')}
                                 </div>
-                                <div className="v-total">
-                                    Tổng thanh toán: <span className="v-price-grand text-danger">{Number(order.TotalAmount).toLocaleString()}đ</span>
+                                <div className="v-total d-flex align-items-center gap-3">
+                                    {order.Status === 'Pending' && (
+                                        <button 
+                                            className="v-btn-cancel-sm"
+                                            onClick={() => handleCancelOrder(order.OrderID)}
+                                        >
+                                            Hủy đơn
+                                        </button>
+                                    )}
+                                    <div>
+                                        Tổng thanh toán: <span className="v-price-grand text-danger">{Number(order.TotalAmount).toLocaleString()}đ</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -55,6 +55,7 @@ class ProductController extends Controller
                         'Color' => $v['color'],
                         'Price' => $v['price'],
                         'Stock' => $v['stock'],
+                        'ImportPrice' => $v['importPrice'] ?? 0,
                     ]);
                 }
             }
@@ -136,6 +137,7 @@ class ProductController extends Controller
                             $variant->update([
                                 'Price' => $v['price'],
                                 'Stock' => $v['stock'],
+                                'ImportPrice' => isset($v['importPrice']) && $v['importPrice'] !== '' ? $v['importPrice'] : $variant->ImportPrice,
                             ]);
                             $incomingSignatures[] = $variant->VariantID;
                         } else {
@@ -144,6 +146,7 @@ class ProductController extends Controller
                                 'Color' => $v['color'],
                                 'Price' => $v['price'],
                                 'Stock' => $v['stock'],
+                                'ImportPrice' => isset($v['importPrice']) && $v['importPrice'] !== '' ? $v['importPrice'] : 0,
                             ]);
                             $incomingSignatures[] = $newVariant->VariantID;
                         }

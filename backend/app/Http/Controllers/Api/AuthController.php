@@ -9,25 +9,22 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    // 1. ĐĂNG KÝ TÀI KHOẢN
+    // 1. ĐĂNG KÝ TÀI KHOẢN (Giữ nguyên của bro)
     public function register(Request $request)
     {
-        // Kiểm tra dữ liệu đầu vào
         $request->validate([
             'FullName' => 'required|string|max:255',
             'Email' => 'required|string|email|unique:users,Email',
             'Password' => 'required|string|min:6'
         ]);
 
-        // Tạo User mới (Mặc định Role là Customer)
         $user = User::create([
             'FullName' => $request->FullName,
             'Email' => $request->Email,
-            'Password' => Hash::make($request->Password), // Mã hóa mật khẩu
+            'Password' => Hash::make($request->Password),
             'Role' => 'Customer'
         ]);
 
-        // Cấp Token (Thẻ thông hành)
         $token = $user->createToken('VionToken')->plainTextToken;
 
         return response()->json([
@@ -37,16 +34,31 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // 2. ĐĂNG NHẬP
+    // 🚀 2. ĐĂNG NHẬP (ĐÃ THÊM VALIDATE CHI TIẾT)
     public function login(Request $request)
     {
-        // Tìm User theo Email
+        // Kiểm tra định dạng, để trống, độ dài và sự tồn tại của Email
+        $request->validate([
+            'Email' => 'required|email|exists:users,Email',
+            'Password' => 'required|min:6'
+        ], [
+            // Custom thông báo lỗi theo đúng ý bro
+            'Email.required' => 'Email không được để trống!',
+            'Email.email' => 'Email sai định dạng!',
+            'Email.exists' => 'Email không tồn tại trong hệ thống!',
+            
+            'Password.required' => 'Mật khẩu không được để trống!',
+            'Password.min' => 'Mật khẩu quá ngắn (phải có ít nhất 6 ký tự).'
+        ]);
+
+        // Lúc này Email chắc chắn đã đúng định dạng và có tồn tại trong DB rồi
         $user = User::where('Email', $request->Email)->first();
 
-        // Kiểm tra xem User có tồn tại không và Mật khẩu có khớp không
-        if (!$user || !Hash::check($request->Password, $user->Password)) {
+        // Chỉ cần kiểm tra xem Mật khẩu có khớp không
+        if (!Hash::check($request->Password, $user->Password)) {
+            // Trả về lỗi 401 Unauthorized nếu sai mật khẩu
             return response()->json([
-                'message' => 'Email hoặc mật khẩu không chính xác!'
+                'message' => 'Sai mật khẩu! Vui lòng thử lại.'
             ], 401);
         }
 
@@ -57,14 +69,13 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Đăng nhập thành công!',
             'user' => $user,
-            'token' => $token // Phải trả về cái này để React cất đi
+            'token' => $token 
         ]);
     }
 
-    // 3. ĐĂNG XUẤT
+    // 3. ĐĂNG XUẤT (Giữ nguyên của bro)
     public function logout(Request $request)
     {
-        // Thu hồi toàn bộ Token của User này
         $request->user()->tokens()->delete();
 
         return response()->json([

@@ -115,7 +115,7 @@ const CategoryManager = () => {
     const handleDelete = async (id) => {
         // Thay window.confirm bằng Swal.fire
         Swal.fire({
-            title: 'Bro chắc chắn chứ?',
+            title: 'Bạn chắc chắn muốn xóa',
             text: "Xóa danh mục này sẽ không thể hoàn tác!",
             icon: 'warning',
             showCancelButton: true,
@@ -169,7 +169,7 @@ const CategoryManager = () => {
                         required
                     />
                     <select value={formData.parent_id} onChange={(e) => setFormData({...formData, parent_id: e.target.value})}>
-                        <option value="">-- Danh mục Cha --</option>
+                        <option value="">-- Danh mục --</option>
                         {allCategories.filter(c => c.id !== editId).map(cat => (
                             <option key={cat.id} value={cat.id}>{cat.display}</option>
                         ))}

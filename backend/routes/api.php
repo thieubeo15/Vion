@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\{
     ProductVariantController, ProductImageController, ProductVectorController,
     CartController, CartItemController, OrderController, 
     OrderDetailController, PaymentController, ReviewController,
-    ChatSessionController, MessageController, AuthController, 
+    MessageController, AuthController, 
     AdminController, BannerController
 };
 
@@ -68,5 +68,5 @@ Route::middleware('auth:sanctum')->group(function () {
 // Lưu ý: Đã xoá các apiResource gây xung đột với group auth ở trên
 Route::apiResource('product-variants', ProductVariantController::class);
 Route::apiResource('product-images', ProductImageController::class);
-Route::apiResource('chat-sessions', ChatSessionController::class);
 Route::apiResource('messages', MessageController::class);
+Route::get('messages/user/{userId}', [MessageController::class, 'getUserMessages']);

@@ -9,7 +9,7 @@ const AdminLayout = () => {
     const token = localStorage.getItem('vion_token');
 
     const handleLogout = async () => {
-        if (window.confirm("Bro muốn đăng xuất khỏi quản trị?")) {
+        if (window.confirm("Bạn muốn đăng xuất?")) {
             try {
                 await axios.post('http://127.0.0.1:8000/api/logout', {}, {
                     headers: { Authorization: `Bearer ${token}` }

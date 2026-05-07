@@ -17,7 +17,7 @@ return new class extends Migration
     $table->unsignedBigInteger('VariantID')->nullable();
     $table->integer('Quantity');
     $table->decimal('Price', 18, 2);
-
+    $table->decimal('ImportPrice', 18, 2)->default(0);
     $table->foreign('OrderID')->references('OrderID')->on('orders')->onDelete('cascade');
     $table->foreign('VariantID')->references('VariantID')->on('product_variants')->onDelete('set null');
 });

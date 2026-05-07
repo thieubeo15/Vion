@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; 
 import { Search, Camera, ShoppingBag, User, LogOut } from 'lucide-react';
 import axios from 'axios';
+import Swal from 'sweetalert2'; // 🚀 1. Import thư viện Swal
 import './Navbar.css';
 
 const Navbar = () => {
@@ -45,14 +46,12 @@ const Navbar = () => {
         return () => window.removeEventListener('cartUpdated', handleCartChange);
     }, []);
 
-    // 🚀 1. Hàm xử lý khi nhấn Enter hoặc click icon Tìm kiếm
     const handleSearchSubmit = (e) => {
         if (e) e.preventDefault();
         if (searchTerm.trim() !== '') {
-            // Chuyển hướng sang trang sản phẩm với query string
             navigate(`/products?search=${searchTerm}`);
-            setSearchTerm(''); // Xóa text sau khi search
-            setSearchResults([]); // Đóng dropdown
+            setSearchTerm(''); 
+            setSearchResults([]); 
         }
     };
 
@@ -71,12 +70,27 @@ const Navbar = () => {
         setSearchResults(filtered);
     };
 
+    // 🚀 2. Sửa lại hàm Đăng xuất dùng SweetAlert2
     const handleLogout = () => {
-        if (window.confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-            localStorage.removeItem('vion_token');
-            localStorage.removeItem('vion_user');
-            window.location.href = '/login'; 
-        }
+        Swal.fire({
+            title: 'Đăng xuất?',
+            text: "Bạn có chắc chắn muốn đăng xuất khỏi Vion không?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#111', // Màu đen cho ngầu
+            cancelButtonColor: '#d33', // Đỏ cho nút Hủy
+            confirmButtonText: 'Đăng xuất',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Xóa Token và Dữ liệu user
+                localStorage.removeItem('vion_token');
+                localStorage.removeItem('vion_user');
+                
+               
+                    window.location.href = '/login'; 
+            }
+        });
     };
 
     return (
@@ -85,7 +99,6 @@ const Navbar = () => {
                 <Link to="/" className="header-logo">VION.</Link>
 
                 <div className="search-container">
-                    {/* 🚀 2. Bọc vào form để nhận sự kiện submit (Enter) */}
                     <form className="search-input-wrap" onSubmit={handleSearchSubmit}>
                         <Search 
                             size={18} 

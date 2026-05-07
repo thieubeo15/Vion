@@ -8,7 +8,7 @@ class MessageController extends Controller
 {
     public function store(Request $request) {
         $request->validate([
-            'SessionID' => 'required|exists:chat_sessions,SessionID',
+            'UserID' => 'required|exists:users,UserID',
             'Sender' => 'required|string|max:20',
             'Content' => 'required|string',
             'SentAt' => 'required|date'
@@ -16,9 +16,9 @@ class MessageController extends Controller
         return response()->json(Message::create($request->all()), 201);
     }
 
-    public function show($id) {
-        $m = Message::find($id);
-        return $m ? response()->json($m) : response()->json(['message' => 'Not found'], 404);
+    public function getUserMessages($userId) {
+        $messages = Message::where('UserID', $userId)->orderBy('SentAt', 'asc')->get();
+        return response()->json($messages);
     }
 
     public function destroy($id) {

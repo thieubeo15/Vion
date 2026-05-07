@@ -2,14 +2,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { DollarSign, ShoppingBag, Users, Package, Loader2, ArrowRight, Image as ImageIcon } from 'lucide-react';
+// 🚀 Nhớ import thêm TrendingUp cho cái icon Lợi nhuận nhé
+import { DollarSign, ShoppingBag, Users, Package, Loader2, ArrowRight, Image as ImageIcon, TrendingUp } from 'lucide-react';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [stats, setStats] = useState({
-        totalRevenue: 0, totalOrders: 0, totalCustomers: 0, 
-        totalProducts: 0, totalBanners: 0, recentOrders: []
+        totalRevenue: 0, 
+        totalProfit: 0, // 🚀 Thêm state Lợi nhuận
+        totalOrders: 0, 
+        totalCustomers: 0, 
+        totalProducts: 0, 
+        totalBanners: 0, 
+        recentOrders: []
     });
     const [loading, setLoading] = useState(true);
 
@@ -23,30 +29,39 @@ const AdminDashboard = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (res.data.success) {
+                    const d = res.data.data;
                     setStats({
-                        totalRevenue: res.data.data.total_revenue,
-                        totalOrders: res.data.data.total_orders,
-                        totalCustomers: res.data.data.total_customers,
-                        totalProducts: res.data.data.total_products,
-                        totalBanners: res.data.data.total_banners, // Nhận số banner từ API
-                        recentOrders: res.data.data.recent_orders
+                        totalRevenue: d.total_revenue || 0,
+                        totalProfit: d.total_profit || 0, // 🚀 Lấy dữ liệu Lợi nhuận từ Backend
+                        totalOrders: d.total_orders || 0,
+                        totalCustomers: d.total_customers || 0,
+                        totalProducts: d.total_products || 0,
+                        totalBanners: d.total_banners || 0,
+                        recentOrders: d.recent_orders || []
                     });
                 }
-            } catch (err) { console.error("Lỗi:", err); }
-            finally { setLoading(false); }
+            } catch (err) { 
+                console.error("Lỗi fetch stats:", err); 
+            } finally { 
+                setLoading(false); 
+            }
         };
         fetchStats();
     }, [token]);
 
     const cardData = [
-        { title: 'Doanh thu', value: `${Number(stats.totalRevenue).toLocaleString()}đ`, icon: <DollarSign />, color: '#10b981', path: '/admin/orders' },
-        { title: 'Đơn hàng', value: stats.totalOrders, icon: <ShoppingBag />, color: '#3b82f6', path: '/admin/orders' },
+        { title: 'Doanh thu', value: `${Number(stats.totalRevenue).toLocaleString()}đ`, icon: <DollarSign />, color: '#3b82f6', path: '/admin/orders' },
+        
+        // 🚀 THẺ LỢI NHUẬN THÊM VÀO ĐÂY
+        { title: 'Lợi nhuận', value: `${Number(stats.totalProfit).toLocaleString()}đ`, icon: <TrendingUp />, color: '#10b981', path: '/admin/orders' },
+        
+        { title: 'Đơn hàng', value: stats.totalOrders, icon: <ShoppingBag />, color: '#f59e0b', path: '/admin/orders' },
         { title: 'Sản phẩm', value: stats.totalProducts, icon: <Package />, color: '#ec4899', path: '/admin/products' },
-        { title: 'Khách hàng', value: stats.totalCustomers, icon: <Users />, color: '#f59e0b', path: '/admin/users' },
+        { title: 'Khách hàng', value: stats.totalCustomers, icon: <Users />, color: '#6366f1', path: '/admin/users' },
         { title: 'Banner', value: stats.totalBanners, icon: <ImageIcon />, color: '#8b5cf6', path: '/admin/banners' },
     ];
 
-    if (loading) return <div className="admin-loading"><Loader2 className="spin-icon" /> Đang tải...</div>;
+    if (loading) return <div className="admin-loading"><Loader2 className="spin-icon" /> Đang tải dữ liệu...</div>;
 
     return (
         <div className="admin-dashboard-content">
@@ -79,40 +94,55 @@ const AdminDashboard = () => {
                             <tr>
                                 <th>Mã đơn</th>
                                 <th>Khách hàng</th>
-                                <th>Sản phẩm đã mua</th> {/* CỘT SP */}
-                                <th>Tổng tiền</th>
+                                <th>Sản phẩm đã mua</th>
+                                <th>Giá trị đơn</th>
+                                <th>Lợi nhuận (Dự kiến)</th>
                                 <th>Trạng thái</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {stats.recentOrders.map(order => (
-                                <tr key={order.OrderID}>
-                                    <td className="fw-800">#VION-{order.OrderID}</td>
-                                    <td>
-                                        <div className="fw-700">{order.FullName}</div>
-                                        <div className="small text-muted">{order.Phone}</div>
-                                    </td>
-                                   {/* AdminDashboard.jsx - Chỗ render cột Sản phẩm đã mua */}
-{/* Chỗ render cột Sản phẩm đã mua */}
-<td>
-    {order.details && order.details.length > 0 ? (
-        order.details.map((detail, i) => (
-            <div key={i} className="order-product-item">
-                {/* Dùng Name (N viết hoa) vì trong Model Product bro đặt là Name.
-                   Thêm cái d.variant?.product?.name (n thường) cho chắc.
-                */}
-                • {detail.variant?.product?.Name || detail.variant?.product?.name || "Tên SP trống"} 
-                <span className="text-muted"> (x{detail.Quantity})</span>
-            </div>
-        ))
-    ) : (
-        <span className="text-muted">Không có dữ liệu SP</span>
-    )}
-</td>
-                                    <td className="fw-800 text-danger">{Number(order.TotalAmount).toLocaleString()}đ</td>
-                                    <td><span className={`status-pill ${order.Status.toLowerCase()}`}>{order.Status}</span></td>
-                                </tr>
-                            ))}
+                            {stats.recentOrders.map(order => {
+                                // 🚀 Tính toán lợi nhuận cho từng đơn hàng hiển thị ở bảng
+                                const orderRevenue = Number(order.TotalAmount);
+                                const orderCost = order.details?.reduce((sum, d) => sum + (Number(d.ImportPrice || d.import_price || 0) * d.Quantity), 0) || 0;
+                                const orderProfit = orderRevenue - orderCost;
+
+                                return (
+                                    <tr key={order.OrderID}>
+                                        <td className="fw-800">#VION-{order.OrderID}</td>
+                                        <td>
+                                            <div className="fw-700">{order.FullName}</div>
+                                            <div className="small text-muted">{order.Phone}</div>
+                                        </td>
+                                        <td>
+                                            {order.details && order.details.length > 0 ? (
+                                                order.details.map((detail, i) => (
+                                                    <div key={i} className="order-product-item">
+                                                        • {detail.variant?.product?.Name || detail.variant?.product?.name || "Sản phẩm"} 
+                                                        <span className="text-muted"> (x{detail.Quantity})</span>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <span className="text-muted">N/A</span>
+                                            )}
+                                        </td>
+                                        <td className="fw-800 text-primary">
+                                            {orderRevenue.toLocaleString()}đ
+                                        </td>
+                                        
+                                        {/* 🚀 HIỂN THỊ LỢI NHUẬN ĐƠN HÀNG Ở ĐÂY */}
+                                        <td className="fw-800 text-success">
+                                            +{orderProfit.toLocaleString()}đ
+                                        </td>
+
+                                        <td>
+                                            <span className={`status-pill ${order.Status?.toLowerCase()}`}>
+                                                {order.Status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -120,4 +150,5 @@ const AdminDashboard = () => {
         </div>
     );
 };
+
 export default AdminDashboard;

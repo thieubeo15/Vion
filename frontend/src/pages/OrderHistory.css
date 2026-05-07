@@ -53,3 +53,31 @@
     border: 2px dashed #eee;
 }
 .fw-600 { font-weight: 600; }
+
+/* Nút Hủy Đơn */
+.v-btn-cancel-sm {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #dc2626;
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.v-btn-cancel-sm:hover {
+    background: #dc2626;
+    color: #fff;
+    border-color: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.v-btn-cancel-sm:active {
+    transform: translateY(0);
+}

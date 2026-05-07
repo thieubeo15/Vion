@@ -14,7 +14,8 @@ class OrderDetail extends Model
         'OrderID',
         'VariantID',
         'Quantity',
-        'Price'
+        'Price',
+        'ImportPrice'
     ];
 
     public function order()

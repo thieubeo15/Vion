@@ -18,7 +18,7 @@ return new class extends Migration
     $table->string('Color', 50);
     $table->decimal('Price', 18, 2);
     $table->integer('Stock');
-
+    $table->decimal('ImportPrice', 18, 2)->default(0);
     $table->foreign('ProductID')->references('ProductID')->on('products')->onDelete('cascade');
 });
     }

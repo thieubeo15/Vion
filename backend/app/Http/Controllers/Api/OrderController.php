@@ -76,10 +76,11 @@ foreach ($selectedItems as $item) {
 
     // 2. Tạo chi tiết đơn hàng
     OrderDetail::create([
-        'OrderID'   => $order->OrderID,
-        'VariantID' => $item->VariantID,
-        'Quantity'  => $item->Quantity,
-        'Price'     => $finalPrice 
+        'OrderID'     => $order->OrderID,
+        'VariantID'   => $item->VariantID,
+        'Quantity'    => $item->Quantity,
+        'Price'       => $finalPrice,
+        'ImportPrice' => $variant->ImportPrice ?? 0
     ]);
 
     // 3. Trừ tồn kho (Bro đã có)
@@ -126,11 +127,30 @@ foreach ($selectedItems as $item) {
     }
 
     public function update(Request $request, $id) {
-        $order = Order::find($id);
+        $order = Order::with('details.variant.product')->find($id);
         if (!$order) return response()->json(['message' => 'Not found'], 404);
         
         $request->validate(['Status' => 'required|string|max:50']);
-        $order->update($request->only('Status'));
+        $newStatus = $request->Status;
+
+        // Nếu chuyển sang Cancelled và trạng thái cũ không phải Cancelled
+        if ($newStatus === 'Cancelled' && $order->Status !== 'Cancelled') {
+            DB::transaction(function () use ($order) {
+                foreach ($order->details as $detail) {
+                    if ($detail->variant) {
+                        // Trả lại tồn kho
+                        $detail->variant->increment('Stock', $detail->Quantity);
+                        
+                        // Giảm số lượng đã bán của sản phẩm
+                        if ($detail->variant->product) {
+                            $detail->variant->product->decrement('sold_count', $detail->Quantity);
+                        }
+                    }
+                }
+            });
+        }
+
+        $order->update(['Status' => $newStatus]);
         return response()->json($order);
     }
 

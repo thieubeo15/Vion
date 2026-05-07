@@ -15,7 +15,7 @@ const LoginPage = () => {
         e.preventDefault();
         setError('');
 
-        // BẮT LỖI CHI TIẾT TỪNG Ô (PLEASE FILL THE FIELD)
+        // BẮT LỖI Ở FRONTEND TRƯỚC CHO ĐỠ NẶNG SERVER
         if (!email.trim()) {
             setError('Vui lòng nhập Email!');
             return;
@@ -35,9 +35,27 @@ const LoginPage = () => {
             localStorage.setItem('vion_token', response.data.token);
             localStorage.setItem('vion_user', JSON.stringify(response.data.user));
             window.location.href = '/';
-        } catch {
-            // Lỗi từ phía Server (Sai tài khoản/mật khẩu)
-            setError('Email hoặc mật khẩu không chính xác.Xin thử lại!');
+            
+        } catch (err) {
+            // 🚀 ĐÂY LÀ CHỖ HỨNG LỖI TỪ LARAVEL BACKEND GỬI VỀ
+            if (err.response && err.response.data) {
+                const data = err.response.data;
+                
+                // Trường hợp 1: Lỗi validate từ $request->validate() (Trả về mảng errors)
+                if (data.errors) {
+                    const firstErrorKey = Object.keys(data.errors)[0];
+                    setError(data.errors[firstErrorKey][0]); // Lấy câu báo lỗi đầu tiên để hiển thị
+                } 
+                // Trường hợp 2: Lỗi sai mật khẩu tự viết (Trả về trường message)
+                else if (data.message) {
+                    setError(data.message);
+                } 
+                else {
+                    setError('Có lỗi xảy ra, vui lòng thử lại!');
+                }
+            } else {
+                setError('Không thể kết nối đến máy chủ!');
+            }
         } finally {
             setLoading(false);
         }
