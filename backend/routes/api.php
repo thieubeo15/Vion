@@ -7,7 +7,8 @@ use App\Http\Controllers\Api\{
     CartController, CartItemController, OrderController, 
     OrderDetailController, PaymentController, ReviewController,
     MessageController, AuthController, 
-    AdminController, BannerController
+    AdminController, BannerController,
+    ProductSearchController // 🚀 THÊM THẰNG NÀY VÀO ĐÂY LÀ XONG LUÔN BRO ƠI!
 };
 
 // --- CÁC ROUTE CÔNG KHAI (Ai cũng xem được) ---
@@ -41,7 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reviews', [ReviewController::class, 'store']);
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 
-    // Admin & Quản lý (Chỗ này sau này bro nên check thêm quyền Admin)
+    // Admin & Quản lý
     Route::get('/admin/stats', [AdminController::class, 'getStats']);
     
     // Banner
@@ -64,9 +65,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
 });
 
-// --- CÁC API RESOURCE KHÁC (Nếu thực sự cần thiết) ---
-// Lưu ý: Đã xoá các apiResource gây xung đột với group auth ở trên
+// --- CÁC API RESOURCE KHÁC ---
 Route::apiResource('product-variants', ProductVariantController::class);
 Route::apiResource('product-images', ProductImageController::class);
 Route::apiResource('messages', MessageController::class);
 Route::get('messages/user/{userId}', [MessageController::class, 'getUserMessages']);
+
+// Tuyến đường tìm kiếm ảnh bằng CLIP AI
+Route::post('/search/image', [ProductSearchController::class, 'searchByImage']);
+// Tuyến đường để Admin chạy đồng bộ vector (Chỉ cần chạy 1 lần để nạp dữ liệu)
+Route::get('/sync-vectors', [\App\Http\Controllers\Api\ProductSearchController::class, 'syncVectors']);

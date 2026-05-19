@@ -64,7 +64,14 @@ class ProductController extends Controller
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $img) {
                     $imgPath = $img->store('products/gallery', 'public');
-                    $product->images()->create(['Url' => $imgPath]);
+                    // Gán vào biến để lấy bản ghi ảnh phụ vừa tạo
+                    $galleryImage = $product->images()->create(['Url' => $imgPath]);
+
+                    // 🚀 CHÈN MỚI TẠI ĐÂY: Tự động gọi Python dịch ảnh mới sang mã Vector AI
+                    \App\Http\Controllers\Api\ProductSearchController::vectorizeSingleImage(
+                        $galleryImage->ImageID ?? $galleryImage->id ?? $galleryImage->getKey(),
+                        $imgPath
+                    );
                 }
             }
 
@@ -115,7 +122,6 @@ class ProductController extends Controller
 
             // 1. Xử lý Ảnh chính mới (Nếu có upload file mới)
             if ($request->hasFile('MainImage')) {
-                // Ta có thể xóa ảnh cũ ở Storage::disk('public')->delete($product->MainImage) nếu muốn
                 $path = $request->file('MainImage')->store('products', 'public');
                 $data['MainImage'] = $path;
             }
@@ -152,7 +158,6 @@ class ProductController extends Controller
                         }
                     }
 
-                    // Để bảo toàn lịch sử đơn hàng, các variant không còn trong danh sách sẽ bị đặt Stock = 0
                     $product->variants()->whereNotIn('VariantID', $incomingSignatures)->update(['Stock' => 0]);
                 }
             }
@@ -161,7 +166,14 @@ class ProductController extends Controller
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $img) {
                     $imgPath = $img->store('products/gallery', 'public');
-                    $product->images()->create(['Url' => $imgPath]);
+                    // Gán vào biến để lấy bản ghi ảnh phụ vừa tạo
+                    $galleryImage = $product->images()->create(['Url' => $imgPath]);
+
+                    // 🚀 CHÈN MỚI TẠI ĐÂY: Tự động gọi Python dịch ảnh phụ mới sang mã Vector AI
+                    \App\Http\Controllers\Api\ProductSearchController::vectorizeSingleImage(
+                        $galleryImage->ImageID ?? $galleryImage->id ?? $galleryImage->getKey(),
+                        $imgPath
+                    );
                 }
             }
 

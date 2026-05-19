@@ -70,11 +70,52 @@ const Navbar = () => {
         setSearchResults(filtered);
     };
 
+    // 🚀 HÀM XỬ LÝ TÌM KIẾM BẰNG HÌNH ẢNH QUA MÔ HÌNH CLIP (THÊM MỚI)
+    const handleImageSearch = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Hiện popup loading của AI
+        Swal.fire({
+            title: 'VION AI ĐANG QUÉT ẢNH...',
+            
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const bodyData = new FormData();
+        bodyData.append('image', file);
+
+        try {
+            const res = await axios.post(`${API_BASE_URL}/api/search/image`, bodyData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            Swal.close();
+
+            if (res.data.success) {
+                // Đẩy sang trang kết quả kèm theo mảng dữ liệu và ảnh để preview
+                navigate('/search-results?type=image', { 
+                    state: { products: res.data.data, searchImage: URL.createObjectURL(file) } 
+                });
+            }
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi quét ảnh',
+                text: err.response?.data?.message || 'Không thể phân tích hình ảnh này!',
+                confirmButtonColor: '#111'
+            });
+        }
+    };
+
     // 🚀 2. Sửa lại hàm Đăng xuất dùng SweetAlert2
     const handleLogout = () => {
         Swal.fire({
             title: 'Đăng xuất?',
-            text: "Bạn có chắc chắn muốn đăng xuất khỏi Vion không?",
+            text: "Bạn có chắc chắn muốn đăng xuất không?",
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#111', // Màu đen cho ngầu
@@ -87,8 +128,7 @@ const Navbar = () => {
                 localStorage.removeItem('vion_token');
                 localStorage.removeItem('vion_user');
                 
-               
-                    window.location.href = '/login'; 
+                window.location.href = '/login'; 
             }
         });
     };
@@ -113,8 +153,18 @@ const Navbar = () => {
                             value={searchTerm}
                             onChange={handleSearch}
                         />
+                        
+                        {/* 🚀 CHỈ SỬA CỤM ICON CAMERA THÀNH NÚT UPLOAD ẨN Ở ĐÂY */}
                         <div className="search-tools">
-                            <Camera size={20} className="camera-icon" title="Tìm kiếm bằng hình ảnh" />
+                            <label className="camera-search-label" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                                <Camera size={20} className="camera-icon" title="Tìm kiếm bằng hình ảnh" />
+                                <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    onChange={handleImageSearch} 
+                                    style={{ display: 'none' }} 
+                                />
+                            </label>
                         </div>
 
                         {searchTerm.trim() !== '' && (

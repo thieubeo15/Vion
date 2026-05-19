@@ -37,7 +37,7 @@ class OrderController extends Controller
         if (!$cart || $cart->items->isEmpty()) {
             return response()->json([
                 'success' => false, 
-                'message' => 'Giỏ hàng của bro đang trống, không thể đặt hàng!'
+                'message' => 'Giỏ hàng của bạn đang trống, không thể đặt hàng!'
             ], 400);
         }
 
@@ -83,10 +83,10 @@ foreach ($selectedItems as $item) {
         'ImportPrice' => $variant->ImportPrice ?? 0
     ]);
 
-    // 3. Trừ tồn kho (Bro đã có)
+    // 3. Trừ tồn kho (Bạn đã có)
     $variant->decrement('Stock', $item->Quantity);
 
-    // 4. TĂNG SỐ LƯỢNG ĐÃ BÁN (THÊM DÒNG NÀY NÈ BRO)
+    // 4. TĂNG SỐ LƯỢNG ĐÃ BÁN (THÊM DÒNG NÀY NÈ BẠN)
     // Lưu ý: Tăng cho Product chứ không phải Variant, và tăng theo đúng số lượng khách mua
     $variant->product()->increment('sold_count', $item->Quantity);
 }
@@ -96,7 +96,7 @@ foreach ($selectedItems as $item) {
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Vion Era đã nhận đơn hàng của bro!',
+                    'message' => 'Vion Era đã nhận đơn hàng của bạn!',
                     'order_id' => $order->OrderID
                 ], 201);
             });

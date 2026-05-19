@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    // 1. ĐĂNG KÝ TÀI KHOẢN (Giữ nguyên của bro)
+    // 1. ĐĂNG KÝ TÀI KHOẢN
     public function register(Request $request)
     {
         $request->validate([
@@ -42,7 +42,7 @@ class AuthController extends Controller
             'Email' => 'required|email|exists:users,Email',
             'Password' => 'required|min:6'
         ], [
-            // Custom thông báo lỗi theo đúng ý bro
+            // Custom thông báo lỗi theo đúng ý bạn
             'Email.required' => 'Email không được để trống!',
             'Email.email' => 'Email sai định dạng!',
             'Email.exists' => 'Email không tồn tại trong hệ thống!',
@@ -73,7 +73,7 @@ class AuthController extends Controller
         ]);
     }
 
-    // 3. ĐĂNG XUẤT (Giữ nguyên của bro)
+    // 3. ĐĂNG XUẤT (Giữ nguyên của bạn)
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();

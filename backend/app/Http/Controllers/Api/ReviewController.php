@@ -34,7 +34,7 @@ public function store(Request $request)
     }
 
     try {
-        // 2. Logic kiểm tra mua hàng và lưu review của bro...
+        // 2. Logic kiểm tra mua hàng và lưu review của bạn...
         // Bây giờ dùng $user->UserID sẽ không bao giờ bị lỗi "on null" nữa
         
         $hasBought = \App\Models\Order::where('UserID', $user->UserID)
@@ -92,7 +92,7 @@ public function destroy(Request $request, $id)
 
     // Kiểm tra: Nếu không phải chủ nhân của review thì không cho xóa
     if ($review->UserID !== $request->user()->UserID) {
-        return response()->json(['message' => 'Bro không có quyền xóa đánh giá này!'], 403);
+        return response()->json(['message' => 'Bạn không có quyền xóa đánh giá này!'], 403);
     }
 
     $review->delete();

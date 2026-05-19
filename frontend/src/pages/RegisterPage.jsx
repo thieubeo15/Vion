@@ -3,6 +3,7 @@ import './RegisterPage.css';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import Swal from 'sweetalert2'; // 🚀 Thêm import SweetAlert2
 
 const RegisterPage = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -14,7 +15,7 @@ const RegisterPage = () => {
         e.preventDefault();
         setError('');
 
-        // 1. BẮT LỖI CHI TIẾT (CHECK TỪNG Ô)
+        // 1. Validate dữ liệu đầu vào
         if (!formData.fullName.trim()) {
             setError('Vui lòng nhập Họ và tên!');
             return;
@@ -43,10 +44,23 @@ const RegisterPage = () => {
                 Email: formData.email,
                 Password: formData.password
             });
-            alert('Chúc mừng bro đã gia nhập Vion! Đăng nhập ngay nhé.');
-            window.location.href = '/login';
+
+            // 🚀 THÔNG BÁO THÀNH CÔNG XỊN XÒ (Thay cho alert cũ)
+            Swal.fire({
+                icon: 'success',
+                title: 'Đăng kí thành công!',
+                text: 'Chào mừng thành viên mới, hãy đăng nhập để bắt đầu trải nghiệm nhé.',
+                confirmButtonColor: '#111',
+                confirmButtonText: 'ĐĂNG NHẬP NGAY',
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/login';
+                }
+            });
+
         } catch (err) {
-            setError(err.response?.data?.message || 'Email này đã được sử dụng. Thử cái khác nhé!');
+            setError(err.response?.data?.message || 'Email này đã được sử dụng.');
         } finally {
             setLoading(false);
         }
@@ -60,20 +74,16 @@ const RegisterPage = () => {
             </header>
 
             <main className="auth-container">
-                {/* CỘT TRÁI: ẢNH NỀN (Khóa cứng 55%) */}
                 <div className="auth-image-col">
                     <div className="auth-overlay">
                         <h1>GIA NHẬP VION.</h1>
-                        <p>NHẬN ƯU ĐÃI ĐỘC QUYỀN KHI LÀ THÀNH VIÊN</p>
                     </div>
                 </div>
 
-                {/* CỘT PHẢI: FORM (Khóa cứng 45%) */}
                 <div className="auth-form-col">
                     <div className="auth-form-card">
                         <h2>Tạo tài khoản</h2>
                         
-                        {/* HỘP LỖI CỐ ĐỊNH CHIỀU CAO - CHỐNG NHẢY FORM */}
                         <div className="auth-error-box">
                             {error && <div className="auth-error-msg">{error}</div>}
                         </div>
