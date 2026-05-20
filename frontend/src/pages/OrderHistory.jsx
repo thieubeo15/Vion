@@ -1,18 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Package, Clock, Truck, CheckCircle, XCircle, ChevronRight, Inbox } from 'lucide-react';
+import { Package, Clock, Truck, CheckCircle, XCircle, Inbox, X, AlertTriangle, ChevronRight } from 'lucide-react';
 import Swal from 'sweetalert2';
 import './OrderHistory.css';
+
+const CANCEL_REASONS = [
+    'Tôi muốn thay đổi địa chỉ giao hàng',
+    'Tôi muốn thay đổi sản phẩm / số lượng',
+    'Tôi tìm thấy giá rẻ hơn ở nơi khác',
+    'Đặt nhầm sản phẩm',
+    'Thay đổi phương thức thanh toán',
+    'Không còn nhu cầu mua nữa',
+];
 
 const OrderHistory = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filterStatus, setFilterStatus] = useState('All'); // State để quản lý Tab hiện tại
+    const [filterStatus, setFilterStatus] = useState('All');
+
+    // Cancel modal state
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [cancelOrderId, setCancelOrderId] = useState(null);
+    const [selectedReason, setSelectedReason] = useState('');
+    const [customReason, setCustomReason] = useState('');
+    const [cancelling, setCancelling] = useState(false);
 
     const token = localStorage.getItem('vion_token');
     const API_URL = 'http://127.0.0.1:8000/api';
+    const ASSET_URL = 'http://127.0.0.1:8000/storage/'; // Đường dẫn lấy ảnh
 
-    // Danh sách các Tab
     const tabs = [
         { id: 'All', label: 'Tất cả' },
         { id: 'Pending', label: 'Chờ xử lý' },
@@ -21,9 +37,7 @@ const OrderHistory = () => {
         { id: 'Cancelled', label: 'Đã hủy' },
     ];
 
-    useEffect(() => {
-        fetchMyOrders();
-    }, []);
+    useEffect(() => { fetchMyOrders(); }, []);
 
     const fetchMyOrders = async () => {
         try {
@@ -38,45 +52,65 @@ const OrderHistory = () => {
         }
     };
 
-    // LOGIC LỌC ĐƠN HÀNG
     const filteredOrders = filterStatus === 'All'
         ? orders
         : orders.filter(order => order.Status === filterStatus);
 
-    const handleCancelOrder = async (orderId) => {
-        const confirm = await Swal.fire({
-            title: 'Hủy đơn hàng?',
-            text: 'Bạn chắc chắn muốn hủy đơn hàng này chứ?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Đồng ý hủy',
-            cancelButtonText: 'Không'
-        });
+    const openCancelModal = (orderId) => {
+        setCancelOrderId(orderId);
+        setSelectedReason('');
+        setCustomReason('');
+        setShowCancelModal(true);
+    };
 
-        if (confirm.isConfirmed) {
-            try {
-                await axios.put(`${API_URL}/orders/${orderId}`, { Status: 'Cancelled' }, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                Swal.fire('Thành công!', 'Đơn hàng đã được hủy.', 'success');
-                fetchMyOrders();
-            } catch (err) {
-                console.error("Lỗi khi hủy đơn:", err);
-                Swal.fire('Lỗi!', 'Không thể hủy đơn hàng lúc này.', 'error');
-            }
+    const closeCancelModal = () => {
+        setShowCancelModal(false);
+        setCancelOrderId(null);
+        setSelectedReason('');
+        setCustomReason('');
+    };
+
+    const handleConfirmCancel = async () => {
+        const reason = selectedReason === '__other__' ? customReason.trim() : selectedReason;
+        if (!reason) {
+            Swal.fire('Chú ý', 'Vui lòng chọn hoặc nhập lý do hủy đơn!', 'warning');
+            return;
+        }
+        setCancelling(true);
+        try {
+            await axios.post(`${API_URL}/orders/${cancelOrderId}/cancel`, { reason }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            closeCancelModal();
+            Swal.fire({
+                icon: 'success',
+                title: 'Đã hủy đơn hàng',
+                text: 'Đơn hàng của bạn đã được hủy thành công.',
+                confirmButtonColor: '#111',
+                timer: 2500,
+                timerProgressBar: true,
+            });
+            fetchMyOrders();
+        } catch (err) {
+            Swal.fire('Lỗi', err.response?.data?.message || 'Không thể hủy đơn hàng!', 'error');
+        } finally {
+            setCancelling(false);
         }
     };
 
     const getStatusIcon = (status) => {
         switch (status) {
-            case 'Pending': return <Clock size={16} />;
-            case 'Shipping': return <Truck size={16} />;
-            case 'Completed': return <CheckCircle size={16} />;
-            case 'Cancelled': return <XCircle size={16} />;
-            default: return <Package size={16} />;
+            case 'Pending': return <Clock size={16} strokeWidth={2.5} />;
+            case 'Shipping': return <Truck size={16} strokeWidth={2.5} />;
+            case 'Completed': return <CheckCircle size={16} strokeWidth={2.5} />;
+            case 'Cancelled': return <XCircle size={16} strokeWidth={2.5} />;
+            default: return <Package size={16} strokeWidth={2.5} />;
         }
+    };
+
+    const getStatusLabel = (status) => {
+        const map = { Pending: 'Chờ xác nhận', Shipping: 'Đang giao', Completed: 'Hoàn thành', Cancelled: 'Đã hủy' };
+        return map[status] || status;
     };
 
     if (loading) return <div className="v-loading">Đang tải đơn mua...</div>;
@@ -94,6 +128,11 @@ const OrderHistory = () => {
                         onClick={() => setFilterStatus(tab.id)}
                     >
                         {tab.label}
+                        {tab.id !== 'All' && orders.filter(o => o.Status === tab.id).length > 0 && (
+                            <span className="v-tab-count">
+                                {orders.filter(o => o.Status === tab.id).length}
+                            </span>
+                        )}
                     </div>
                 ))}
             </div>
@@ -108,47 +147,151 @@ const OrderHistory = () => {
                 <div className="v-order-list">
                     {filteredOrders.map(order => (
                         <div key={order.OrderID} className="v-order-card shadow-sm mb-4">
+                            {/* HEADER ĐƠN HÀNG */}
                             <div className="v-order-header d-flex justify-content-between align-items-center">
-                                <span className="v-order-id">Mã đơn: <b>#VION-{order.OrderID}</b></span>
+                                <div className="d-flex align-items-center gap-2">
+                                    <Package size={18} className="text-muted" />
+                                    <span className="v-order-id text-dark">Mã đơn: <b className="text-uppercase">#VION-{order.OrderID}</b></span>
+                                </div>
                                 <span className={`v-status-label ${order.Status.toLowerCase()}`}>
-                                    {getStatusIcon(order.Status)} {order.Status}
+                                    {getStatusIcon(order.Status)} {getStatusLabel(order.Status)}
                                 </span>
                             </div>
 
+                            {/* DANH SÁCH SẢN PHẨM */}
                             <div className="v-order-body">
                                 {order.details.map((item, index) => (
-                                    <div key={index} className="v-product-row d-flex align-items-center mb-3">
-                                        <div className="v-product-info">
-                                            <h6 className="mb-0 fw-700">{item.variant?.product?.Name}</h6>
-                                            <small className="text-muted">Size: {item.variant?.Size} | SL: x{item.Quantity}</small>
+                                    <div key={index} className="v-product-row d-flex align-items-center">
+                                        <div className="v-product-img-box">
+                                            <img 
+                                                src={item.variant?.product?.MainImage ? `${ASSET_URL}${item.variant.product.MainImage}` : 'https://via.placeholder.com/80'} 
+                                                alt={item.variant?.product?.Name} 
+                                                className="v-product-img"
+                                            />
                                         </div>
-                                        <div className="v-product-price ms-auto fw-800">
-                                            {(item.Price * item.Quantity).toLocaleString()}đ
+                                        <div className="v-product-info flex-grow-1">
+                                            <h6 className="mb-1 fw-700 text-dark v-text-truncate">{item.variant?.product?.Name}</h6>
+                                            <div className="text-muted fs-13 mb-1">
+                                                Phân loại: {item.variant?.Color} / {item.variant?.Size}
+                                            </div>
+                                            <div className="fw-600 fs-14">x{item.Quantity}</div>
+                                        </div>
+                                        <div className="v-product-price text-end">
+                                            <div className="fw-800 text-danger fs-15">{(item.Price * item.Quantity).toLocaleString()}đ</div>
+                                            {item.Price !== (item.variant?.Price || item.Price) && (
+                                                <div className="text-muted text-decoration-line-through fs-12 mt-1">
+                                                    {(item.variant?.Price * item.Quantity).toLocaleString()}đ
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="v-order-footer d-flex justify-content-between align-items-center border-top pt-3">
-                                <div className="v-order-date text-muted fs-12">
-                                    Ngày đặt: {new Date(order.OrderDate).toLocaleDateString('vi-VN')}
+                            {/* LÝ DO HỦY */}
+                            {order.Status === 'Cancelled' && order.CancelReason && (
+                                <div className="v-cancel-reason-box">
+                                    <AlertTriangle size={16} className="text-danger" />
+                                    <span>Lý do hủy: <strong>{order.CancelReason}</strong></span>
                                 </div>
-                                <div className="v-total d-flex align-items-center gap-3">
+                            )}
+
+                            {/* FOOTER ĐƠN HÀNG */}
+                            <div className="v-order-footer d-flex justify-content-between align-items-center">
+                                <div className="v-order-date text-muted fs-13 d-flex align-items-center gap-1">
+                                    <Clock size={14} /> Ngày đặt: {new Date(order.OrderDate).toLocaleDateString('vi-VN')}
+                                </div>
+                                <div className="v-total-section d-flex align-items-center gap-4">
+                                    <div className="d-flex flex-column align-items-end">
+                                        <span className="fs-13 text-muted">Thành tiền</span>
+                                        <span className="v-price-grand text-danger fw-900 fs-18">{Number(order.TotalAmount).toLocaleString()}đ</span>
+                                    </div>
                                     {order.Status === 'Pending' && (
-                                        <button 
-                                            className="v-btn-cancel-sm"
-                                            onClick={() => handleCancelOrder(order.OrderID)}
+                                        <button
+                                            className="v-btn-cancel-action"
+                                            onClick={() => openCancelModal(order.OrderID)}
                                         >
-                                            Hủy đơn
+                                            Hủy đơn hàng
                                         </button>
                                     )}
-                                    <div>
-                                        Tổng thanh toán: <span className="v-price-grand text-danger">{Number(order.TotalAmount).toLocaleString()}đ</span>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* MODAL HỦY ĐƠN */}
+            {showCancelModal && (
+                <div className="v-cancel-modal-overlay" onClick={closeCancelModal}>
+                    <div className="v-cancel-modal" onClick={e => e.stopPropagation()}>
+                        <div className="v-cancel-modal-header">
+                            <div className="v-cancel-modal-title">
+                                <h3>Chọn lý do hủy đơn</h3>
+                                <p className="text-muted fs-13 mt-1 mb-0">Việc hủy đơn sẽ không thể hoàn tác. Vui lòng cân nhắc kỹ.</p>
+                            </div>
+                            <button className="v-cancel-modal-close" onClick={closeCancelModal}><X size={24} /></button>
+                        </div>
+
+                        <div className="v-cancel-modal-body">
+                            <div className="v-reason-grid">
+                                {CANCEL_REASONS.map((reason, i) => (
+                                    <label key={i} className={`v-reason-block ${selectedReason === reason ? 'active' : ''}`}>
+                                        <input
+                                            type="radio"
+                                            name="cancelReason"
+                                            value={reason}
+                                            className="d-none"
+                                            checked={selectedReason === reason}
+                                            onChange={() => { setSelectedReason(reason); setCustomReason(''); }}
+                                        />
+                                        <div className="v-reason-content">
+                                            <span>{reason}</span>
+                                            <div className="v-check-circle"></div>
+                                        </div>
+                                    </label>
+                                ))}
+                                <label className={`v-reason-block ${selectedReason === '__other__' ? 'active' : ''}`}>
+                                    <input
+                                        type="radio"
+                                        name="cancelReason"
+                                        value="__other__"
+                                        className="d-none"
+                                        checked={selectedReason === '__other__'}
+                                        onChange={() => setSelectedReason('__other__')}
+                                    />
+                                    <div className="v-reason-content">
+                                        <span>Lý do khác...</span>
+                                        <div className="v-check-circle"></div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            {selectedReason === '__other__' && (
+                                <textarea
+                                    className="v-custom-reason-input mt-3"
+                                    placeholder="Vui lòng nhập lý do cụ thể để Vion có thể phục vụ bạn tốt hơn..."
+                                    value={customReason}
+                                    onChange={e => setCustomReason(e.target.value)}
+                                    rows={3}
+                                    autoFocus
+                                />
+                            )}
+                        </div>
+
+                        <div className="v-cancel-modal-footer">
+                            <button className="v-cancel-modal-btn-back" onClick={closeCancelModal}>
+                                Đóng
+                            </button>
+                            <button
+                                className="v-cancel-modal-btn-confirm"
+                                onClick={handleConfirmCancel}
+                                disabled={cancelling || !selectedReason || (selectedReason === '__other__' && !customReason.trim())}
+                            >
+                                {cancelling ? 'Đang xử lý...' : 'Xác nhận hủy'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

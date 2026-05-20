@@ -28,7 +28,8 @@ class Order extends Model
         'Status', 
         'PaymentMethod',
         'VoucherCode',
-        'DiscountAmount'
+        'DiscountAmount',
+        'CancelReason'
     ];
 
     // --- THÊM ĐOẠN NÀY VÀO ---

@@ -214,10 +214,7 @@ class OrderController extends Controller
             DB::transaction(function () use ($order) {
                 foreach ($order->details as $detail) {
                     if ($detail->variant) {
-                        // Trả lại tồn kho
                         $detail->variant->increment('Stock', $detail->Quantity);
-                        
-                        // Giảm số lượng đã bán của sản phẩm
                         if ($detail->variant->product) {
                             $detail->variant->product->decrement('sold_count', $detail->Quantity);
                         }
@@ -226,8 +223,41 @@ class OrderController extends Controller
             });
         }
 
-        $order->update(['Status' => $newStatus]);
+        $updateData = ['Status' => $newStatus];
+        if ($request->has('CancelReason')) {
+            $updateData['CancelReason'] = $request->CancelReason;
+        }
+
+        $order->update($updateData);
         return response()->json($order);
+    }
+
+    /**
+     * Khách hàng tự hủy đơn (chỉ khi Pending)
+     */
+    public function cancelOrder(Request $request, $id) {
+        $user = Auth::user();
+        $order = Order::with('details.variant.product')->find($id);
+
+        if (!$order) return response()->json(['success' => false, 'message' => 'Đơn hàng không tồn tại!'], 404);
+        if ($order->UserID !== $user->UserID) return response()->json(['success' => false, 'message' => 'Không có quyền hủy đơn này!'], 403);
+        if ($order->Status !== 'Pending') return response()->json(['success' => false, 'message' => 'Đơn hàng không thể hủy ở trạng thái này!'], 400);
+
+        $request->validate(['reason' => 'required|string|max:500']);
+
+        DB::transaction(function () use ($order, $request) {
+            foreach ($order->details as $detail) {
+                if ($detail->variant) {
+                    $detail->variant->increment('Stock', $detail->Quantity);
+                    if ($detail->variant->product) {
+                        $detail->variant->product->decrement('sold_count', $detail->Quantity);
+                    }
+                }
+            }
+            $order->update(['Status' => 'Cancelled', 'CancelReason' => $request->reason]);
+        });
+
+        return response()->json(['success' => true, 'message' => 'Đả hủy đơn hàng thành công!']);
     }
 
     public function destroy($id) {
