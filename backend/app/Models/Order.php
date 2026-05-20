@@ -26,7 +26,9 @@ class Order extends Model
         'TotalAmount', 
         'OrderDate', 
         'Status', 
-        'PaymentMethod'
+        'PaymentMethod',
+        'VoucherCode',
+        'DiscountAmount'
     ];
 
     // --- THÊM ĐOẠN NÀY VÀO ---

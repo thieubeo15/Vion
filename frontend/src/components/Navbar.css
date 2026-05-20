@@ -72,13 +72,23 @@
     color: #666;
 }
 
+.camera-search-label {
+    position: relative;
+}
+
 .camera-icon {
     cursor: pointer;
-    transition: 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .camera-icon:hover {
     color: #EE4D2D;
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 6px rgba(238, 77, 45, 0.3));
+}
+
+.camera-search-label:active .camera-icon {
+    transform: scale(0.95);
 }
 
 /* ACTIONS */

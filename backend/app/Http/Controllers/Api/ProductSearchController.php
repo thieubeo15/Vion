@@ -11,7 +11,7 @@ use App\Http\Resources\ProductResource;
 
 class ProductSearchController extends Controller
 {
-    // 🎯 HÀM 1: TÌM KIẾM SẢN PHẨM BẰNG ẢNH AI (Giữ nguyên luồng chạy mượt của bro)
+    // 🎯 HÀM 1: TÌM KIẾM SẢN PHẨM BẰNG ẢNH AI
     public function searchByImage(Request $request)
     {
         if (!$request->hasFile('image')) {
@@ -74,15 +74,26 @@ class ProductSearchController extends Controller
                 }
             }
 
-            // Sắp xếp lấy Top 5 sản phẩm giống nhất
+            // Sắp xếp và lọc bỏ sản phẩm không liên quan
             arsort($similarities);
+            
+            // Ngưỡng tối thiểu: cosine < 0.65 = không liên quan → loại bỏ
+            $minThreshold = 0.65;
+            $similarities = array_filter($similarities, fn($score) => $score >= $minThreshold);
+            
             $topProductIds = array_slice(array_keys($similarities), 0, 5, true);
 
             if (empty($topProductIds)) {
-                return response()->json(['success' => true, 'data' => []]);
+                return response()->json(['success' => true, 'data' => [], 'similarities' => []]);
             }
 
-            // 4. Truy vấn thông tin sản phẩm trả về React
+            // 4. Tạo map similarity score (%) cho từng sản phẩm
+            $similarityScores = [];
+            foreach ($topProductIds as $pid) {
+                $similarityScores[$pid] = round(max(0, $similarities[$pid]) * 100, 1);
+            }
+
+            // 5. Truy vấn thông tin sản phẩm trả về React
             $idsOrder = implode(',', $topProductIds);
             $firstProduct = Product::first();
             $primaryKey = ($firstProduct && isset($firstProduct->ProductID)) ? 'ProductID' : 'id';
@@ -94,7 +105,8 @@ class ProductSearchController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => ProductResource::collection($products)
+                'data' => ProductResource::collection($products),
+                'similarities' => $similarityScores
             ]);
 
         } catch (\Exception $e) {

@@ -27,9 +27,10 @@ class UserController extends Controller
             'FullName' => 'sometimes|string|max:255',
             'Phone'    => 'sometimes|string|max:20',
             'Address'  => 'sometimes|string',
+            'Birthday' => 'sometimes|nullable|date',
         ]);
 
-        $user->update($request->only('FullName', 'Phone', 'Address'));
+        $user->update($request->only('FullName', 'Phone', 'Address', 'Birthday'));
         return response()->json(['success' => true, 'message' => 'Vion đã cập nhật hồ sơ!', 'user' => $user]);
     }
 

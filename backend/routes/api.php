@@ -8,7 +8,8 @@ use App\Http\Controllers\Api\{
     OrderDetailController, PaymentController, ReviewController,
     MessageController, AuthController, 
     AdminController, BannerController,
-    ProductSearchController // 🚀 THÊM THẰNG NÀY VÀO ĐÂY LÀ XONG LUÔN BRO ƠI!
+    ProductSearchController,
+    VoucherController
 };
 
 // --- CÁC ROUTE CÔNG KHAI (Ai cũng xem được) ---
@@ -20,6 +21,9 @@ Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::get('/products/{id}/reviews', [ReviewController::class, 'index']); // Lấy review của 1 SP
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/banners', [BannerController::class, 'index']);
+
+// Voucher - Áp dụng mã giảm giá (public, nhưng cần đăng nhập để check per-user limit)
+Route::middleware('auth:sanctum')->post('/voucher/apply', [VoucherController::class, 'apply']);
 
 // --- NHÓM API BẮT BUỘC PHẢI ĐĂNG NHẬP (Bảo vệ bằng Sanctum) ---
 Route::middleware('auth:sanctum')->group(function () {
@@ -63,6 +67,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::put('/orders/{id}', [OrderController::class, 'update']);
     Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
+
+    // Voucher khách hàng
+    Route::get('/my-vouchers', [VoucherController::class, 'myVouchers']);
+    Route::get('/vouchers/public', [VoucherController::class, 'publicVouchers']);
+    Route::post('/vouchers/{id}/save', [VoucherController::class, 'saveVoucher']);
+
+    // Admin tặng voucher
+    Route::post('/vouchers/{id}/gift', [VoucherController::class, 'giftVoucher']);
+    Route::post('/vouchers/{id}/gift-random', [VoucherController::class, 'giftRandom']);
+    Route::post('/vouchers/{id}/gift-birthday', [VoucherController::class, 'giftBirthday']);
+    Route::get('/users/list', [VoucherController::class, 'allUsers']);
+
+    // Voucher (Admin CRUD)
+    Route::apiResource('vouchers', VoucherController::class);
 });
 
 // --- CÁC API RESOURCE KHÁC ---

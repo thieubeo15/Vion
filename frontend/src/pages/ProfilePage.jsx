@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { User, Package, Camera, Lock, Loader2, CheckCircle, AlertTriangle, LayoutDashboard, X } from 'lucide-react';
+import { User, Package, Camera, Lock, Loader2, CheckCircle, AlertTriangle, LayoutDashboard, X, Ticket, Copy, Tag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './ProfilePage.css';
 
@@ -22,6 +22,11 @@ const ProfilePage = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
+
+    // State Voucher
+    const [myVouchers, setMyVouchers] = useState([]);
+    const [publicVouchers, setPublicVouchers] = useState([]);
+    const [voucherLoading, setVoucherLoading] = useState(false);
 
     const API_BASE_URL = 'http://127.0.0.1:8000';
     const token = localStorage.getItem('vion_token');
@@ -84,6 +89,65 @@ const ProfilePage = () => {
         } finally { setIsSaving(false); }
     };
 
+    // Fetch voucher của user + voucher public
+    const fetchMyVouchers = async () => {
+        setVoucherLoading(true);
+        try {
+            const [myRes, pubRes] = await Promise.all([
+                axios.get(`${API_BASE_URL}/api/my-vouchers`, { headers: { Authorization: `Bearer ${token}` } }),
+                axios.get(`${API_BASE_URL}/api/vouchers/public`, { headers: { Authorization: `Bearer ${token}` } })
+            ]);
+            setMyVouchers(myRes.data.data || []);
+            setPublicVouchers(pubRes.data.data || []);
+        } catch (err) { console.error(err); }
+        finally { setVoucherLoading(false); }
+    };
+
+    const handleSaveVoucher = async (voucherId) => {
+        try {
+            const res = await axios.post(`${API_BASE_URL}/api/vouchers/${voucherId}/save`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.data.success) {
+                triggerToast('Đã lưu voucher vào ví! 🏷️');
+                fetchMyVouchers();
+            }
+        } catch (err) {
+            triggerToast(err.response?.data?.message || 'Lỗi lưu voucher!', 'error');
+        }
+    };
+
+    const handleCopyCode = (code) => {
+        navigator.clipboard.writeText(code);
+        triggerToast(`Đã sao chép mã ${code}!`);
+    };
+
+    const formatVoucherValue = (v) => {
+        if (v.type === 'percent' || v.Type === 'percent') {
+            const val = v.value || v.Value;
+            const max = v.max_discount || v.MaxDiscount;
+            return `Giảm ${val}%${max ? ` (tối đa ${Number(max).toLocaleString()}đ)` : ''}`;
+        }
+        return `Giảm ${Number(v.value || v.Value).toLocaleString()}đ`;
+    };
+
+    const getVoucherStatusBadge = (v) => {
+        if (v.is_used) return { label: 'Đã dùng', cls: 'v-badge-used' };
+        if (v.is_expired || v.status === 'expired') return { label: 'Hết hạn', cls: 'v-badge-expired' };
+        if (!v.is_active) return { label: 'Ngừng HĐ', cls: 'v-badge-used' };
+        return { label: 'Còn dùng được', cls: 'v-badge-active' };
+    };
+
+    const getSourceBadge = (source) => {
+        const map = {
+            saved: { label: 'Đã lưu', cls: 'v-badge-saved' },
+            gifted: { label: 'Được tặng', cls: 'v-badge-gifted' },
+            birthday: { label: 'Sinh nhật 🎂', cls: 'v-badge-birthday' },
+            event: { label: 'Sự kiện', cls: 'v-badge-event' },
+        };
+        return map[source] || { label: source, cls: 'v-badge-saved' };
+    };
+
     if (loading) return <div className="vion-loading-box">Vion Era đang tải dữ liệu...</div>;
 
     return (
@@ -134,16 +198,19 @@ const ProfilePage = () => {
                         <div className={`v-nav-item ${activeTab === 'password' ? 'active' : ''}`} onClick={() => setActiveTab('password')}>
                             <Lock size={18} /> Đổi mật khẩu
                         </div>
-                       <div className="v-nav-item" onClick={() => navigate('/orders')}> {/* Bỏ chữ 'my-' đi */}
-    <Package size={18} /> Đơn mua của tôi
-</div>
+                        <div className="v-nav-item" onClick={() => navigate('/orders')}>
+                            <Package size={18} /> Đơn mua của tôi
+                        </div>
+                        <div className={`v-nav-item ${activeTab === 'vouchers' ? 'active' : ''}`} onClick={() => { setActiveTab('vouchers'); fetchMyVouchers(); }}>
+                            <Ticket size={18} /> Voucher của tôi
+                        </div>
                     </nav>
                 </aside>
 
                 {/* NỘI DUNG CHÍNH */}
                 <main className="vion-profile-main">
                     <div className="v-main-header">
-                        <h2>{activeTab === 'profile' ? 'Thiết lập hồ sơ' : 'Bảo mật tài khoản'}</h2>
+                        <h2>{activeTab === 'profile' ? 'Thiết lập hồ sơ' : activeTab === 'password' ? 'Bảo mật tài khoản' : 'Voucher của tôi'}</h2>
                     </div>
 
                     {activeTab === 'profile' ? (
@@ -152,11 +219,12 @@ const ProfilePage = () => {
                             <div className="v-form-row"><label>Email</label><div className="v-email-lock">{userData.Email}</div></div>
                             <div className="v-form-row"><label>Số điện thoại</label><input type="text" value={userData.Phone} onChange={(e) => setUserData({...userData, Phone: e.target.value})} /></div>
                             <div className="v-form-row"><label>Địa chỉ</label><textarea value={userData.Address} onChange={(e) => setUserData({...userData, Address: e.target.value})} /></div>
+                            <div className="v-form-row"><label>Ngày sinh</label><input type="date" value={userData.Birthday || ''} onChange={(e) => setUserData({...userData, Birthday: e.target.value})} /></div>
                             <div className="v-form-footer">
                                 <button type="submit" className="v-btn-mini-save" disabled={isSaving}>{isSaving ? 'Đang lưu...' : 'Lưu hồ sơ'}</button>
                             </div>
                         </form>
-                    ) : (
+                    ) : activeTab === 'password' ? (
                         <form className="vion-form" onSubmit={handleChangePassword}>
                             <div className="v-form-row">
                                 <label>Mật khẩu cũ</label>
@@ -174,6 +242,82 @@ const ProfilePage = () => {
                                 <button type="submit" className="v-btn-mini-save" disabled={isSaving}>{isSaving ? 'Đang xử lý...' : 'Đổi mật khẩu'}</button>
                             </div>
                         </form>
+                    ) : (
+                        <div className="v-voucher-tab">
+                            {voucherLoading ? (
+                                <div className="v-voucher-empty"><Loader2 className="v-spin" size={24} /> Đang tải...</div>
+                            ) : (
+                                <>
+                                    {/* VOUCHER CỦA TÔI */}
+                                    <div className="v-voucher-section-title">🏷️ Voucher của tôi ({myVouchers.length})</div>
+                                    {myVouchers.length === 0 ? (
+                                        <div className="v-voucher-empty">Bạn chưa có voucher nào. Hãy lưu voucher bên dưới!</div>
+                                    ) : (
+                                        <div className="v-voucher-list">
+                                            {myVouchers.map(v => {
+                                                const status = getVoucherStatusBadge(v);
+                                                const source = getSourceBadge(v.source);
+                                                return (
+                                                    <div key={v.id} className={`v-voucher-card ${v.is_used || v.is_expired ? 'v-voucher-card--dim' : ''}`}>
+                                                        <div className="v-voucher-card-header">
+                                                            <span className="v-voucher-code">{v.code}</span>
+                                                            <div className="v-voucher-badges">
+                                                                <span className={`v-voucher-badge ${source.cls}`}>{source.label}</span>
+                                                                <span className={`v-voucher-badge ${status.cls}`}>{status.label}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="v-voucher-card-body">
+                                                            <div className="v-voucher-value">{formatVoucherValue(v)}</div>
+                                                            {v.min_order > 0 && <div className="v-voucher-min">Đơn tối thiểu: {Number(v.min_order).toLocaleString()}đ</div>}
+                                                            {v.description && <div className="v-voucher-desc">{v.description}</div>}
+                                                            <div className="v-voucher-expiry">HSD: {v.end_date ? new Date(v.end_date).toLocaleDateString('vi-VN') : '—'}</div>
+                                                        </div>
+                                                        <div className="v-voucher-card-footer">
+                                                            <button className="v-voucher-copy-btn" onClick={() => handleCopyCode(v.code)}>
+                                                                <Copy size={13} /> Sao chép mã
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+
+                                    {/* VOUCHER CÓ THỂ LƯU */}
+                                    <div className="v-voucher-divider"></div>
+                                    <div className="v-voucher-section-title">🎁 Voucher có thể lưu</div>
+                                    {(() => {
+                                        const savedIds = myVouchers.map(v => v.voucher_id);
+                                        const available = publicVouchers.filter(v => !savedIds.includes(v.VoucherID));
+                                        return available.length === 0 ? (
+                                            <div className="v-voucher-empty">Hiện không có voucher công khai nào để lưu.</div>
+                                        ) : (
+                                            <div className="v-voucher-list">
+                                                {available.map(v => (
+                                                    <div key={v.VoucherID} className="v-voucher-card">
+                                                        <div className="v-voucher-card-header">
+                                                            <span className="v-voucher-code">{v.Code}</span>
+                                                            <span className="v-voucher-badge v-badge-active">Công khai</span>
+                                                        </div>
+                                                        <div className="v-voucher-card-body">
+                                                            <div className="v-voucher-value">{formatVoucherValue(v)}</div>
+                                                            {v.MinOrderAmount > 0 && <div className="v-voucher-min">Đơn tối thiểu: {Number(v.MinOrderAmount).toLocaleString()}đ</div>}
+                                                            {v.Description && <div className="v-voucher-desc">{v.Description}</div>}
+                                                            <div className="v-voucher-expiry">HSD: {v.EndDate ? new Date(v.EndDate).toLocaleDateString('vi-VN') : '—'}</div>
+                                                        </div>
+                                                        <div className="v-voucher-card-footer">
+                                                            <button className="v-voucher-save-btn" onClick={() => handleSaveVoucher(v.VoucherID)}>
+                                                                <Tag size={13} /> Lưu voucher
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    })()}
+                                </>
+                            )}
+                        </div>
                     )}
                 </main>
             </div>

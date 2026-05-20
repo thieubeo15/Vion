@@ -22,6 +22,7 @@ class User extends Authenticatable
         'FullName',
         'Phone',
         'Address',
+        'Birthday',
     ];
 
     protected $hidden = [
@@ -44,5 +45,9 @@ class User extends Authenticatable
 
     public function cart() {
         return $this->hasOne(Cart::class, 'UserID', 'UserID');
+    }
+
+    public function userVouchers() {
+        return $this->hasMany(UserVoucher::class, 'UserID', 'UserID');
     }
 }

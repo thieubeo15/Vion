@@ -1,62 +1,244 @@
-import React from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import React, { useRef } from 'react';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { Camera, ChevronRight, ArrowLeft, Sparkles } from 'lucide-react';
+import Swal from 'sweetalert2';
+import axios from 'axios';
+import './SearchResults.css';
 
 const SearchResults = () => {
     const location = useLocation();
-    // Lấy mảng sản phẩm AI tìm được và ảnh gốc mà khách đã up từ trạng thái điều hướng
-    const { products, searchImage } = location.state || { products: [], searchImage: null };
+    const navigate = useNavigate();
+    const retryInputRef = useRef(null);
     const API_BASE_URL = 'http://127.0.0.1:8000';
 
-    return (
-        <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
-            <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', textTransform: 'uppercase' }}>
-                Kết quả tìm kiếm bằng AI
-            </h2>
+    // Lấy dữ liệu từ navigation state
+    const { products, similarities, searchImage } = location.state || { 
+        products: [], 
+        similarities: {},
+        searchImage: null 
+    };
 
-            {/* Hiển thị lại ảnh gốc mà khách đã tải lên để đối chiếu */}
-            {searchImage && (
-                <div style={{ marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <p style={{ color: '#666' }}>Ảnh bạn tìm kiếm:</p>
-                    <img 
-                        src={searchImage} 
-                        alt="Search Target" 
-                        style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} 
-                    />
+    // Hàm lấy similarity score cho 1 sản phẩm
+    const getSimilarity = (prod) => {
+        const id = prod.id || prod.ProductID;
+        if (similarities && similarities[id] !== undefined) {
+            return similarities[id];
+        }
+        return null;
+    };
+
+    // Hàm xác định class CSS dựa trên mức similarity
+    const getSimilarityClass = (score) => {
+        if (score >= 70) return 'high';
+        if (score >= 40) return 'medium';
+        return 'low';
+    };
+
+    const getBarClass = (score) => {
+        if (score >= 70) return '';
+        if (score >= 40) return 'medium-bar';
+        return 'low-bar';
+    };
+
+    // Hàm xác định rank class
+    const getRankClass = (index) => {
+        if (index === 0) return 'rank-1';
+        if (index === 1) return 'rank-2';
+        if (index === 2) return 'rank-3';
+        return 'rank-other';
+    };
+
+    // Hàm tìm lại bằng ảnh khác
+    const handleRetrySearch = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Reset input
+        if (retryInputRef.current) {
+            retryInputRef.current.value = '';
+        }
+
+        Swal.fire({
+            title: 'VION AI ĐANG QUÉT ẢNH...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        const bodyData = new FormData();
+        bodyData.append('image', file);
+
+        try {
+            const res = await axios.post(`${API_BASE_URL}/api/search/image`, bodyData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            Swal.close();
+
+            if (res.data.success) {
+                navigate('/search-results?type=image', { 
+                    state: { 
+                        products: res.data.data, 
+                        similarities: res.data.similarities || {},
+                        searchImage: URL.createObjectURL(file) 
+                    },
+                    replace: true
+                });
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Không tìm thấy kết quả',
+                    text: res.data.message || 'AI không thể phân tích hình ảnh này.',
+                    confirmButtonColor: '#111'
+                });
+            }
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi quét ảnh',
+                text: err.response?.data?.message || 'Không thể kết nối tới máy chủ AI.',
+                confirmButtonColor: '#111'
+            });
+        }
+    };
+
+    // === TRẠNG THÁI: Mất data khi refresh ===
+    if (!location.state) {
+        return (
+            <div className="search-results-page">
+                <div className="sr-lost-state">
+                    <div className="sr-empty-icon">🔄</div>
+                    <h3>Phiên tìm kiếm đã hết hạn</h3>
+                    <p>Dữ liệu tìm kiếm không còn tồn tại. Vui lòng thực hiện tìm kiếm mới từ trang chủ.</p>
+                    <Link to="/" className="sr-back-btn">
+                        <ArrowLeft size={16} />
+                        Về trang chủ
+                    </Link>
                 </div>
-            )}
+            </div>
+        );
+    }
 
-            {/* Danh sách sản phẩm tương đồng do mô hình CLIP tìm được */}
+    return (
+        <div className="search-results-page">
+            {/* BREADCRUMB */}
+            <nav className="sr-breadcrumb">
+                <Link to="/">Trang chủ</Link>
+                <ChevronRight size={14} className="sr-breadcrumb-sep" />
+                <span className="sr-breadcrumb-current">Tìm kiếm bằng hình ảnh</span>
+            </nav>
+
+            {/* HEADER */}
+            <div className="sr-header">
+                <div className="sr-header-left">
+                    {searchImage && (
+                        <img 
+                            src={searchImage} 
+                            alt="Ảnh tìm kiếm" 
+                            className="sr-uploaded-image" 
+                        />
+                    )}
+                    <div className="sr-header-info">
+                        <h1>Kết quả tìm kiếm </h1>
+                        <p className="sr-subtitle">
+                            Tìm thấy {products.length} sản phẩm tương đồng
+                        </p>
+                    </div>
+                </div>
+
+                {/* NÚT TÌM LẠI */}
+                <label className="sr-retry-btn">
+                    <Camera size={16} />
+                    Tìm bằng ảnh khác
+                    <input 
+                        ref={retryInputRef}
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleRetrySearch} 
+                        style={{ display: 'none' }} 
+                    />
+                </label>
+            </div>
+
+            {/* GRID SẢN PHẨM */}
             {products.length > 0 ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '25px' }}>
-                    {products.map((prod) => (
-                        <Link to={`/product/${prod.id || prod.ProductID}`} key={prod.id || prod.ProductID} style={{ textDecoration: 'none', color: '#111' }}>
-                            <div style={{ border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden' }}>
-                                <img 
-                                    src={`${API_BASE_URL}/storage/${prod.main_image || prod.MainImage}`} 
-                                    alt={prod.name || prod.Name} 
-                                    style={{ width: '100%', height: '280px', objectFit: 'cover' }}
-                                />
-                                <div style={{ padding: '12px' }}>
-                                    <h3 style={{ fontSize: '15px', margin: '0 0 8px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div className="sr-products-grid">
+                    {products.map((prod, index) => {
+                        const score = getSimilarity(prod);
+                        const simClass = score !== null ? getSimilarityClass(score) : null;
+
+                        return (
+                            <Link 
+                                to={`/product/${prod.id || prod.ProductID}`} 
+                                key={prod.id || prod.ProductID} 
+                                className="sr-product-card"
+                            >
+                                {/* RANK BADGE */}
+                                <div className={`sr-rank-badge ${getRankClass(index)}`}>
+                                    {index + 1}
+                                </div>
+
+                                {/* SIMILARITY BADGE */}
+                                {score !== null && (
+                                    <div className={`sr-similarity-badge ${simClass}`}>
+                                        {score}% khớp
+                                    </div>
+                                )}
+
+                                {/* ẢNH */}
+                                <div className="sr-product-image-wrap">
+                                    <img 
+                                        src={`${API_BASE_URL}/storage/${prod.main_image || prod.MainImage}`}
+                                        alt={prod.name || prod.Name}
+                                        className="sr-product-image"
+                                    />
+                                </div>
+
+                                {/* THÔNG TIN */}
+                                <div className="sr-product-info">
+                                    <h3 className="sr-product-name">
                                         {prod.name || prod.Name}
                                     </h3>
-                                   <p style={{ fontWeight: 'bold', color: '#111', margin: 0 }}>
-    {(() => {
-        const variant = prod.variants?.[0];
-        if (!variant) return '0';
-        // Tự động ăn theo cả price viết thường lẫn Price viết hoa
-        const priceValue = variant.price ?? variant.Price ?? 0; 
-        return Number(priceValue).toLocaleString();
-    })()}đ
-</p>
+                                    <p className="sr-product-price">
+                                        {(() => {
+                                            const variant = prod.variants?.[0];
+                                            if (!variant) return '0';
+                                            const priceValue = variant.price ?? variant.Price ?? 0;
+                                            return Number(priceValue).toLocaleString();
+                                        })()}đ
+                                    </p>
+
+                                    {/* THANH SIMILARITY */}
+                                    {score !== null && (
+                                        <div className="sr-similarity-bar-wrap">
+                                            <div className="sr-similarity-bar">
+                                                <div 
+                                                    className={`sr-similarity-bar-fill ${getBarClass(score)}`}
+                                                    style={{ width: `${score}%` }}
+                                                />
+                                            </div>
+                                            <span className="sr-similarity-text">{score}%</span>
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        </Link>
-                    ))}
+                            </Link>
+                        );
+                    })}
                 </div>
             ) : (
-                <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-                    Không tìm thấy sản phẩm nào có ngoại hình tương tự. Vui lòng thử lại bằng ảnh khác!
+                <div className="sr-empty-state">
+                    <div className="sr-empty-icon">🔍</div>
+                    <h3>Không tìm thấy sản phẩm tương đồng</h3>
+                    <p>AI không tìm thấy sản phẩm nào có ngoại hình giống với ảnh của bạn. Hãy thử lại bằng ảnh khác!</p>
+                    <label className="sr-retry-btn">
+                        <Camera size={16} />
+                        Thử ảnh khác
+                        <input 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={handleRetrySearch} 
+                            style={{ display: 'none' }} 
+                        />
+                    </label>
                 </div>
             )}
         </div>

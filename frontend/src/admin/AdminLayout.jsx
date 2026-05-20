@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { LayoutDashboard, Layers, Box, ShoppingCart, LogOut } from 'lucide-react';
+import { LayoutDashboard, Layers, Box, ShoppingCart, LogOut, Ticket } from 'lucide-react';
 import './AdminLayout.css';
 
 const AdminLayout = () => {
@@ -42,6 +42,10 @@ const AdminLayout = () => {
 
                     <NavLink to="/admin/orders" className={({isActive}) => isActive ? 'active' : ''}>
                         <ShoppingCart size={20} /> <span>Đơn hàng</span>
+                    </NavLink>
+
+                    <NavLink to="/admin/vouchers" className={({isActive}) => isActive ? 'active' : ''}>
+                        <Ticket size={20} /> <span>Voucher</span>
                     </NavLink>
                 </nav>
 

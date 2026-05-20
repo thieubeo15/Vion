@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\ProductVariant;
-use App\Models\Cart; // Thêm Model Cart
+use App\Models\Cart;
+use App\Models\Voucher;
+use App\Models\VoucherUsage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -27,6 +29,7 @@ class OrderController extends Controller
             'Address' => 'required|string',
             'TotalAmount' => 'required|numeric',
             'SelectedItems' => 'required|array|min:1',
+            'VoucherCode' => 'nullable|string|max:50',
         ]);
 
         $user = Auth::user();
@@ -50,54 +53,127 @@ class OrderController extends Controller
                     throw new \Exception("Không có sản phẩm nào được chọn để thanh toán!");
                 }
 
+                // Tính TotalAmount phía server (không tin client)
+                $totalAmount = 0;
+                foreach ($selectedItems as $item) {
+                    $price = $item->Price ?? $item->variant->Price ?? 0;
+                    $totalAmount += $price * $item->Quantity;
+                }
+
+                // Xử lý voucher nếu có
+                $voucherCode = $request->VoucherCode;
+                $discountAmount = 0;
+                $voucher = null;
+
+                if ($voucherCode) {
+                    $voucher = Voucher::where('Code', $voucherCode)->first();
+
+                    if (!$voucher) {
+                        throw new \Exception('Mã giảm giá không tồn tại!');
+                    }
+                    if (!$voucher->IsActive) {
+                        throw new \Exception('Mã giảm giá đã bị vô hiệu hóa!');
+                    }
+
+                    $now = now();
+                    if ($now->lt($voucher->StartDate) || $now->gt($voucher->EndDate)) {
+                        throw new \Exception('Mã giảm giá không trong thời gian hiệu lực!');
+                    }
+                    if ($voucher->UsageLimit !== null && $voucher->UsedCount >= $voucher->UsageLimit) {
+                        throw new \Exception('Mã giảm giá đã hết lượt sử dụng!');
+                    }
+
+                    $userUsageCount = VoucherUsage::where('VoucherID', $voucher->VoucherID)
+                        ->where('UserID', $user->UserID)
+                        ->count();
+                    if ($userUsageCount >= $voucher->PerUserLimit) {
+                        throw new \Exception('Bạn đã sử dụng mã giảm giá này đủ số lần cho phép!');
+                    }
+
+                    if ($totalAmount < $voucher->MinOrderAmount) {
+                        throw new \Exception('Đơn hàng chưa đạt giá trị tối thiểu để sử dụng mã này!');
+                    }
+
+                    // Tính số tiền giảm
+                    if ($voucher->Type === 'fixed') {
+                        $discountAmount = $voucher->Value;
+                    } else {
+                        $discountAmount = ($totalAmount * $voucher->Value) / 100;
+                        if ($voucher->MaxDiscount !== null && $discountAmount > $voucher->MaxDiscount) {
+                            $discountAmount = $voucher->MaxDiscount;
+                        }
+                    }
+
+                    if ($discountAmount > $totalAmount) {
+                        $discountAmount = $totalAmount;
+                    }
+
+                    $discountAmount = round($discountAmount, 2);
+                }
+
+                // Trừ discount vào tổng tiền
+                $finalTotal = $totalAmount - $discountAmount;
+
                 // 1. Tạo bản ghi Đơn hàng
                 $order = Order::create([
-                    'UserID'      => $user->UserID,
-                    'FullName'    => $request->FullName,
-                    'Phone'       => $request->Phone,
-                    'Address'     => $request->Address,
-                    'TotalAmount' => $request->TotalAmount,
-                    'OrderDate'   => now(),
-                    'Status'      => 'Pending', // Trạng thái chờ xử lý
-                    'PaymentMethod' => $request->PaymentMethod ?? 'COD'
+                    'UserID'         => $user->UserID,
+                    'FullName'       => $request->FullName,
+                    'Phone'          => $request->Phone,
+                    'Address'        => $request->Address,
+                    'TotalAmount'    => $finalTotal,
+                    'OrderDate'      => now(),
+                    'Status'         => 'Pending',
+                    'PaymentMethod'  => $request->PaymentMethod ?? 'COD',
+                    'VoucherCode'    => $voucherCode,
+                    'DiscountAmount' => $discountAmount,
                 ]);
 
                 // 2. Chuyển từng món từ Giỏ hàng sang Chi tiết đơn hàng
-               // 2. Chuyển từng món từ Giỏ hàng sang Chi tiết đơn hàng
-foreach ($selectedItems as $item) {
-    $variant = $item->variant;
+                foreach ($selectedItems as $item) {
+                    $variant = $item->variant;
 
-    // 1. Kiểm tra tồn kho
-    if ($variant->Stock < $item->Quantity) {
-        throw new \Exception("Sản phẩm {$variant->product->Name} không đủ tồn kho!");
-    }
+                    // Kiểm tra tồn kho
+                    if ($variant->Stock < $item->Quantity) {
+                        throw new \Exception("Sản phẩm {$variant->product->Name} không đủ tồn kho!");
+                    }
 
-    $finalPrice = $item->Price ?? $variant->Price ?? 0;
+                    $finalPrice = $item->Price ?? $variant->Price ?? 0;
 
-    // 2. Tạo chi tiết đơn hàng
-    OrderDetail::create([
-        'OrderID'     => $order->OrderID,
-        'VariantID'   => $item->VariantID,
-        'Quantity'    => $item->Quantity,
-        'Price'       => $finalPrice,
-        'ImportPrice' => $variant->ImportPrice ?? 0
-    ]);
+                    // Tạo chi tiết đơn hàng
+                    OrderDetail::create([
+                        'OrderID'     => $order->OrderID,
+                        'VariantID'   => $item->VariantID,
+                        'Quantity'    => $item->Quantity,
+                        'Price'       => $finalPrice,
+                        'ImportPrice' => $variant->ImportPrice ?? 0
+                    ]);
 
-    // 3. Trừ tồn kho (Bạn đã có)
-    $variant->decrement('Stock', $item->Quantity);
+                    // Trừ tồn kho
+                    $variant->decrement('Stock', $item->Quantity);
 
-    // 4. TĂNG SỐ LƯỢNG ĐÃ BÁN (THÊM DÒNG NÀY NÈ BẠN)
-    // Lưu ý: Tăng cho Product chứ không phải Variant, và tăng theo đúng số lượng khách mua
-    $variant->product()->increment('sold_count', $item->Quantity);
-}
+                    // Tăng số lượng đã bán
+                    $variant->product()->increment('sold_count', $item->Quantity);
+                }
 
-                // 3. XÓA GIỎ HÀNG (Làm sạch sau khi mua theo các món đã chọn)
+                // 3. Ghi nhận lượt sử dụng voucher
+                if ($voucher) {
+                    VoucherUsage::create([
+                        'VoucherID'      => $voucher->VoucherID,
+                        'UserID'         => $user->UserID,
+                        'OrderID'        => $order->OrderID,
+                        'DiscountAmount' => $discountAmount,
+                    ]);
+                    $voucher->increment('UsedCount');
+                }
+
+                // 4. XÓA GIỎ HÀNG (Làm sạch sau khi mua theo các món đã chọn)
                 $cart->items()->whereIn('CartItemID', $request->SelectedItems)->delete();
 
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Vion Era đã nhận đơn hàng của bạn!',
-                    'order_id' => $order->OrderID
+                    'success'         => true,
+                    'message'         => 'Vion Era đã nhận đơn hàng của bạn!',
+                    'order_id'        => $order->OrderID,
+                    'discount_amount' => $discountAmount,
                 ], 201);
             });
         } catch (\Exception $e) {

@@ -45,3 +45,66 @@
 .fs-14 { font-size: 14px; }
 .fs-15 { font-size: 15px; }
 .fs-16 { font-size: 16px; }
+
+/* Voucher Section */
+.v-voucher-section { margin-top: 16px; padding-top: 16px; border-top: 1px dashed #eee; }
+.v-voucher-label { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; color: #444; margin-bottom: 10px; }
+.v-voucher-input-wrap { display: flex; gap: 8px; }
+.v-voucher-input {
+    flex: 1; border: 1.5px solid #eee; padding: 10px 14px; border-radius: 10px; outline: none;
+    font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; transition: 0.3s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.v-voucher-input:focus { border-color: #111; background: #fff; }
+.v-voucher-input::placeholder { text-transform: none; letter-spacing: 0; font-weight: 400; color: #bbb; }
+.v-voucher-apply-btn {
+    padding: 10px 20px; border: none; border-radius: 10px; background: #111; color: #fff;
+    font-weight: 800; font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: 0.3s;
+    white-space: nowrap; display: flex; align-items: center; justify-content: center; min-width: 90px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.v-voucher-apply-btn:hover { background: #EE4D2D; transform: translateY(-2px); }
+.v-voucher-apply-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.v-voucher-applied {
+    display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 10px;
+    background: #e6f9ee; border: 1.5px solid #34c759; color: #1a8a3f; font-size: 13px; font-weight: 700;
+}
+.v-voucher-applied span { flex: 1; }
+.v-voucher-remove {
+    background: none; border: none; color: #1a8a3f; cursor: pointer; padding: 2px; border-radius: 50%;
+    display: flex; align-items: center; transition: 0.2s;
+}
+.v-voucher-remove:hover { background: rgba(0,0,0,0.08); color: #c0392b; }
+.v-voucher-error { margin-top: 8px; font-size: 12px; color: #EE4D2D; font-weight: 600; }
+.v-discount-row { color: #1a8a3f; font-weight: 700; font-size: 14px; }
+
+/* Wallet Button + Picker */
+.v-voucher-wallet-btn {
+    display: flex; align-items: center; gap: 5px; padding: 10px 14px;
+    border: 1.5px solid #eee; border-radius: 10px; background: #fff;
+    font-weight: 800; font-size: 12px; cursor: pointer; transition: 0.3s;
+    white-space: nowrap; color: #555; font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.v-voucher-wallet-btn:hover { border-color: #111; color: #111; background: #fafafa; }
+
+.v-voucher-picker {
+    background: #fff; border: 1.5px solid #eee; border-radius: 14px;
+    margin-top: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+.v-picker-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px; background: #fafafa; border-bottom: 1px solid #f0f0f0;
+    font-size: 13px; font-weight: 800;
+}
+.v-picker-header button { background: none; border: none; cursor: pointer; color: #888; display: flex; }
+.v-picker-header button:hover { color: #111; }
+.v-picker-item {
+    padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f8f8f8;
+    transition: background 0.2s;
+}
+.v-picker-item:last-child { border-bottom: none; }
+.v-picker-item:hover { background: #fff8f6; }
+.v-picker-code { font-weight: 800; font-size: 14px; letter-spacing: 1px; color: #111; margin-bottom: 3px; }
+.v-picker-value { font-size: 13px; font-weight: 700; color: #EE4D2D; }
+.v-picker-min { font-size: 11px; color: #aaa; margin-top: 2px; }
+.v-picker-empty { padding: 16px; text-align: center; font-size: 13px; color: #aaa; }

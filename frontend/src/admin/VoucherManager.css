@@ -1,0 +1,166 @@
+/* VoucherManager styles - extends admin design system */
+
+/* Voucher code cell */
+.v-voucher-code-cell {
+    font-weight: 800; font-size: 14px; letter-spacing: 1px; color: #111;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+/* Usage badge */
+.v-usage-badge {
+    display: inline-block; padding: 4px 10px; border-radius: 20px;
+    background: #f1f3f5; font-size: 12px; font-weight: 700; color: #555;
+}
+
+/* Date cell */
+.v-date-cell { font-size: 12px; color: #666; line-height: 1.6; }
+.v-date-to { color: #999; }
+
+/* Status badges */
+.v-status-badge {
+    display: inline-block; padding: 4px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.v-status-active { background: #e6f9ee; color: #1a8a3f; }
+.v-status-expired { background: #fff1f0; color: #e74c3c; }
+.v-status-inactive { background: #f1f3f5; color: #999; }
+.v-status-pending { background: #fff8e1; color: #f59e0b; }
+
+/* Toggle icon */
+.v-toggle-icon {
+    background: none; border: none; padding: 6px; cursor: pointer;
+    border-radius: 6px; transition: 0.2s; display: inline-flex; vertical-align: middle;
+}
+.v-toggle-icon:hover { background: #f1f3f5; }
+
+/* Modal Overlay */
+.v-modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.v-modal-content {
+    background: #fff; border-radius: 20px; width: 95%; max-width: 640px;
+    max-height: 90vh; overflow-y: auto; padding: 30px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+    animation: slideUp 0.3s ease;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.v-modal-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
+}
+.v-modal-header h3 { font-size: 18px; font-weight: 800; color: #111; margin: 0; }
+.v-modal-close {
+    background: #f1f3f5; border: none; padding: 8px; border-radius: 50%;
+    cursor: pointer; color: #666; transition: 0.2s; display: flex;
+}
+.v-modal-close:hover { background: #eee; color: #111; }
+
+/* Form grid */
+.v-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.v-form-group label { display: block; font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.v-form-group input,
+.v-form-group select,
+.v-form-group textarea {
+    width: 100%; padding: 10px 14px; border: 1.5px solid #eee; border-radius: 10px;
+    outline: none; font-size: 13px; transition: 0.3s; background: #fafafa;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.v-form-group input:focus,
+.v-form-group select:focus,
+.v-form-group textarea:focus { border-color: #111; background: #fff; }
+.v-form-group select { cursor: pointer; appearance: auto; }
+.v-full-width { margin-bottom: 16px; }
+
+/* Checkbox */
+.v-checkbox-group { margin-bottom: 20px; }
+.v-checkbox-label {
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+    font-size: 14px; font-weight: 700; color: #333;
+}
+.v-checkbox-label input[type="checkbox"] {
+    width: 18px; height: 18px; accent-color: #111; cursor: pointer;
+}
+
+/* Modal actions */
+.v-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.v-modal-actions .v-btn-cancel {
+    padding: 11px 25px; border-radius: 10px; font-weight: 700; font-size: 13px;
+    cursor: pointer; transition: 0.3s;
+}
+.v-modal-actions .v-btn-add,
+.v-modal-actions .v-btn-save {
+    padding: 11px 25px; border-radius: 10px; font-weight: 700; font-size: 13px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .v-form-grid { grid-template-columns: 1fr; }
+    .v-modal-content { padding: 20px; margin: 10px; }
+}
+
+/* Gift button */
+.v-gift-icon {
+    background: #fff8f6; border: 1px solid #ffd5cb; color: #EE4D2D;
+    padding: 6px 8px; border-radius: 6px; cursor: pointer; transition: 0.2s;
+    display: inline-flex; align-items: center; vertical-align: middle;
+}
+.v-gift-icon:hover { background: #EE4D2D; color: #fff; border-color: #EE4D2D; }
+
+/* Gift modal */
+.v-gift-modal { max-width: 520px; }
+.v-gift-body { margin-bottom: 24px; }
+
+.v-gift-modes { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.v-gift-mode-btn {
+    display: flex; align-items: center; gap: 8px; padding: 10px 16px;
+    border: 2px solid #eee; border-radius: 10px; cursor: pointer; font-size: 13px;
+    font-weight: 700; transition: 0.2s; user-select: none; flex: 1; justify-content: center;
+}
+.v-gift-mode-btn:hover { border-color: #EE4D2D; color: #EE4D2D; }
+.v-gift-mode-btn.active { border-color: #EE4D2D; background: #fff8f6; color: #EE4D2D; }
+
+.v-gift-user-list { border: 1.5px solid #eee; border-radius: 12px; overflow: hidden; }
+.v-gift-user-search {
+    display: flex; align-items: center; gap: 6px; padding: 10px 16px;
+    background: #fafafa; border-bottom: 1px solid #eee; font-size: 12px;
+    font-weight: 700; color: #666;
+}
+.v-gift-user-scroll { max-height: 260px; overflow-y: auto; }
+.v-gift-user-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+    cursor: pointer; border-bottom: 1px solid #f8f8f8; transition: background 0.15s;
+}
+.v-gift-user-item:last-child { border-bottom: none; }
+.v-gift-user-item:hover { background: #fff8f6; }
+.v-gift-user-item.selected { background: #fff1ee; }
+.v-gift-user-avatar {
+    width: 32px; height: 32px; border-radius: 50%; background: #111; color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;
+    flex-shrink: 0;
+}
+.v-gift-user-name { font-size: 13px; font-weight: 700; color: #111; }
+.v-gift-user-email { font-size: 11px; color: #999; }
+.v-gift-check { margin-left: auto; color: #EE4D2D; font-weight: 900; font-size: 16px; }
+
+.v-gift-random { padding: 8px 0; }
+.v-gift-random label { display: block; font-size: 13px; font-weight: 700; color: #444; margin-bottom: 10px; }
+.v-gift-count-input {
+    width: 120px; padding: 10px 14px; border: 1.5px solid #eee; border-radius: 10px;
+    font-size: 20px; font-weight: 800; text-align: center; outline: none; transition: 0.2s;
+}
+.v-gift-count-input:focus { border-color: #EE4D2D; }
+.v-gift-hint { font-size: 12px; color: #999; margin-top: 12px; }
+
+.v-gift-birthday-info {
+    padding: 16px 20px; background: #fdf4ff; border-radius: 12px; border: 1.5px solid #e9d5ff;
+    font-size: 14px; color: #7c3aed; line-height: 1.7;
+}
+
+.v-spin { animation: spinV 1s linear infinite; }
+@keyframes spinV { to { transform: rotate(360deg); } }

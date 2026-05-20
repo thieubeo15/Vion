@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { ChevronLeft, MapPin, Phone, User, CreditCard, ShieldCheck, Loader2 } from 'lucide-react';
+import { ChevronLeft, MapPin, Phone, User, CreditCard, ShieldCheck, Loader2, Tag, X, Ticket } from 'lucide-react';
 import Swal from 'sweetalert2';
 import './CheckoutPage.css';
 
@@ -15,6 +15,14 @@ const CheckoutPage = () => {
     const [orderInfo, setOrderInfo] = useState({
         FullName: '', Phone: '', Address: ''
     });
+
+    const [voucherCode, setVoucherCode] = useState('');
+    const [voucherDiscount, setVoucherDiscount] = useState(0);
+    const [voucherInfo, setVoucherInfo] = useState(null);
+    const [voucherError, setVoucherError] = useState('');
+    const [applyingVoucher, setApplyingVoucher] = useState(false);
+    const [showVoucherPicker, setShowVoucherPicker] = useState(false);
+    const [walletVouchers, setWalletVouchers] = useState([]);
 
     const token = localStorage.getItem('vion_token');
     const API_URL = 'http://127.0.0.1:8000/api';
@@ -60,6 +68,68 @@ const CheckoutPage = () => {
         }, 0);
     };
 
+    const calculateFinalTotal = () => {
+        return calculateTotal() - voucherDiscount;
+    };
+
+    const handleApplyVoucher = async () => {
+        if (!voucherCode.trim()) return;
+        setApplyingVoucher(true);
+        setVoucherError('');
+        try {
+            const res = await axios.post(`${API_URL}/voucher/apply`, {
+                code: voucherCode,
+                total_amount: calculateTotal()
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setVoucherDiscount(res.data.discount_amount);
+            setVoucherInfo(res.data.voucher_info);
+            setVoucherError('');
+        } catch (err) {
+            setVoucherError(err.response?.data?.message || 'Mã giảm giá không hợp lệ!');
+            setVoucherDiscount(0);
+            setVoucherInfo(null);
+        } finally {
+            setApplyingVoucher(false);
+        }
+    };
+
+    const handleRemoveVoucher = () => {
+        setVoucherCode('');
+        setVoucherDiscount(0);
+        setVoucherInfo(null);
+        setVoucherError('');
+    };
+
+    const fetchWalletVouchers = async () => {
+        try {
+            const res = await axios.get(`${API_URL}/my-vouchers`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const active = (res.data.data || []).filter(v => v.status === 'active');
+            setWalletVouchers(active);
+            setShowVoucherPicker(true);
+        } catch (err) { console.error(err); }
+    };
+
+    const handleSelectWalletVoucher = async (code) => {
+        setShowVoucherPicker(false);
+        setVoucherCode(code);
+        setApplyingVoucher(true);
+        setVoucherError('');
+        try {
+            const res = await axios.post(`${API_URL}/voucher/apply`, {
+                code, total_amount: calculateTotal()
+            }, { headers: { Authorization: `Bearer ${token}` } });
+            setVoucherDiscount(res.data.discount_amount);
+            setVoucherInfo(res.data.voucher_info);
+        } catch (err) {
+            setVoucherError(err.response?.data?.message || 'Voucher không hợp lệ!');
+            setVoucherDiscount(0); setVoucherInfo(null);
+        } finally { setApplyingVoucher(false); }
+    };
+
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
 
@@ -74,9 +144,10 @@ const CheckoutPage = () => {
                 FullName: orderInfo.FullName,
                 Phone: orderInfo.Phone,
                 Address: orderInfo.Address,
-                TotalAmount: calculateTotal(),
+                TotalAmount: calculateFinalTotal(),
                 PaymentMethod: 'COD',
-                SelectedItems: selectedItems
+                SelectedItems: selectedItems,
+                VoucherCode: voucherInfo ? voucherCode : undefined
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -183,10 +254,84 @@ const CheckoutPage = () => {
                                 <span>Phí vận chuyển</span>
                                 <span className="fw-700">MIỄN PHÍ</span>
                             </div>
+
+                            {/* VOUCHER SECTION */}
+                            <div className="v-voucher-section">
+                                <div className="v-voucher-label">
+                                    <Tag size={14} /> Mã giảm giá
+                                </div>
+                                {!voucherInfo ? (
+                                    <>
+                                        <div className="v-voucher-input-wrap">
+                                            <input
+                                                type="text"
+                                                className="v-voucher-input"
+                                                placeholder="Nhập mã giảm giá..."
+                                                value={voucherCode}
+                                                onChange={e => setVoucherCode(e.target.value.toUpperCase())}
+                                                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleApplyVoucher())}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="v-voucher-apply-btn"
+                                                onClick={handleApplyVoucher}
+                                                disabled={applyingVoucher}
+                                            >
+                                                {applyingVoucher ? <Loader2 className="v-spin" size={14} /> : 'ÁP DỤNG'}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="v-voucher-wallet-btn"
+                                                onClick={fetchWalletVouchers}
+                                                title="Chọn từ ví voucher"
+                                            >
+                                                <Ticket size={14} /> Ví
+                                            </button>
+                                        </div>
+                                        {showVoucherPicker && (
+                                            <div className="v-voucher-picker">
+                                                <div className="v-picker-header">
+                                                    <span>🏷️ Chọn voucher từ ví</span>
+                                                    <button type="button" onClick={() => setShowVoucherPicker(false)}><X size={14} /></button>
+                                                </div>
+                                                {walletVouchers.length === 0 ? (
+                                                    <div className="v-picker-empty">Ví không có voucher khả dụng</div>
+                                                ) : walletVouchers.map(v => (
+                                                    <div key={v.id} className="v-picker-item" onClick={() => handleSelectWalletVoucher(v.code)}>
+                                                        <div className="v-picker-code">{v.code}</div>
+                                                        <div className="v-picker-value">
+                                                            {v.type === 'fixed' ? `Giảm ${Number(v.value).toLocaleString()}đ` : `Giảm ${v.value}%${v.max_discount ? ` (tối đa ${Number(v.max_discount).toLocaleString()}đ)` : ''}`}
+                                                        </div>
+                                                        {v.min_order > 0 && <div className="v-picker-min">Đơn tối thiểu: {Number(v.min_order).toLocaleString()}đ</div>}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {voucherError && (
+                                            <div className="v-voucher-error">{voucherError}</div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="v-voucher-applied">
+                                        <Tag size={14} />
+                                        <span>Giảm {voucherDiscount.toLocaleString()}đ</span>
+                                        <button type="button" className="v-voucher-remove" onClick={handleRemoveVoucher}>
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
                             <div className="v-bill-divider my-3"></div>
+                            {voucherDiscount > 0 && (
+                                <div className="v-discount-row d-flex justify-content-between mb-2">
+                                    <span>Giảm giá</span>
+                                    <span>-{voucherDiscount.toLocaleString()}đ</span>
+                                </div>
+                            )}
                             <div className="d-flex justify-content-between align-items-center">
                                 <span className="fw-800 fs-16">TỔNG TIỀN</span>
-                                <span className="v-grand-total">{calculateTotal().toLocaleString()}đ</span>
+                                <span className="v-grand-total">{calculateFinalTotal().toLocaleString()}đ</span>
                             </div>
                         </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; 
 import { Search, Camera, ShoppingBag, User, LogOut } from 'lucide-react';
 import axios from 'axios';
@@ -10,6 +10,7 @@ const Navbar = () => {
     const [allProducts, setAllProducts] = useState([]); 
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
+    const imageInputRef = useRef(null);
     
     const navigate = useNavigate();
     const API_BASE_URL = 'http://127.0.0.1:8000';
@@ -75,10 +76,15 @@ const Navbar = () => {
         const file = e.target.files[0];
         if (!file) return;
 
+        // Reset input file để có thể chọn lại cùng 1 ảnh
+        if (imageInputRef.current) {
+            imageInputRef.current.value = '';
+        }
+
         // Hiện popup loading của AI
         Swal.fire({
             title: 'VION AI ĐANG QUÉT ẢNH...',
-            
+            html: '<p style="color:#666;font-size:14px">Mô hình CLIP đang phân tích đặc trưng hình ảnh...</p>',
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();
@@ -96,16 +102,28 @@ const Navbar = () => {
             Swal.close();
 
             if (res.data.success) {
-                // Đẩy sang trang kết quả kèm theo mảng dữ liệu và ảnh để preview
+                // Đẩy sang trang kết quả kèm theo mảng dữ liệu, similarity scores và ảnh preview
                 navigate('/search-results?type=image', { 
-                    state: { products: res.data.data, searchImage: URL.createObjectURL(file) } 
+                    state: { 
+                        products: res.data.data, 
+                        similarities: res.data.similarities || {},
+                        searchImage: URL.createObjectURL(file) 
+                    } 
+                });
+            } else {
+                // Trường hợp API trả về success=false
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Không tìm thấy kết quả',
+                    text: res.data.message || 'AI không thể phân tích hình ảnh này. Vui lòng thử ảnh khác!',
+                    confirmButtonColor: '#111'
                 });
             }
         } catch (err) {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi quét ảnh',
-                text: err.response?.data?.message || 'Không thể phân tích hình ảnh này!',
+                text: err.response?.data?.message || 'Không thể kết nối tới máy chủ AI. Vui lòng thử lại sau!',
                 confirmButtonColor: '#111'
             });
         }
@@ -159,6 +177,7 @@ const Navbar = () => {
                             <label className="camera-search-label" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                                 <Camera size={20} className="camera-icon" title="Tìm kiếm bằng hình ảnh" />
                                 <input 
+                                    ref={imageInputRef}
                                     type="file" 
                                     accept="image/*" 
                                     onChange={handleImageSearch} 

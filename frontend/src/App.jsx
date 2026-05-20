@@ -20,6 +20,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderManager from './admin/OrderManager';
 import OrderHistory from './pages/OrderHistory';
 import BannerManager from './admin/BannerManager';
+import VoucherManager from './admin/VoucherManager';
 
 
 
@@ -79,6 +80,7 @@ function App() {
             <Route path="products" element={<ProductManager />} />
             <Route path="orders" element={<OrderManager />} />
             <Route path="banners" element={<BannerManager />} />
+            <Route path="vouchers" element={<VoucherManager />} />
             {/* Sau này thêm Quản lý sản phẩm, đơn hàng vào đây... */}
           </Route>
 
