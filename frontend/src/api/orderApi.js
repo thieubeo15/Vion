@@ -11,9 +11,5 @@ export const orderApi = {
     updateOrderStatus(id, data) {
         return axiosClient.put(`/orders/${id}`, data);
     },
-
-    // Thanh toán
-    createPayment(data) {
-        return axiosClient.post('/payments', data);
-    }
 };
+

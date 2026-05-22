@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Plus, Trash2, Edit2, Package, Search, Upload, Save, X, Image as ImageIcon, Eye, Loader2, RefreshCw } from 'lucide-react';
 import Swal from 'sweetalert2';
@@ -23,6 +23,24 @@ const ProductManager = () => {
     const Toast = Swal.mixin({
         toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true,
     });
+
+    // States for cropping modal
+    const [cropModal, setCropModal] = useState({
+        isOpen: false,
+        imgSrc: '',
+        fileName: '',
+        onCropDone: null,
+        title: 'Cắt ảnh'
+    });
+    const [cropState, setCropState] = useState({
+        zoom: 1,
+        x: 0,
+        y: 0,
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+    const [imgSize, setImgSize] = useState({ w: 0, h: 0, baseW: 0, baseH: 0 });
+    const cropImgRef = useRef(null);
 
     useEffect(() => { fetchData(); }, []);
 
@@ -89,6 +107,184 @@ const ProductManager = () => {
         });
     };
 
+    const openCropModal = (file, callback, title = 'Cắt ảnh sản phẩm') => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            setCropModal({
+                isOpen: true,
+                imgSrc: reader.result,
+                fileName: file.name,
+                onCropDone: callback,
+                title: title
+            });
+            setCropState({ zoom: 1, x: 0, y: 0 });
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleImageLoad = (e) => {
+        const img = e.target;
+        const wOrig = img.naturalWidth;
+        const hOrig = img.naturalHeight;
+        const vpW = 300;
+        const vpH = 400;
+        let baseW = vpW;
+        let baseH = vpH;
+        const origRatio = wOrig / hOrig;
+        if (origRatio > 0.75) {
+            baseH = vpH;
+            baseW = wOrig * (vpH / hOrig);
+        } else {
+            baseW = vpW;
+            baseH = hOrig * (vpW / wOrig);
+        }
+        setImgSize({ w: wOrig, h: hOrig, baseW, baseH });
+        setCropState({
+            zoom: 1,
+            x: (vpW - baseW) / 2,
+            y: (vpH - baseH) / 2
+        });
+    };
+
+    const handleMouseDown = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
+        setDragStart({
+            x: e.clientX - cropState.x,
+            y: e.clientY - cropState.y
+        });
+    };
+
+    const handleMouseMove = (e) => {
+        if (!isDragging) return;
+        const vpW = 300;
+        const vpH = 400;
+        const dispW = imgSize.baseW * cropState.zoom;
+        const dispH = imgSize.baseH * cropState.zoom;
+        let newX = e.clientX - dragStart.x;
+        let newY = e.clientY - dragStart.y;
+        newX = Math.min(0, Math.max(vpW - dispW, newX));
+        newY = Math.min(0, Math.max(vpH - dispH, newY));
+        setCropState(prev => ({ ...prev, x: newX, y: newY }));
+    };
+
+    const handleMouseUpOrLeave = () => {
+        setIsDragging(false);
+    };
+
+    const handleTouchStart = (e) => {
+        if (e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        setIsDragging(true);
+        setDragStart({
+            x: touch.clientX - cropState.x,
+            y: touch.clientY - cropState.y
+        });
+    };
+
+    const handleTouchMove = (e) => {
+        if (!isDragging || e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        const vpW = 300;
+        const vpH = 400;
+        const dispW = imgSize.baseW * cropState.zoom;
+        const dispH = imgSize.baseH * cropState.zoom;
+        let newX = touch.clientX - dragStart.x;
+        let newY = touch.clientY - dragStart.y;
+        newX = Math.min(0, Math.max(vpW - dispW, newX));
+        newY = Math.min(0, Math.max(vpH - dispH, newY));
+        setCropState(prev => ({ ...prev, x: newX, y: newY }));
+    };
+
+    const handleZoomChange = (e) => {
+        const newZoom = parseFloat(e.target.value);
+        const oldZoom = cropState.zoom;
+        const vpW = 300;
+        const vpH = 400;
+        const vpCenterX = vpW / 2;
+        const vpCenterY = vpH / 2;
+        const imgCenterX = vpCenterX - cropState.x;
+        const imgCenterY = vpCenterY - cropState.y;
+        const imgCenterXNew = imgCenterX * (newZoom / oldZoom);
+        const imgCenterYNew = imgCenterY * (newZoom / oldZoom);
+        let newX = vpCenterX - imgCenterXNew;
+        let newY = vpCenterY - imgCenterYNew;
+        const dispW = imgSize.baseW * newZoom;
+        const dispH = imgSize.baseH * newZoom;
+        newX = Math.min(0, Math.max(vpW - dispW, newX));
+        newY = Math.min(0, Math.max(vpH - dispH, newY));
+        setCropState({ zoom: newZoom, x: newX, y: newY });
+    };
+
+    const handleCropConfirm = () => {
+        if (!cropImgRef.current) return;
+        const vpW = 300;
+        const vpH = 400;
+        const dispW = imgSize.baseW * cropState.zoom;
+        const dispH = imgSize.baseH * cropState.zoom;
+        const scaleX = imgSize.w / dispW;
+        const scaleY = imgSize.h / dispH;
+        const srcX = -cropState.x * scaleX;
+        const srcY = -cropState.y * scaleY;
+        const srcW = vpW * scaleX;
+        const srcH = vpH * scaleY;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 900;
+        canvas.height = 1200;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(cropImgRef.current, srcX, srcY, srcW, srcH, 0, 0, 900, 1200);
+
+        canvas.toBlob((blob) => {
+            if (blob) {
+                const croppedFile = new File([blob], cropModal.fileName, { type: 'image/jpeg' });
+                croppedFile.preview = URL.createObjectURL(croppedFile);
+                cropModal.onCropDone(croppedFile);
+                setCropModal({ isOpen: false, imgSrc: '', fileName: '', onCropDone: null, title: '' });
+            }
+        }, 'image/jpeg', 0.9);
+    };
+
+    const revokePreview = (file) => {
+        if (file && file.preview) {
+            URL.revokeObjectURL(file.preview);
+        }
+    };
+
+    const handleMainImageChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        revokePreview(formData.MainImage);
+        openCropModal(file, (croppedFile) => {
+            setFormData(prev => ({ ...prev, MainImage: croppedFile }));
+        }, 'Cắt ảnh đại diện (Tỉ lệ chuẩn 3:4)');
+        e.target.value = '';
+    };
+
+    const handleAdditionalImagesChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+        let index = 0;
+        const croppedFiles = [];
+        const processNext = () => {
+            if (index < files.length) {
+                openCropModal(files[index], (croppedFile) => {
+                    croppedFiles.push(croppedFile);
+                    index++;
+                    processNext();
+                }, `Cắt ảnh phụ ${index + 1}/${files.length} (Tỉ lệ chuẩn 3:4)`);
+            } else {
+                setFormData(prev => ({
+                    ...prev,
+                    additionalImages: [...(prev.additionalImages || []), ...croppedFiles]
+                }));
+            }
+        };
+        processNext();
+        e.target.value = '';
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -151,6 +347,10 @@ const ProductManager = () => {
     };
 
     const resetForm = () => {
+        revokePreview(formData.MainImage);
+        if (formData.additionalImages) {
+            formData.additionalImages.forEach(revokePreview);
+        }
         setFormData({ Name: '', CategoryID: '', Description: '', MainImage: null, additionalImages: [], variants: [{ size: '', color: '', price: '', importPrice: '', stock: '' }] });
         setIsEditing(false); setEditId(null);
     };
@@ -184,14 +384,51 @@ const ProductManager = () => {
                             <label className="v-upload-main">
                                 <Upload size={22} />
                                 <span>{formData.MainImage ? "Đã chọn ảnh chính" : "Ảnh đại diện"}</span>
-                                <input type="file" hidden onChange={(e) => setFormData({ ...formData, MainImage: e.target.files[0] })} />
+                                <input type="file" hidden onChange={handleMainImageChange} />
                             </label>
                             <label className="v-upload-sub">
                                 <ImageIcon size={22} />
                                 <span>Ảnh phụ (+{formData.additionalImages.length})</span>
-                                <input type="file" multiple hidden onChange={(e) => setFormData({ ...formData, additionalImages: [...formData.additionalImages, ...Array.from(e.target.files)] })} />
+                                <input type="file" multiple hidden onChange={handleAdditionalImagesChange} />
                             </label>
                         </div>
+
+                        {/* Lưới hiển thị ảnh xem trước đã chọn (đã cắt) */}
+                        {(formData.MainImage || (formData.additionalImages && formData.additionalImages.length > 0)) && (
+                            <div className="v-image-previews-container">
+                                {formData.MainImage && (
+                                    <div className="v-preview-card main-preview">
+                                        <div className="v-preview-badge">Ảnh chính</div>
+                                        <img 
+                                            src={formData.MainImage.preview || formData.MainImage} 
+                                            alt="Main Preview" 
+                                        />
+                                        <button type="button" className="v-preview-remove" onClick={() => {
+                                            revokePreview(formData.MainImage);
+                                            setFormData({ ...formData, MainImage: null });
+                                        }} title="Xóa ảnh chính">
+                                            <X size={12} />
+                                        </button>
+                                    </div>
+                                )}
+                                {formData.additionalImages && formData.additionalImages.map((file, idx) => (
+                                    <div key={idx} className="v-preview-card sub-preview">
+                                        <div className="v-preview-badge">Phụ {idx + 1}</div>
+                                        <img 
+                                            src={file.preview || file} 
+                                            alt={`Sub Preview ${idx}`} 
+                                        />
+                                        <button type="button" className="v-preview-remove" onClick={() => {
+                                            revokePreview(file);
+                                            const updated = formData.additionalImages.filter((_, i) => i !== idx);
+                                            setFormData({ ...formData, additionalImages: updated });
+                                        }} title="Xóa ảnh phụ">
+                                            <X size={12} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -240,6 +477,83 @@ const ProductManager = () => {
                     ))}
                 </tbody>
             </table>
+
+            {/* Crop Modal Overlay */}
+            {cropModal.isOpen && (
+                <div className="v-crop-modal-overlay">
+                    <div className="v-crop-modal">
+                        <div className="v-crop-header">
+                            <h3>{cropModal.title}</h3>
+                            <button type="button" className="v-crop-close-btn" onClick={() => setCropModal({ isOpen: false, imgSrc: '', fileName: '', onCropDone: null, title: '' })}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        
+                        <div className="v-crop-body">
+                            <div 
+                                className="v-crop-viewport"
+                                onMouseDown={handleMouseDown}
+                                onMouseMove={handleMouseMove}
+                                onMouseUp={handleMouseUpOrLeave}
+                                onMouseLeave={handleMouseUpOrLeave}
+                                onTouchStart={handleTouchStart}
+                                onTouchMove={handleTouchMove}
+                                onTouchEnd={handleMouseUpOrLeave}
+                            >
+                                <img 
+                                    ref={cropImgRef}
+                                    src={cropModal.imgSrc} 
+                                    alt="Crop source" 
+                                    onLoad={handleImageLoad}
+                                    style={{
+                                        position: 'absolute',
+                                        left: `${cropState.x}px`,
+                                        top: `${cropState.y}px`,
+                                        width: `${imgSize.baseW * cropState.zoom}px`,
+                                        height: `${imgSize.baseH * cropState.zoom}px`,
+                                        maxWidth: 'none',
+                                        maxHeight: 'none',
+                                        userSelect: 'none',
+                                        pointerEvents: 'none'
+                                    }}
+                                />
+                                <div className="v-crop-overlay-grid"></div>
+                            </div>
+                            
+                            <div className="v-crop-slider-container">
+                                <span className="v-crop-zoom-label">Thu nhỏ</span>
+                                <input 
+                                    type="range" 
+                                    min="1" 
+                                    max="3" 
+                                    step="0.01" 
+                                    value={cropState.zoom} 
+                                    onChange={handleZoomChange}
+                                    className="v-crop-slider"
+                                />
+                                <span className="v-crop-zoom-label">Phóng to</span>
+                            </div>
+                        </div>
+                        
+                        <div className="v-crop-footer">
+                            <button 
+                                type="button" 
+                                className="v-crop-btn-cancel" 
+                                onClick={() => setCropModal({ isOpen: false, imgSrc: '', fileName: '', onCropDone: null, title: '' })}
+                            >
+                                HỦY BỎ
+                            </button>
+                            <button 
+                                type="button" 
+                                className="v-crop-btn-confirm" 
+                                onClick={handleCropConfirm}
+                            >
+                                CẮT & LƯU ẢNH
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

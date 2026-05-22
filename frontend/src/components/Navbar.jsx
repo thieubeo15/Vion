@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Search, Camera, ShoppingBag, User, LogOut } from 'lucide-react';
 import axios from 'axios';
 import Swal from 'sweetalert2'; // 🚀 1. Import thư viện Swal
+import NotificationBell from './NotificationBell';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -35,6 +36,16 @@ const Navbar = () => {
                 });
                 const items = res.data.data?.items || [];
                 const count = items.reduce((sum, item) => sum + item.Quantity, 0);
+                setCartCount(count);
+            } else {
+                let guestCart = [];
+                try {
+                    const storedCart = localStorage.getItem('vion_guest_cart');
+                    if (storedCart) guestCart = JSON.parse(storedCart);
+                } catch (e) {
+                    guestCart = [];
+                }
+                const count = guestCart.reduce((sum, item) => sum + item.Quantity, 0);
                 setCartCount(count);
             }
         } catch (err) { console.error("Lỗi tải dữ liệu Navbar", err); }
@@ -214,6 +225,8 @@ const Navbar = () => {
                 </div>
 
                 <div className="header-actions">
+                    {user && <NotificationBell />}
+
                     <Link to="/cart" className="action-icon">
                         <ShoppingBag size={24} strokeWidth={1.5} />
                         <span className="cart-badge">{cartCount}</span>

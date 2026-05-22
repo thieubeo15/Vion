@@ -4,17 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Message extends Model
+class ChatbotMessage extends Model
 {
-    protected $table = 'messages';
-    protected $primaryKey = 'MessageID';
-    public $timestamps = false;
+    protected $table = 'chatbot_messages';
 
     protected $fillable = [
+        'session_id',
         'UserID',
-        'Sender',
-        'Content',
-        'SentAt'
+        'Role',
+        'Content'
     ];
 
     public function user()

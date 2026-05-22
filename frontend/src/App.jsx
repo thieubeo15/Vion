@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ProfilePage from './pages/ProfilePage';
 import CartPage from './pages/CartPage';
 import ProductsPage from './pages/ProductsPage';
@@ -21,17 +22,19 @@ import OrderManager from './admin/OrderManager';
 import OrderHistory from './pages/OrderHistory';
 import BannerManager from './admin/BannerManager';
 import VoucherManager from './admin/VoucherManager';
+import UserManager from './admin/UserManager';
 
 
 
 // Nhúng các linh kiện (Components)
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ChatWidget from './components/ChatWidget';
 
 // 3. Trạm kiểm soát Menu (Ẩn Navbar ở Login, Register và toàn bộ trang ADMIN)
 const MenuBar = () => {
   const location = useLocation();
-  const hideOn = ['/login', '/register'];
+  const hideOn = ['/login', '/register', '/forgot'];
   // Nếu đường dẫn là login/register HOẶC bắt đầu bằng /admin -> Không hiện Navbar
   if (hideOn.includes(location.pathname) || location.pathname.startsWith('/admin')) {
     return null;
@@ -42,11 +45,21 @@ const MenuBar = () => {
 // 4. Trạm kiểm soát Footer (Ẩn Footer tương tự Navbar)
 const FooterControl = () => {
   const location = useLocation();
-  const hideOn = ['/login', '/register'];
+  const hideOn = ['/login', '/register', '/forgot'];
   if (hideOn.includes(location.pathname) || location.pathname.startsWith('/admin')) {
     return null;
   }
   return <Footer />;
+};
+
+// 5. Trạm kiểm soát Chatbot (Ẩn Chatbot ở Login, Register và ADMIN)
+const ChatWidgetControl = () => {
+  const location = useLocation();
+  const hideOn = ['/login', '/register', '/forgot'];
+  if (hideOn.includes(location.pathname) || location.pathname.startsWith('/admin')) {
+    return null;
+  }
+  return <ChatWidget />;
 };
 
 function App() {
@@ -62,6 +75,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot" element={<ForgotPasswordPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<CartPage />} />
@@ -81,6 +95,7 @@ function App() {
             <Route path="orders" element={<OrderManager />} />
             <Route path="banners" element={<BannerManager />} />
             <Route path="vouchers" element={<VoucherManager />} />
+            <Route path="users" element={<UserManager />} />
             {/* Sau này thêm Quản lý sản phẩm, đơn hàng vào đây... */}
           </Route>
 
@@ -89,6 +104,9 @@ function App() {
 
       {/* Chân trang khách hàng */}
       <FooterControl />
+
+      {/* Chatbot AI trợ lý bán hàng */}
+      <ChatWidgetControl />
     </BrowserRouter>
   );
 }

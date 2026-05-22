@@ -77,4 +77,154 @@ class UserController extends Controller
             ]
         ]);
     }
+
+    // --- CÁC HÀM QUẢN LÝ USER DÀNH CHO ADMIN ---
+
+    // Lấy danh sách user kèm phân trang và tìm kiếm
+    public function indexAdmin(Request $request)
+    {
+        $query = User::query();
+
+        // Tìm kiếm theo Email, FullName, Phone
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('Email', 'like', "%{$search}%")
+                  ->orWhere('FullName', 'like', "%{$search}%")
+                  ->orWhere('Phone', 'like', "%{$search}%");
+            });
+        }
+
+        // Lọc theo Role
+        if ($request->filled('role')) {
+            $query->where('Role', $request->input('role'));
+        }
+
+        // Phân trang mặc định 10 dòng
+        $users = $query->orderBy('UserID', 'desc')->paginate(10);
+
+        return response()->json([
+            'success' => true,
+            'data' => $users
+        ]);
+    }
+
+    // Admin tạo tài khoản mới
+    public function storeAdmin(Request $request)
+    {
+        $request->validate([
+            'Email' => 'required|email|unique:users,Email',
+            'Password' => 'required|string|min:6',
+            'FullName' => 'required|string|max:255',
+            'Phone' => 'nullable|string|max:20',
+            'Address' => 'nullable|string',
+            'Birthday' => 'nullable|date',
+            'Role' => 'required|in:Admin,Customer',
+        ], [
+            'Email.required' => 'Vui lòng nhập Email.',
+            'Email.email' => 'Email không đúng định dạng.',
+            'Email.unique' => 'Email này đã tồn tại trong hệ thống.',
+            'Password.required' => 'Vui lòng nhập mật khẩu.',
+            'Password.min' => 'Mật khẩu phải từ 6 ký tự trở lên.',
+            'FullName.required' => 'Vui lòng nhập họ và tên.',
+            'Role.required' => 'Vui lòng chọn vai trò.',
+            'Role.in' => 'Vai trò phải là Admin hoặc Customer.',
+        ]);
+
+        $user = User::create([
+            'Email' => $request->Email,
+            'Password' => Hash::make($request->Password),
+            'FullName' => $request->FullName,
+            'Phone' => $request->Phone,
+            'Address' => $request->Address,
+            'Birthday' => $request->Birthday,
+            'Role' => $request->Role,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tạo tài khoản thành công!',
+            'user' => $user
+        ], 201);
+    }
+
+    // Admin cập nhật thông tin và quyền của user
+    public function updateAdmin(Request $request, $id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy người dùng này.'
+            ], 404);
+        }
+
+        $request->validate([
+            'Email' => 'sometimes|required|email|unique:users,Email,' . $id . ',UserID',
+            'Password' => 'nullable|string|min:6',
+            'FullName' => 'sometimes|required|string|max:255',
+            'Phone' => 'nullable|string|max:20',
+            'Address' => 'nullable|string',
+            'Birthday' => 'nullable|date',
+            'Role' => 'sometimes|required|in:Admin,Customer',
+        ], [
+            'Email.required' => 'Email không được để trống.',
+            'Email.email' => 'Email không đúng định dạng.',
+            'Email.unique' => 'Email đã được sử dụng bởi tài khoản khác.',
+            'Password.min' => 'Mật khẩu phải từ 6 ký tự trở lên.',
+            'FullName.required' => 'Họ và tên không được để trống.',
+            'Role.required' => 'Vai trò không được để trống.',
+            'Role.in' => 'Vai trò phải là Admin hoặc Customer.',
+        ]);
+
+        $updateData = $request->only('Email', 'FullName', 'Phone', 'Address', 'Birthday', 'Role');
+
+        // Nếu admin cập nhật mật khẩu mới cho user
+        if ($request->filled('Password')) {
+            $updateData['Password'] = Hash::make($request->Password);
+        }
+
+        // Ngăn Admin tự hạ quyền của chính mình để tránh khóa hệ thống
+        if ($user->UserID === Auth::id() && isset($updateData['Role']) && $updateData['Role'] !== 'Admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không thể tự hạ quyền Admin của chính mình!'
+            ], 400);
+        }
+
+        $user->update($updateData);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật thông tin thành công!',
+            'user' => $user
+        ]);
+    }
+
+    // Admin xóa tài khoản
+    public function destroyAdmin($id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy người dùng này.'
+            ], 404);
+        }
+
+        // Chặn tự xóa chính mình
+        if ($user->UserID === Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không thể tự xóa tài khoản của chính mình!'
+            ], 400);
+        }
+
+        $user->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Xóa tài khoản thành công!'
+        ]);
+    }
 }

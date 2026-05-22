@@ -34,17 +34,38 @@ const ProductDetail = () => {
                 setSelectedColor(data.variants[0].Color || data.variants[0].color);
             }
 
+            // Lấy toàn bộ danh sách sản phẩm để lọc hàng tương tự
             const allRes = await axios.get(`${API_BASE_URL}/api/products`);
             
-            // 🚀 BỔ SUNG LẤY ID LỒNG NHAU ĐỂ KHÔNG BỊ RỖNG
-            const catID = data.category_id || data.CategoryID || data.category?.id || data.category?.CategoryID;
+            // 🚀 BỌC LÓT LẤY ID DANH MỤC & SẢN PHẨM HIỆN TẠI
+            const catID = data.CategoryID || data.category_id || data.category?.id || data.category?.CategoryID;
+            const currentProdID = data.ProductID || data.id;
             
-            const related = allRes.data.data.filter(p => 
-                (p.category_id === catID || p.CategoryID === catID) && 
-                (p.id !== data.id && p.ProductID !== data.ProductID)
-            );
-            setRelatedProducts(related.slice(0, 6));
-
+            // Đảm bảo bốc đúng mảng dữ liệu dù API trả về dạng nào
+            const productsList = Array.isArray(allRes.data) ? allRes.data : (allRes.data.data || []);
+            
+            // LỌC CHUẨN XÁC: Lọc sản phẩm cùng danh mục trước
+            let related = productsList.filter(p => {
+                const pCatID = p.CategoryID || p.category_id || p.category?.id || p.category?.CategoryID;
+                const pProdID = p.ProductID || p.id;
+                
+                return String(pCatID) === String(catID) && String(pProdID) !== String(currentProdID);
+            });
+            
+            // Nếu không đủ 12 sản phẩm cùng danh mục, lấy thêm sản phẩm khác để điền đầy lưới gợi ý
+            if (related.length < 12) {
+                const otherProducts = productsList.filter(p => {
+                    const pProdID = p.ProductID || p.id;
+                    const isCurrent = String(pProdID) === String(currentProdID);
+                    const isAlreadyRelated = related.some(r => String(r.ProductID || r.id) === String(pProdID));
+                    return !isCurrent && !isAlreadyRelated;
+                });
+                related = [...related, ...otherProducts].slice(0, 12);
+            } else {
+                related = related.slice(0, 12);
+            }
+            
+            setRelatedProducts(related);
             setLoading(false);
         } catch (err) {
             console.error("Lỗi API:", err);
@@ -63,24 +84,96 @@ const ProductDetail = () => {
     );
     const maxStock = currentVariant?.Stock || currentVariant?.stock || 0;
 
-  const handleAddToCart = async (isBuyNow = false) => {
-        const token = localStorage.getItem('vion_token');
-        if (!token) {
-            Swal.fire({ icon: 'info', title: 'Thông báo', text: 'Vui lòng đăng nhập!', confirmButtonColor: '#111' })
-                .then((res) => { if (res.isConfirmed) navigate('/login'); });
-            return;
-        }
+    const handleAddToCart = async (isBuyNow = false) => {
         if (!currentVariant) return Swal.fire('Lỗi', 'Chọn Size & Màu sắc!', 'error');
 
+        const token = localStorage.getItem('vion_token');
+        const variantId = currentVariant.id || currentVariant.VariantID;
+
+        // Xử lý cho KHÁCH VÃNG LAI (không có token)
+        if (!token) {
+            let guestCart = [];
+            try {
+                const storedCart = localStorage.getItem('vion_guest_cart');
+                if (storedCart) guestCart = JSON.parse(storedCart);
+            } catch (e) {
+                guestCart = [];
+            }
+
+            const existingIdx = guestCart.findIndex(item => item.VariantID === variantId);
+            let finalQty = quantity;
+
+            if (existingIdx > -1) {
+                finalQty = guestCart[existingIdx].Quantity + quantity;
+                if (finalQty > maxStock) {
+                    Swal.fire('Thất bại', `Vượt quá tồn kho! Kho còn ${maxStock} sản phẩm, trong giỏ bạn đã có ${guestCart[existingIdx].Quantity} sản phẩm.`, 'error');
+                    return;
+                }
+                guestCart[existingIdx].Quantity = finalQty;
+            } else {
+                if (quantity > maxStock) {
+                    Swal.fire('Thất bại', `Vượt quá tồn kho! Kho chỉ còn ${maxStock} sản phẩm.`, 'error');
+                    return;
+                }
+                const guestItem = {
+                    id: `guest_${variantId}`,
+                    CartItemID: `guest_${variantId}`,
+                    VariantID: variantId,
+                    Quantity: quantity,
+                    Price: currentVariant.Price || currentVariant.price || 0,
+                    variant: {
+                        id: variantId,
+                        VariantID: variantId,
+                        Size: selectedSize,
+                        Color: selectedColor,
+                        Price: currentVariant.Price || currentVariant.price || 0,
+                        Stock: maxStock,
+                        product: {
+                            ProductID: product.ProductID || product.id,
+                            id: product.ProductID || product.id,
+                            Name: product.name || product.Name,
+                            MainImage: product.main_image || product.MainImage
+                        }
+                    }
+                };
+                guestCart.push(guestItem);
+            }
+
+            localStorage.setItem('vion_guest_cart', JSON.stringify(guestCart));
+            window.dispatchEvent(new Event('cartUpdated'));
+
+            if (isBuyNow) {
+                navigate('/checkout', { state: { selectedItems: [`guest_${variantId}`] } });
+            } else {
+                Swal.fire('Thành công', 'Đã thêm vào giỏ hàng vãng lai!', 'success');
+            }
+            return;
+        }
+
+        // Xử lý cho THÀNH VIÊN ĐÃ ĐĂNG NHẬP
         try {
             await axios.post(`${API_BASE_URL}/api/cart/add`, {
-                VariantID: currentVariant.id || currentVariant.VariantID,
+                VariantID: variantId,
                 Quantity: quantity
             }, { headers: { Authorization: `Bearer ${token}` } });
 
             window.dispatchEvent(new Event('cartUpdated'));
-            if (isBuyNow) navigate('/checkout');
-            else Swal.fire('Thành công', 'Đã thêm vào giỏ!', 'success');
+            
+            if (isBuyNow) {
+                // Tải giỏ hàng để lấy CartItemID vừa thêm
+                const res = await axios.get(`${API_BASE_URL}/api/my-cart`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const items = res.data.data?.items || [];
+                const matchedItem = items.find(item => item.VariantID === variantId);
+                if (matchedItem) {
+                    navigate('/checkout', { state: { selectedItems: [matchedItem.CartItemID || matchedItem.id] } });
+                } else {
+                    navigate('/checkout'); // Fallback nếu không tìm thấy
+                }
+            } else {
+                Swal.fire('Thành công', 'Đã thêm vào giỏ!', 'success');
+            }
         } catch (err) { 
             const errorMessage = err.response?.data?.message || 'Lỗi thêm vào giỏ!';
             Swal.fire('Thất bại', errorMessage, 'error'); 
@@ -286,15 +379,14 @@ const ProductDetail = () => {
                                         )}
                                     </div>
                                     <div className="rev-stars" style={{ color: '#EE4D2D', fontSize: '12px', marginBottom: '5px' }}>
-                                        {'★'.repeat(rev.Rating)}{'☆'.repeat(5 - rev.Rating)}
+                                        {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < (rev.Rating || 0) ? "#EE4D2D" : "none"} color="#EE4D2D" />)}
                                     </div>
                                     <p style={{ marginTop: '8px', color: '#444' }}>
-                                    {rev.Content || "Người dùng không để lại bình luận."}
+                                        {rev.Content || rev.Comment || "Người dùng không để lại bình luận."}
                                     </p>
-                                    <small className="text-muted" style={{fontSize: '11px'}}>{new Date(rev.created_at).toLocaleDateString('vi-VN')}</small>
                                 </div>
                             );
-                        }) : <div className="no-rev-box"><MessageSquare size={32} color="#ccc" /><p>Chưa có đánh giá nào.</p></div>}
+                        }) : <p>Chưa có đánh giá nào.</p>}
                     </div>
                 </div>
 
@@ -307,12 +399,14 @@ const ProductDetail = () => {
                             {relatedProducts.map(relProd => (
                                 <Link key={relProd.id} to={`/product/${relProd.id}`} className="rel-card">
                                     <div className="rel-img">
-                                        <img src={relProd.main_image ? `${API_BASE_URL}/storage/${relProd.main_image}` : 'https://via.placeholder.com/300x400'} alt={relProd.name} />
+                                        <img src={relProd.main_image || relProd.MainImage ? `${API_BASE_URL}/storage/${relProd.main_image || relProd.MainImage}` : 'https://via.placeholder.com/300x400'} alt={relProd.name || relProd.Name} />
                                     </div>
-                                    <p className="rel-name">{relProd.name}</p>
-                                    <p className="rel-price">
-                                        {relProd.variants?.[0] ? Number(relProd.variants[0].Price || relProd.variants[0].price).toLocaleString() : '0'}đ
-                                    </p>
+                                    <div className="rel-info">
+                                        <p className="rel-name">{relProd.name || relProd.Name}</p>
+                                        <p className="rel-price">
+                                            {relProd.variants?.[0] ? Number(relProd.variants[0].Price || relProd.variants[0].price).toLocaleString() : '0'}đ
+                                        </p>
+                                    </div>
                                 </Link>
                             ))}
                         </div>
@@ -321,7 +415,6 @@ const ProductDetail = () => {
                     )}
                 </div>
                 {/* KẾT THÚC GỢI Ý */}
-
             </div>
         </div>
     );

@@ -1,0 +1,265 @@
+/* Quản lý Thành Viên - UserManager CSS */
+
+.v-user-manager {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.v-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #111;
+}
+
+.v-subtitle {
+    font-size: 0.9rem;
+}
+
+/* Nút thêm mới */
+.v-add-btn {
+    background-color: #111;
+    color: #fff;
+    border: none;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.v-add-btn:hover {
+    background-color: #EE4D2D;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(238, 77, 45, 0.2);
+}
+
+/* Bộ lọc & tìm kiếm */
+.v-filter-card {
+    border-radius: 12px;
+}
+
+.v-search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.v-search-box input {
+    height: 45px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    transition: all 0.2s ease;
+}
+
+.v-search-box input:focus {
+    border-color: #EE4D2D;
+    box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.15);
+}
+
+.v-filter-card select {
+    height: 45px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    cursor: pointer;
+}
+
+.v-filter-card select:focus {
+    border-color: #EE4D2D;
+    box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.15);
+}
+
+/* Bảng thành viên */
+.table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: #666;
+    padding: 15px 12px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+
+.table td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+/* Avatar người dùng */
+.v-avatar {
+    width: 42px;
+    height: 42px;
+    background: linear-gradient(135deg, #111, #444);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.v-user-name {
+    font-weight: 600;
+    color: #222;
+}
+
+.small-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    vertical-align: middle;
+}
+
+/* Badges cho Roles */
+.v-role-badge {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.bg-danger-light {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+.bg-success-light {
+    background-color: rgba(40, 167, 69, 0.1) !important;
+}
+
+/* Nút hành động trong bảng */
+.btn-action {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-light-edit {
+    background-color: #f0f0f0;
+    color: #495057;
+}
+
+.btn-light-edit:hover {
+    background-color: #111;
+    color: #fff;
+}
+
+.btn-light-danger {
+    background-color: rgba(220, 53, 69, 0.08);
+    color: #dc3545;
+}
+
+.btn-light-danger:hover {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+/* Custom Modals */
+.v-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+    animation: fadeInBg 0.2s ease-out;
+}
+
+.v-modal {
+    width: 100%;
+    max-width: 600px;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fadeInBg {
+    from { background-color: rgba(0, 0, 0, 0); }
+    to { background-color: rgba(0, 0, 0, 0.5); }
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.v-modal-header {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.v-modal-header h5 {
+    color: #111;
+}
+
+.v-modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.v-modal-body label {
+    color: #555;
+}
+
+.v-modal-body input, 
+.v-modal-body select {
+    height: 42px;
+    border-radius: 8px;
+    border: 1px solid #dcdcdc;
+    font-size: 0.95rem;
+}
+
+.v-modal-body input:focus,
+.v-modal-body select:focus {
+    border-color: #EE4D2D;
+    box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.15);
+}
+
+.v-modal-footer {
+    border-top: 1px solid #f0f0f0;
+}
+
+.v-modal-footer .btn {
+    padding: 10px 20px;
+    font-weight: 500;
+    border-radius: 8px;
+}
+
+.v-modal-footer .btn-primary {
+    background-color: #EE4D2D;
+    border: none;
+}
+
+.v-modal-footer .btn-primary:hover {
+    background-color: #d63c1f;
+}
+
+.v-modal-footer .btn-secondary {
+    background-color: #f0f0f0;
+    color: #333;
+    border: none;
+}
+
+.v-modal-footer .btn-secondary:hover {
+    background-color: #e0e0e0;
+}

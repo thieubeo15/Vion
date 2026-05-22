@@ -146,6 +146,7 @@
 }
 
 .v-status-label.pending { background: #fff7ed; color: #ea580c; }
+.v-status-label.cancelrequested { background: #fffbeb; color: #d97706; }
 .v-status-label.shipping { background: #eff6ff; color: #2563eb; }
 .v-status-label.completed { background: #f0fdf4; color: #16a34a; }
 .v-status-label.cancelled { background: #fef2f2; color: #dc2626; }
@@ -374,3 +375,57 @@
         justify-content: space-between;
     }
 }
+
+/* Cancel Reason Selection UI */
+.v-cancel-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+.v-reason-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.v-reason-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border: 1.5px solid #eee;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    color: #444;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+.v-reason-item:hover {
+    background: #fafafa;
+    border-color: #ddd;
+}
+.v-reason-item.selected {
+    border-color: #EE4D2D;
+    background: #fff8f6;
+    color: #EE4D2D;
+}
+.v-reason-item input[type="radio"] {
+    accent-color: #EE4D2D;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* THÔNG TIN GIAO HÀNG TRONG CARD */
+.v-order-shipping-info {
+    background: #fafafa;
+    padding: 16px 20px;
+    border-top: 1px dashed #eee;
+    border-bottom: 1px dashed #eee;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+}

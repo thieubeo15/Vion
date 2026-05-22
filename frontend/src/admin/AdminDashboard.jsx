@@ -57,7 +57,7 @@ const AdminDashboard = () => {
         
         { title: 'Đơn hàng', value: stats.totalOrders, icon: <ShoppingBag />, color: '#f59e0b', path: '/admin/orders' },
         { title: 'Sản phẩm', value: stats.totalProducts, icon: <Package />, color: '#ec4899', path: '/admin/products' },
-        { title: 'Khách hàng', value: stats.totalCustomers, icon: <Users />, color: '#6366f1', path: '/admin/users' },
+        { title: 'Người dùng', value: stats.totalCustomers, icon: <Users />, color: '#6366f1', path: '/admin/users' },
         { title: 'Banner', value: stats.totalBanners, icon: <ImageIcon />, color: '#8b5cf6', path: '/admin/banners' },
     ];
 

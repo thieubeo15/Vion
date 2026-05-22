@@ -128,13 +128,6 @@ const LoginPage = () => {
                             </button>
                         </form>
 
-                        <div className="divider">HOẶC</div>
-
-                        <div className="social">
-                            <button type="button">Facebook</button>
-                            <button type="button">Google</button>
-                        </div>
-
                         <p className="register">
                             Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
                         </p>

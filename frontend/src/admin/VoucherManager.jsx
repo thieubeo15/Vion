@@ -4,6 +4,18 @@ import { Plus, Trash2, RefreshCw, Ticket, Edit2, X, Save, Search, Loader2, Toggl
 import Swal from 'sweetalert2';
 import './VoucherManager.css';
 
+const cleanVoucherCode = (val) => {
+    if (!val) return '';
+    return val
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .replace(/\s+/g, '')
+        .replace(/[^a-zA-Z0-9]/g, '')
+        .toUpperCase();
+};
+
 const VoucherManager = () => {
     const [vouchers, setVouchers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -22,11 +34,14 @@ const VoucherManager = () => {
     const [showGiftModal, setShowGiftModal] = useState(false);
     const [giftVoucherId, setGiftVoucherId] = useState(null);
     const [giftVoucherCode, setGiftVoucherCode] = useState('');
-    const [giftMode, setGiftMode] = useState('specific');
-    const [giftUserIds, setGiftUserIds] = useState([]);
+    const [giftMode, setGiftMode] = useState('all');
     const [giftRandomCount, setGiftRandomCount] = useState(10);
-    const [allUsers, setAllUsers] = useState([]);
     const [giftLoading, setGiftLoading] = useState(false);
+
+    const [showUsagesModal, setShowUsagesModal] = useState(false);
+    const [usagesList, setUsagesList] = useState([]);
+    const [usagesLoading, setUsagesLoading] = useState(false);
+    const [usagesVoucherCode, setUsagesVoucherCode] = useState('');
 
     const token = localStorage.getItem('vion_token');
     const API_URL = 'http://127.0.0.1:8000/api/vouchers';
@@ -165,41 +180,40 @@ const VoucherManager = () => {
         }
     };
 
-    const fetchAllUsers = async () => {
+    const openUsagesModal = async (voucher) => {
+        const id = voucher.VoucherID || voucher.id;
+        setUsagesVoucherCode(voucher.Code);
+        setShowUsagesModal(true);
+        setUsagesLoading(true);
         try {
-            const res = await axios.get('http://127.0.0.1:8000/api/users/list', { headers: { Authorization: `Bearer ${token}` } });
-            setAllUsers(res.data.data || []);
-        } catch (err) { console.error(err); }
+            const res = await axios.get(`http://127.0.0.1:8000/api/vouchers/${id}/usages`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setUsagesList(res.data.data || []);
+        } catch (err) {
+            console.error("Lỗi lấy lịch sử sử dụng:", err);
+            setUsagesList([]);
+        } finally {
+            setUsagesLoading(false);
+        }
     };
 
     const openGiftModal = (voucher) => {
         setGiftVoucherId(voucher.VoucherID || voucher.id);
         setGiftVoucherCode(voucher.Code);
-        setGiftMode('specific');
-        setGiftUserIds([]);
+        setGiftMode('all');
         setGiftRandomCount(10);
         setShowGiftModal(true);
-        fetchAllUsers();
-    };
-
-    const toggleGiftUser = (userId) => {
-        setGiftUserIds(prev => prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]);
     };
 
     const handleGift = async () => {
-        if (giftMode === 'specific' && giftUserIds.length === 0) {
-            Swal.fire('Chú ý', 'Chọn ít nhất 1 người dùng!', 'warning'); return;
-        }
         setGiftLoading(true);
         try {
-            let res;
-            if (giftMode === 'specific') {
-                res = await axios.post(`${API_URL}/${giftVoucherId}/gift`, { user_ids: giftUserIds, source: 'gifted' }, { headers: { Authorization: `Bearer ${token}` } });
-            } else if (giftMode === 'random') {
-                res = await axios.post(`${API_URL}/${giftVoucherId}/gift-random`, { count: giftRandomCount }, { headers: { Authorization: `Bearer ${token}` } });
-            } else {
-                res = await axios.post(`${API_URL}/${giftVoucherId}/gift-birthday`, {}, { headers: { Authorization: `Bearer ${token}` } });
-            }
+            const res = await axios.post(`http://127.0.0.1:8000/api/vouchers/${giftVoucherId}/gift-segment`, {
+                segment: giftMode,
+                count: giftMode === 'random' ? giftRandomCount : undefined
+            }, { headers: { Authorization: `Bearer ${token}` } });
+            
             if (res.data.success) {
                 Swal.fire('Thành công! 🎁', res.data.message, 'success');
                 setShowGiftModal(false);
@@ -280,7 +294,12 @@ const VoucherManager = () => {
                                     <td className="fw-700">{formatValue(v)}</td>
                                     <td>{v.MinOrderAmount ? `${Number(v.MinOrderAmount).toLocaleString()}đ` : '—'}</td>
                                     <td>
-                                        <span className="v-usage-badge">
+                                        <span 
+                                            className="v-usage-badge clickable"
+                                            onClick={() => openUsagesModal(v)}
+                                            title="Xem danh sách người dùng đã áp dụng"
+                                            style={{ cursor: 'pointer' }}
+                                        >
                                             {v.UsedCount || 0} / {v.UsageLimit ? v.UsageLimit : '∞'}
                                         </span>
                                     </td>
@@ -317,7 +336,7 @@ const VoucherManager = () => {
                                 <div className="v-form-group">
                                     <label>Mã voucher</label>
                                     <input type="text" required value={formData.Code}
-                                        onChange={e => setFormData({ ...formData, Code: e.target.value.toUpperCase() })}
+                                        onChange={e => setFormData({ ...formData, Code: cleanVoucherCode(e.target.value) })}
                                         placeholder="VD: GIAM50K" />
                                 </div>
                                 <div className="v-form-group">
@@ -409,55 +428,82 @@ const VoucherManager = () => {
                             <button className="v-modal-close" onClick={() => setShowGiftModal(false)}><X size={20} /></button>
                         </div>
                         <div className="v-gift-body">
-                            <div className="v-gift-modes">
-                                <label className={`v-gift-mode-btn ${giftMode === 'specific' ? 'active' : ''}`}>
-                                    <input type="radio" hidden checked={giftMode === 'specific'} onChange={() => setGiftMode('specific')} />
-                                    <Users size={16} /> Chọn user cụ thể
+                            <div className="v-gift-modes-grid">
+                                <label className={`v-gift-mode-card ${giftMode === 'all' ? 'active' : ''}`}>
+                                    <input type="radio" hidden checked={giftMode === 'all'} onChange={() => setGiftMode('all')} />
+                                    <Users size={18} />
+                                    <span>Tất cả khách</span>
                                 </label>
-                                <label className={`v-gift-mode-btn ${giftMode === 'random' ? 'active' : ''}`}>
+                                <label className={`v-gift-mode-card ${giftMode === 'new' ? 'active' : ''}`}>
+                                    <input type="radio" hidden checked={giftMode === 'new'} onChange={() => setGiftMode('new')} />
+                                    <Plus size={18} />
+                                    <span>Khách hàng mới</span>
+                                </label>
+                                <label className={`v-gift-mode-card ${giftMode === 'loyal' ? 'active' : ''}`}>
+                                    <input type="radio" hidden checked={giftMode === 'loyal'} onChange={() => setGiftMode('loyal')} />
+                                    <span style={{ fontSize: '18px', display: 'block', marginBottom: '4px' }}>👑</span>
+                                    <span>Thân thiết (VIP)</span>
+                                </label>
+                                <label className={`v-gift-mode-card ${giftMode === 'zero_orders' ? 'active' : ''}`}>
+                                    <input type="radio" hidden checked={giftMode === 'zero_orders'} onChange={() => setGiftMode('zero_orders')} />
+                                    <span style={{ fontSize: '18px', display: 'block', marginBottom: '4px' }}>💤</span>
+                                    <span>Chưa mua hàng</span>
+                                </label>
+                                <label className={`v-gift-mode-card ${giftMode === 'random' ? 'active' : ''}`}>
                                     <input type="radio" hidden checked={giftMode === 'random'} onChange={() => setGiftMode('random')} />
-                                    🎲 Ngẫu nhiên
+                                    <span style={{ fontSize: '18px', display: 'block', marginBottom: '4px' }}>🎲</span>
+                                    <span>Ngẫu nhiên</span>
                                 </label>
-                                <label className={`v-gift-mode-btn ${giftMode === 'birthday' ? 'active' : ''}`}>
+                                <label className={`v-gift-mode-card ${giftMode === 'birthday' ? 'active' : ''}`}>
                                     <input type="radio" hidden checked={giftMode === 'birthday'} onChange={() => setGiftMode('birthday')} />
-                                    🎂 Sinh nhật hôm nay
+                                    <span style={{ fontSize: '18px', display: 'block', marginBottom: '4px' }}>🎂</span>
+                                    <span>Sinh nhật hôm nay</span>
                                 </label>
                             </div>
 
-                            {giftMode === 'specific' && (
-                                <div className="v-gift-user-list">
-                                    <div className="v-gift-user-search"><Users size={14} /> {allUsers.length} người dùng — Đã chọn: {giftUserIds.length}</div>
-                                    <div className="v-gift-user-scroll">
-                                        {allUsers.map(u => (
-                                            <label key={u.UserID} className={`v-gift-user-item ${giftUserIds.includes(u.UserID) ? 'selected' : ''}`}>
-                                                <input type="checkbox" hidden checked={giftUserIds.includes(u.UserID)} onChange={() => toggleGiftUser(u.UserID)} />
-                                                <div className="v-gift-user-avatar">{(u.FullName || 'U')[0].toUpperCase()}</div>
-                                                <div>
-                                                    <div className="v-gift-user-name">{u.FullName}</div>
-                                                    <div className="v-gift-user-email">{u.Email}</div>
-                                                </div>
-                                                {giftUserIds.includes(u.UserID) && <span className="v-gift-check">✓</span>}
-                                            </label>
-                                        ))}
+                            <div className="v-gift-details-box">
+                                {giftMode === 'all' && (
+                                    <div className="v-gift-desc all">
+                                        <p>🎁 Hệ thống sẽ tặng voucher này cho <strong>tất cả khách hàng</strong> có tài khoản trên cửa hàng (loại trừ quản trị viên Admin).</p>
+                                        <p className="v-gift-warning">Lưu ý: Chỉ những người chưa sở hữu voucher này mới được nhận.</p>
                                     </div>
-                                </div>
-                            )}
-
-                            {giftMode === 'random' && (
-                                <div className="v-gift-random">
-                                    <label>Số lượng tặng ngẫu nhiên</label>
-                                    <input type="number" min="1" max="1000" value={giftRandomCount}
-                                        onChange={e => setGiftRandomCount(Number(e.target.value))}
-                                        className="v-gift-count-input" />
-                                    <p className="v-gift-hint">🎲 Hệ thống sẽ tự động chọn ngẫu nhiên {giftRandomCount} người dùng chưa có voucher này.</p>
-                                </div>
-                            )}
-
-                            {giftMode === 'birthday' && (
-                                <div className="v-gift-birthday-info">
-                                    🎂 Hệ thống sẽ tặng voucher cho tất cả user có <strong>ngày sinh nhật hôm nay</strong>. Đảm bảo user đã điền Ngày sinh trong hồ sơ.
-                                </div>
-                            )}
+                                )}
+                                {giftMode === 'new' && (
+                                    <div className="v-gift-desc new">
+                                        <p>🆕 Hệ thống sẽ tặng voucher cho <strong>khách hàng đăng ký trong 30 ngày gần đây</strong>.</p>
+                                        <p className="v-gift-warning">Thích hợp để kích thích tương tác cho nhóm khách hàng mới.</p>
+                                    </div>
+                                )}
+                                {giftMode === 'loyal' && (
+                                    <div className="v-gift-desc loyal">
+                                        <p>👑 Hệ thống sẽ tặng voucher cho các <strong>khách hàng VIP</strong> thỏa mãn:</p>
+                                        <ul>
+                                            <li>Có ít nhất 3 đơn hàng hoàn thành (Status: Completed)</li>
+                                            <li>HOẶC tổng số tiền chi tiêu tích lũy từ 1.000.000đ trở lên</li>
+                                        </ul>
+                                    </div>
+                                )}
+                                {giftMode === 'zero_orders' && (
+                                    <div className="v-gift-desc zero_orders">
+                                        <p>💤 Hệ thống sẽ tặng voucher cho các khách hàng <strong>chưa mua đơn hàng nào thành công</strong>.</p>
+                                        <p className="v-gift-warning">Thúc đẩy tỷ lệ chuyển đổi khách hàng tiềm năng mua đơn hàng đầu tiên!</p>
+                                    </div>
+                                )}
+                                {giftMode === 'random' && (
+                                    <div className="v-gift-random">
+                                        <label style={{ fontSize: '13px', fontWeight: 700, color: '#444', display: 'block', marginBottom: '10px' }}>Số lượng tặng ngẫu nhiên</label>
+                                        <input type="number" min="1" max="1000" value={giftRandomCount}
+                                            onChange={e => setGiftRandomCount(Number(e.target.value))}
+                                            className="v-gift-count-input" />
+                                        <p className="v-gift-hint">🎲 Hệ thống sẽ tự động chọn ngẫu nhiên {giftRandomCount} khách hàng chưa có voucher này để gửi tặng.</p>
+                                    </div>
+                                )}
+                                {giftMode === 'birthday' && (
+                                    <div className="v-gift-birthday-info">
+                                        🎂 Hệ thống sẽ tặng voucher cho tất cả khách hàng có <strong>ngày sinh nhật hôm nay</strong>.
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="v-modal-actions">
                             <button className="v-btn-cancel" onClick={() => setShowGiftModal(false)}>Hủy</button>
@@ -465,6 +511,58 @@ const VoucherManager = () => {
                                 {giftLoading ? <Loader2 className="v-spin" size={16} /> : <Gift size={16} />}
                                 {giftLoading ? 'Đang tặng...' : 'Xác nhận tặng'}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL DANH SÁCH NGƯỜI ĐÃ DÙNG */}
+            {showUsagesModal && (
+                <div className="v-modal-overlay" onClick={() => setShowUsagesModal(false)}>
+                    <div className="v-modal-content v-usages-modal" onClick={e => e.stopPropagation()}>
+                        <div className="v-modal-header">
+                            <h3>📊 Lịch sử sử dụng: <span style={{color:'#EE4D2D'}}>{usagesVoucherCode}</span></h3>
+                            <button className="v-modal-close" onClick={() => setShowUsagesModal(false)}><X size={20} /></button>
+                        </div>
+                        <div className="v-usages-body">
+                            {usagesLoading ? (
+                                <div className="v-loading" style={{ textAlign: 'center', padding: '30px' }}><Loader2 className="v-spin" style={{ display: 'inline-block', marginRight: '8px' }} /> Đang tải lịch sử sử dụng...</div>
+                            ) : usagesList.length === 0 ? (
+                                <div className="v-no-data" style={{ textAlign: 'center', padding: '30px', color: '#999', fontSize: '14px' }}>Chưa có khách hàng nào sử dụng mã giảm giá này.</div>
+                            ) : (
+                                <div className="v-usages-table-wrapper" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                                    <table className="v-usages-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                        <thead>
+                                            <tr style={{ borderBottom: '2px solid #eee', textAlign: 'left' }}>
+                                                <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: 700, color: '#888' }}>Khách hàng</th>
+                                                <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: 700, color: '#888' }}>Đơn hàng</th>
+                                                <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: 700, color: '#888' }}>Tổng tiền</th>
+                                                <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: 700, color: '#888' }}>Giảm giá</th>
+                                                <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: 700, color: '#888' }}>Ngày dùng</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {usagesList.map(usage => (
+                                                <tr key={usage.id || usage.ID} style={{ borderBottom: '1px solid #f8f8f8' }}>
+                                                    <td style={{ padding: '12px 8px' }}>
+                                                        <div style={{ fontWeight: 700, fontSize: '13px', color: '#111' }}>{usage.user?.FullName || 'Khách vãng lai'}</div>
+                                                        <div style={{ fontSize: '11px', color: '#999' }}>{usage.user?.Email || '—'}</div>
+                                                    </td>
+                                                    <td style={{ padding: '12px 8px' }}>
+                                                        <span style={{ fontSize: '12px', background: '#f1f3f5', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>#{usage.OrderID}</span>
+                                                    </td>
+                                                    <td style={{ padding: '12px 8px', fontSize: '13px' }}>{Number(usage.order?.TotalAmount || 0).toLocaleString()}đ</td>
+                                                    <td style={{ padding: '12px 8px', fontSize: '13px', fontWeight: 700, color: '#e74c3c' }}>-{Number(usage.DiscountAmount || 0).toLocaleString()}đ</td>
+                                                    <td style={{ padding: '12px 8px', fontSize: '11px', color: '#666' }}>{formatDate(usage.created_at || usage.CreatedAt)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                        <div className="v-modal-actions" style={{ marginTop: '20px' }}>
+                            <button className="v-btn-cancel" onClick={() => setShowUsagesModal(false)}>Đóng</button>
                         </div>
                     </div>
                 </div>

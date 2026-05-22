@@ -94,6 +94,7 @@
 }
 
 .v-status-tag.pending { background: #fff7ed; color: #ea580c; }
+.v-status-tag.cancelrequested { background: #fffbeb; color: #d97706; }
 .v-status-tag.shipping { background: #eff6ff; color: #2563eb; }
 .v-status-tag.completed { background: #f0fdf4; color: #16a34a; }
 .v-status-tag.cancelled { background: #fef2f2; color: #dc2626; }
@@ -178,3 +179,49 @@
     color: #EE4D2D; 
     font-size: 15px;
 }
+
+/* Cancel Reason Styling */
+.v-info-item.v-cancel-reason {
+    background: #fef2f2;
+    border: 1px dashed #fee2e2;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-top: 15px;
+    grid-column: 1 / -1; /* Chiếm toàn bộ chiều rộng grid nếu có */
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.v-info-item.v-cancel-reason label {
+    font-size: 12px;
+    color: #ef4444;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+.v-info-item.v-cancel-reason span {
+    color: #b91c1c;
+    font-weight: 700;
+}
+
+/* Guest Order Styling */
+.v-guest-badge {
+    background: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fde68a;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.v-guest-alert {
+    background: #fffbeb;
+    border-left: 4px solid #ea580c;
+    color: #9a3412;
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}

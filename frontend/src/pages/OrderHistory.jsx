@@ -32,6 +32,7 @@ const OrderHistory = () => {
     const tabs = [
         { id: 'All', label: 'Tất cả' },
         { id: 'Pending', label: 'Chờ xử lý' },
+        { id: 'CancelRequested', label: 'Yêu cầu hủy' },
         { id: 'Shipping', label: 'Đang giao' },
         { id: 'Completed', label: 'Hoàn thành' },
         { id: 'Cancelled', label: 'Đã hủy' },
@@ -101,6 +102,7 @@ const OrderHistory = () => {
     const getStatusIcon = (status) => {
         switch (status) {
             case 'Pending': return <Clock size={16} strokeWidth={2.5} />;
+            case 'CancelRequested': return <AlertTriangle size={16} strokeWidth={2.5} />;
             case 'Shipping': return <Truck size={16} strokeWidth={2.5} />;
             case 'Completed': return <CheckCircle size={16} strokeWidth={2.5} />;
             case 'Cancelled': return <XCircle size={16} strokeWidth={2.5} />;
@@ -109,7 +111,13 @@ const OrderHistory = () => {
     };
 
     const getStatusLabel = (status) => {
-        const map = { Pending: 'Chờ xác nhận', Shipping: 'Đang giao', Completed: 'Hoàn thành', Cancelled: 'Đã hủy' };
+        const map = { 
+            Pending: 'Chờ xác nhận', 
+            CancelRequested: 'Yêu cầu hủy', 
+            Shipping: 'Đang giao', 
+            Completed: 'Hoàn thành', 
+            Cancelled: 'Đã hủy' 
+        };
         return map[status] || status;
     };
 
@@ -188,11 +196,24 @@ const OrderHistory = () => {
                                 ))}
                             </div>
 
+                            {/* THÔNG TIN GIAO HÀNG */}
+                            <div className="v-order-shipping-info">
+                                <div className="fw-700 text-dark mb-1">📍 Địa chỉ nhận hàng:</div>
+                                <div><strong>{order.FullName}</strong> | {order.Phone}</div>
+                                <div className="text-muted mt-1">
+                                    {order.SpecificAddress ? (
+                                        `${order.SpecificAddress}, ${order.Ward}, ${order.District}, ${order.Province}`
+                                    ) : (
+                                        order.Address
+                                    )}
+                                </div>
+                            </div>
+
                             {/* LÝ DO HỦY */}
-                            {order.Status === 'Cancelled' && order.CancelReason && (
-                                <div className="v-cancel-reason-box">
-                                    <AlertTriangle size={16} className="text-danger" />
-                                    <span>Lý do hủy: <strong>{order.CancelReason}</strong></span>
+                            {(order.Status === 'Cancelled' || order.Status === 'CancelRequested') && order.CancelReason && (
+                                <div className="v-cancel-reason-box" style={{ background: order.Status === 'CancelRequested' ? '#fffbeb' : '#fef2f2', color: order.Status === 'CancelRequested' ? '#b45309' : '#dc2626' }}>
+                                    <AlertTriangle size={16} color={order.Status === 'CancelRequested' ? '#b45309' : '#dc2626'} />
+                                    <span>{order.Status === 'CancelRequested' ? 'Lý do khách yêu cầu hủy' : 'Lý do hủy'}: <strong>{order.CancelReason}</strong></span>
                                 </div>
                             )}
 
@@ -213,6 +234,11 @@ const OrderHistory = () => {
                                         >
                                             Hủy đơn hàng
                                         </button>
+                                    )}
+                                    {order.Status === 'CancelRequested' && (
+                                        <span className="v-cancel-requested-badge" style={{ padding: '8px 16px', background: '#fffbeb', color: '#b45309', borderRadius: '8px', fontSize: '13px', fontWeight: 700 }}>
+                                            ⏳ Đang chờ admin xác nhận hủy
+                                        </span>
                                     )}
                                 </div>
                             </div>

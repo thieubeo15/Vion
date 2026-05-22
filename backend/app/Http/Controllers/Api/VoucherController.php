@@ -27,7 +27,7 @@ class VoucherController extends Controller
         $user = Auth::user();
 
         // Tìm voucher theo mã
-        $voucher = Voucher::where('Code', $request->code)->first();
+        $voucher = Voucher::where('Code', Voucher::cleanCode($request->code))->first();
 
         if (!$voucher) {
             return response()->json([
@@ -313,6 +313,18 @@ class VoucherController extends Controller
             $exists = UserVoucher::where('UserID', $userId)->where('VoucherID', $id)->exists();
             if (!$exists) {
                 UserVoucher::create(['UserID' => $userId, 'VoucherID' => $id, 'Source' => $source]);
+                
+                // Tạo thông báo cho user
+                \App\Models\Notification::create([
+                    'UserID' => $userId,
+                    'Title' => 'Mã giảm giá mới được tặng',
+                    'Content' => "Bạn đã nhận được voucher mới: Mã \"{$voucher->Code}\" giảm " . ($voucher->Type === 'fixed' ? number_format($voucher->Value, 0, ',', '.') . "đ" : $voucher->Value . "%") . " từ Vion.",
+                    'Type' => 'voucher_gifted',
+                    'RedirectUrl' => '/profile',
+                    'IsRead' => false,
+                    'IsAdminNotification' => false
+                ]);
+
                 $count++;
             }
         }
@@ -336,6 +348,18 @@ class VoucherController extends Controller
         $count = 0;
         foreach ($users as $user) {
             UserVoucher::create(['UserID' => $user->UserID, 'VoucherID' => $id, 'Source' => 'gifted']);
+            
+            // Tạo thông báo cho user
+            \App\Models\Notification::create([
+                'UserID' => $user->UserID,
+                'Title' => 'Mã giảm giá mới được tặng',
+                'Content' => "Bạn đã nhận được voucher mới: Mã \"{$voucher->Code}\" giảm " . ($voucher->Type === 'fixed' ? number_format($voucher->Value, 0, ',', '.') . "đ" : $voucher->Value . "%") . " từ Vion.",
+                'Type' => 'voucher_gifted',
+                'RedirectUrl' => '/profile',
+                'IsRead' => false,
+                'IsAdminNotification' => false
+            ]);
+
             $count++;
         }
 
@@ -359,11 +383,161 @@ class VoucherController extends Controller
             $exists = UserVoucher::where('UserID', $user->UserID)->where('VoucherID', $id)->exists();
             if (!$exists) {
                 UserVoucher::create(['UserID' => $user->UserID, 'VoucherID' => $id, 'Source' => 'birthday']);
+                
+                // Tạo thông báo cho user
+                \App\Models\Notification::create([
+                    'UserID' => $user->UserID,
+                    'Title' => 'Quà tặng sinh nhật từ Vion',
+                    'Content' => "Chúc mừng sinh nhật! Vion gửi tặng bạn voucher chúc mừng: Mã \"{$voucher->Code}\" giảm " . ($voucher->Type === 'fixed' ? number_format($voucher->Value, 0, ',', '.') . "đ" : $voucher->Value . "%") . ".",
+                    'Type' => 'voucher_gifted',
+                    'RedirectUrl' => '/profile',
+                    'IsRead' => false,
+                    'IsAdminNotification' => false
+                ]);
+
                 $count++;
             }
         }
 
         return response()->json(['success' => true, 'message' => "Đã tặng sinh nhật cho {$count} người dùng!", 'count' => $count]);
+    }
+
+    /**
+     * Admin tặng voucher theo phân khúc khách hàng
+     * POST /api/vouchers/{id}/gift-segment
+     */
+    public function giftSegment(Request $request, $id)
+    {
+        $request->validate([
+            'segment' => 'required|string|in:all,new,loyal,zero_orders,random,birthday',
+            'count'   => 'nullable|integer|min:1|max:1000',
+        ]);
+
+        $voucher = Voucher::find($id);
+        if (!$voucher) {
+            return response()->json(['success' => false, 'message' => 'Voucher không tồn tại!'], 404);
+        }
+
+        $segment = $request->segment;
+        $countInput = $request->count ?? 10;
+
+        // Loại trừ các user đã sở hữu voucher này
+        $existingUserIdsQuery = function ($query) use ($id) {
+            $query->select('UserID')->from('user_vouchers')->where('VoucherID', $id);
+        };
+
+        $query = User::where('Role', '!=', 'Admin')
+            ->whereNotIn('UserID', $existingUserIdsQuery);
+
+        switch ($segment) {
+            case 'all':
+                break;
+
+            case 'new':
+                // Lọc khách hàng đăng ký trong 30 ngày qua
+                $query->where('created_at', '>=', now()->subDays(30));
+                break;
+
+            case 'loyal':
+                // Khách hàng thân thiết: có >= 3 đơn hàng hoàn thành HOẶC chi tiêu >= 1.000.000đ
+                $query->where(function ($q) {
+                    $q->whereHas('orders', function ($oq) {
+                        $oq->where('Status', 'Completed');
+                    }, '>=', 3)
+                    ->orWhereIn('UserID', function ($sq) {
+                        $sq->select('UserID')
+                            ->from('orders')
+                            ->where('Status', 'Completed')
+                            ->groupBy('UserID')
+                            ->havingRaw('SUM(TotalAmount) >= ?', [1000000]);
+                    });
+                });
+                break;
+
+            case 'zero_orders':
+                // Khách hàng chưa mua hàng: 0 đơn hàng hoàn thành
+                $query->whereDoesntHave('orders', function ($oq) {
+                    $oq->where('Status', 'Completed');
+                });
+                break;
+
+            case 'random':
+                $query->inRandomOrder()->limit($countInput);
+                break;
+
+            case 'birthday':
+                $today = now();
+                $query->whereMonth('Birthday', $today->month)
+                      ->whereDay('Birthday', $today->day);
+                break;
+        }
+
+        $users = $query->get();
+        $insertedCount = 0;
+        $source = $segment === 'birthday' ? 'birthday' : 'gifted';
+
+        foreach ($users as $user) {
+            UserVoucher::create([
+                'UserID'    => $user->UserID,
+                'VoucherID' => $id,
+                'Source'    => $source
+            ]);
+
+            // Tạo thông báo cho user
+            \App\Models\Notification::create([
+                'UserID'              => $user->UserID,
+                'Title'               => 'Mã giảm giá mới được tặng',
+                'Content'             => "Bạn đã nhận được voucher mới: Mã \"{$voucher->Code}\" giảm " . ($voucher->Type === 'fixed' ? number_format($voucher->Value, 0, ',', '.') . "đ" : $voucher->Value . "%") . " từ Vion.",
+                'Type'                => 'voucher_gifted',
+                'RedirectUrl'         => '/profile',
+                'IsRead'              => false,
+                'IsAdminNotification' => false
+            ]);
+
+            $insertedCount++;
+        }
+
+        $segmentLabels = [
+            'all'         => 'tất cả khách hàng',
+            'new'         => 'khách hàng mới',
+            'loyal'       => 'khách hàng thân thiết',
+            'zero_orders' => 'khách hàng chưa mua hàng',
+            'random'      => 'ngẫu nhiên khách hàng',
+            'birthday'    => 'khách hàng sinh nhật hôm nay'
+        ];
+
+        $label = $segmentLabels[$segment] ?? 'khách hàng';
+
+        return response()->json([
+            'success' => true,
+            'message' => "Đã tặng voucher thành công cho {$insertedCount} {$label}!",
+            'count'   => $insertedCount
+        ]);
+    }
+
+    /**
+     * Danh sách lịch sử sử dụng của một voucher (Admin)
+     * GET /api/vouchers/{id}/usages
+     */
+    public function usages($id)
+    {
+        $voucher = Voucher::find($id);
+        if (!$voucher) {
+            return response()->json(['success' => false, 'message' => 'Voucher không tồn tại!'], 404);
+        }
+
+        $usages = VoucherUsage::where('VoucherID', $id)
+            ->with([
+                'user:UserID,FullName,Email',
+                'order:OrderID,OrderDate,TotalAmount,Status'
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $usages
+        ]);
     }
 
     /**

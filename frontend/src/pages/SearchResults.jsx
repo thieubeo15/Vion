@@ -29,14 +29,14 @@ const SearchResults = () => {
 
     // Hàm xác định class CSS dựa trên mức similarity
     const getSimilarityClass = (score) => {
-        if (score >= 70) return 'high';
-        if (score >= 40) return 'medium';
+        if (score >= 82) return 'high';
+        if (score >= 74) return 'medium';
         return 'low';
     };
 
     const getBarClass = (score) => {
-        if (score >= 70) return '';
-        if (score >= 40) return 'medium-bar';
+        if (score >= 82) return '';
+        if (score >= 74) return 'medium-bar';
         return 'low-bar';
     };
 

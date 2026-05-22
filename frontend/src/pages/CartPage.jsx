@@ -26,17 +26,28 @@ const CartPage = () => {
     };
 
     useEffect(() => {
-        if (!token) { navigate('/login'); return; }
         fetchCart();
     }, [token]);
 
     const fetchCart = async () => {
         setLoading(true);
+        if (!token) {
+            let guestCart = [];
+            try {
+                const storedCart = localStorage.getItem('vion_guest_cart');
+                if (storedCart) guestCart = JSON.parse(storedCart);
+            } catch (e) {
+                guestCart = [];
+            }
+            setCartItems(guestCart);
+            setLoading(false);
+            return;
+        }
+
         try {
             const res = await axios.get(`${API_URL}/my-cart`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            // Controller trả về { data: { items: [] } }
             setCartItems(res.data.data?.items || []);
         } catch (err) {
             console.error("Lỗi fetch giỏ hàng");
@@ -48,8 +59,31 @@ const CartPage = () => {
     const updateQty = async (itemId, currentQty, delta) => {
         const newQty = currentQty + delta;
         if (newQty < 1) return;
+
+        if (!token) {
+            let guestCart = [];
+            try {
+                guestCart = JSON.parse(localStorage.getItem('vion_guest_cart')) || [];
+            } catch (e) {
+                guestCart = [];
+            }
+
+            const itemIndex = guestCart.findIndex(item => (item.CartItemID || item.id) === itemId);
+            if (itemIndex > -1) {
+                const stock = guestCart[itemIndex].variant?.Stock || guestCart[itemIndex].variant?.stock || 0;
+                if (newQty > stock) {
+                    Swal.fire('Thất bại', `Vượt quá tồn kho! Kho chỉ còn ${stock} sản phẩm.`, 'error');
+                    return;
+                }
+                guestCart[itemIndex].Quantity = newQty;
+                localStorage.setItem('vion_guest_cart', JSON.stringify(guestCart));
+                window.dispatchEvent(new Event('cartUpdated'));
+                fetchCart();
+            }
+            return;
+        }
+
         try {
-            // Gọi đúng route /cart-items (số nhiều)
             await axios.put(`${API_URL}/cart-items/${itemId}`,
                 { Quantity: newQty },
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -68,13 +102,26 @@ const CartPage = () => {
             confirmButtonColor: '#111', confirmButtonText: 'Xóa ngay'
         }).then(async (result) => {
             if (result.isConfirmed) {
-                // Gọi đúng route /cart-items (số nhiều)
+                if (!token) {
+                    let guestCart = [];
+                    try {
+                        guestCart = JSON.parse(localStorage.getItem('vion_guest_cart')) || [];
+                    } catch (e) {
+                        guestCart = [];
+                    }
+                    const updatedCart = guestCart.filter(item => (item.CartItemID || item.id) !== itemId);
+                    localStorage.setItem('vion_guest_cart', JSON.stringify(updatedCart));
+                    window.dispatchEvent(new Event('cartUpdated'));
+                    fetchCart();
+                    setSelectedItems(prev => prev.filter(i => i !== itemId));
+                    return;
+                }
+
                 await axios.delete(`${API_URL}/cart-items/${itemId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 window.dispatchEvent(new Event('cartUpdated'));
                 fetchCart();
-                // Nếu item vừa bị xóa đang nằm trong danh sách chọn, loại bỏ nó
                 setSelectedItems(prev => prev.filter(i => i !== itemId));
             }
         });

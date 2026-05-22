@@ -77,8 +77,8 @@ class ProductSearchController extends Controller
             // Sắp xếp và lọc bỏ sản phẩm không liên quan
             arsort($similarities);
             
-            // Ngưỡng tối thiểu: cosine < 0.65 = không liên quan → loại bỏ
-            $minThreshold = 0.65;
+            // Ngưỡng tối thiểu: cosine < 0.73 = không liên quan → loại bỏ
+            $minThreshold = 0.73;
             $similarities = array_filter($similarities, fn($score) => $score >= $minThreshold);
             
             $topProductIds = array_slice(array_keys($similarities), 0, 5, true);

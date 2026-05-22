@@ -23,6 +23,10 @@ class Order extends Model
         'FullName', 
         'Phone', 
         'Address', 
+        'SpecificAddress',
+        'Province',
+        'District',
+        'Ward',
         'TotalAmount', 
         'OrderDate', 
         'Status', 
@@ -41,10 +45,4 @@ class Order extends Model
         return $this->hasMany(OrderDetail::class, 'OrderID', 'OrderID');
     }
 
-    // Nếu có bảng payments, bạn có thể thêm luôn (để tránh lỗi sau này)
-    public function payment()
-    {
-        return $this->hasOne(Payment::class, 'OrderID', 'OrderID');
-    }
-    
 }

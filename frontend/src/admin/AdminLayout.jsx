@@ -1,12 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { LayoutDashboard, Layers, Box, ShoppingCart, LogOut, Ticket } from 'lucide-react';
+import { LayoutDashboard, Layers, Box, ShoppingCart, LogOut, Ticket, Users } from 'lucide-react';
+import Swal from 'sweetalert2';
+import NotificationBell from '../components/NotificationBell';
 import './AdminLayout.css';
 
 const AdminLayout = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem('vion_token');
+    const user = JSON.parse(localStorage.getItem('vion_user') || '{}');
+
+    useEffect(() => {
+        if (!token || user.Role !== 'Admin') {
+            Swal.fire({
+                title: 'Truy cập bị từ chối!',
+                text: 'Bạn không có quyền truy cập khu vực quản trị.',
+                icon: 'error',
+                confirmButtonColor: '#EE4D2D',
+                confirmButtonText: 'Quay lại trang chủ'
+            }).then(() => {
+                navigate('/');
+            });
+        }
+    }, [token, user.Role, navigate]);
 
     const handleLogout = async () => {
         if (window.confirm("Bạn muốn đăng xuất?")) {
@@ -16,9 +33,14 @@ const AdminLayout = () => {
                 });
             } catch (err) { console.error(err); }
             localStorage.removeItem('vion_token');
+            localStorage.removeItem('vion_user');
             navigate('/login');
         }
     };
+
+    if (!token || user.Role !== 'Admin') {
+        return null;
+    }
 
     return (
         <div className="vion-admin-container">
@@ -47,6 +69,10 @@ const AdminLayout = () => {
                     <NavLink to="/admin/vouchers" className={({isActive}) => isActive ? 'active' : ''}>
                         <Ticket size={20} /> <span>Voucher</span>
                     </NavLink>
+
+                    <NavLink to="/admin/users" className={({isActive}) => isActive ? 'active' : ''}>
+                        <Users size={20} /> <span>Người dùng</span>
+                    </NavLink>
                 </nav>
 
                 <div className="vion-logout-btn" onClick={handleLogout}>
@@ -54,8 +80,16 @@ const AdminLayout = () => {
                 </div>
             </aside>
 
-            <main className="vion-admin-main">
-                <div className="vion-admin-content">
+            <main className="vion-admin-main p-0">
+                <header className="vion-admin-header d-flex justify-content-between align-items-center px-4 py-3 bg-white border-bottom shadow-sm" style={{ height: '60px' }}>
+                    <div className="v-admin-welcome fw-bold" style={{ color: '#333' }}>
+                        Xin chào, <span style={{ color: '#EE4D2D' }}>{user.FullName || 'Quản trị viên'}</span>
+                    </div>
+                    <div className="v-admin-header-actions">
+                        <NotificationBell />
+                    </div>
+                </header>
+                <div className="vion-admin-content p-4">
                     {/* Nơi nội dung của Dashboard hoặc Category sẽ hiện ra */}
                     <Outlet /> 
                 </div>

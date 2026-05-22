@@ -112,43 +112,92 @@
 }
 .v-gift-icon:hover { background: #EE4D2D; color: #fff; border-color: #EE4D2D; }
 
-/* Gift modal */
-.v-gift-modal { max-width: 520px; }
+/* Gift modal grid styles */
+.v-gift-modal { max-width: 540px; }
 .v-gift-body { margin-bottom: 24px; }
 
-.v-gift-modes { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-.v-gift-mode-btn {
-    display: flex; align-items: center; gap: 8px; padding: 10px 16px;
-    border: 2px solid #eee; border-radius: 10px; cursor: pointer; font-size: 13px;
-    font-weight: 700; transition: 0.2s; user-select: none; flex: 1; justify-content: center;
+.v-gift-modes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
 }
-.v-gift-mode-btn:hover { border-color: #EE4D2D; color: #EE4D2D; }
-.v-gift-mode-btn.active { border-color: #EE4D2D; background: #fff8f6; color: #EE4D2D; }
+@media (max-width: 600px) {
+    .v-gift-modes-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+.v-gift-mode-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 12px;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.25s ease;
+    user-select: none;
+    background: #fafafa;
+}
+.v-gift-mode-card span {
+    font-size: 11px;
+    font-weight: 700;
+    color: #555;
+    margin-top: 6px;
+    line-height: 1.3;
+}
+.v-gift-mode-card:hover {
+    border-color: #EE4D2D;
+    background: #fffbfb;
+}
+.v-gift-mode-card.active {
+    border-color: #EE4D2D;
+    background: #fff8f6;
+    box-shadow: 0 4px 12px rgba(238, 77, 45, 0.1);
+}
+.v-gift-mode-card.active span {
+    color: #EE4D2D;
+}
 
-.v-gift-user-list { border: 1.5px solid #eee; border-radius: 12px; overflow: hidden; }
-.v-gift-user-search {
-    display: flex; align-items: center; gap: 6px; padding: 10px 16px;
-    background: #fafafa; border-bottom: 1px solid #eee; font-size: 12px;
-    font-weight: 700; color: #666;
+.v-gift-details-box {
+    background: #fafafa;
+    border: 1.5px solid #eee;
+    border-radius: 12px;
+    padding: 16px 20px;
+    min-height: 85px;
 }
-.v-gift-user-scroll { max-height: 260px; overflow-y: auto; }
-.v-gift-user-item {
-    display: flex; align-items: center; gap: 12px; padding: 10px 16px;
-    cursor: pointer; border-bottom: 1px solid #f8f8f8; transition: background 0.15s;
+.v-gift-desc p {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #444;
 }
-.v-gift-user-item:last-child { border-bottom: none; }
-.v-gift-user-item:hover { background: #fff8f6; }
-.v-gift-user-item.selected { background: #fff1ee; }
-.v-gift-user-avatar {
-    width: 32px; height: 32px; border-radius: 50%; background: #111; color: #fff;
-    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;
-    flex-shrink: 0;
+.v-gift-desc p:last-child {
+    margin-bottom: 0;
 }
-.v-gift-user-name { font-size: 13px; font-weight: 700; color: #111; }
-.v-gift-user-email { font-size: 11px; color: #999; }
-.v-gift-check { margin-left: auto; color: #EE4D2D; font-weight: 900; font-size: 16px; }
+.v-gift-desc ul {
+    margin: 8px 0 0 0;
+    padding-left: 20px;
+    font-size: 13px;
+    color: #555;
+}
+.v-gift-desc li {
+    margin-bottom: 4px;
+}
+.v-gift-warning {
+    color: #e74c3c !important;
+    font-weight: 700;
+}
+.v-gift-birthday-info {
+    font-size: 13px;
+    color: #7c3aed;
+    font-weight: 600;
+    line-height: 1.6;
+}
 
-.v-gift-random { padding: 8px 0; }
+.v-gift-random { padding: 4px 0; }
 .v-gift-random label { display: block; font-size: 13px; font-weight: 700; color: #444; margin-bottom: 10px; }
 .v-gift-count-input {
     width: 120px; padding: 10px 14px; border: 1.5px solid #eee; border-radius: 10px;
@@ -157,9 +206,18 @@
 .v-gift-count-input:focus { border-color: #EE4D2D; }
 .v-gift-hint { font-size: 12px; color: #999; margin-top: 12px; }
 
-.v-gift-birthday-info {
-    padding: 16px 20px; background: #fdf4ff; border-radius: 12px; border: 1.5px solid #e9d5ff;
-    font-size: 14px; color: #7c3aed; line-height: 1.7;
+/* Usages modal & badge styles */
+.v-usages-modal {
+    max-width: 680px;
+}
+.v-usage-badge.clickable:hover {
+    background: #EE4D2D !important;
+    color: #fff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(238, 77, 45, 0.15);
+}
+.v-usage-badge {
+    transition: all 0.2s;
 }
 
 .v-spin { animation: spinV 1s linear infinite; }

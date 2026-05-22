@@ -5,6 +5,18 @@ import { ChevronLeft, MapPin, Phone, User, CreditCard, ShieldCheck, Loader2, Tag
 import Swal from 'sweetalert2';
 import './CheckoutPage.css';
 
+const cleanVoucherCode = (val) => {
+    if (!val) return '';
+    return val
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .replace(/\s+/g, '')
+        .replace(/[^a-zA-Z0-9]/g, '')
+        .toUpperCase();
+};
+
 const CheckoutPage = () => {
     const navigate = useNavigate();
     const [cartItems, setCartItems] = useState([]);
@@ -13,7 +25,12 @@ const CheckoutPage = () => {
     const selectedItems = location.state?.selectedItems || [];
 
     const [orderInfo, setOrderInfo] = useState({
-        FullName: '', Phone: '', Address: ''
+        FullName: '',
+        Phone: '',
+        SpecificAddress: '',
+        Province: '',
+        District: '',
+        Ward: ''
     });
 
     const [voucherCode, setVoucherCode] = useState('');
@@ -28,20 +45,25 @@ const CheckoutPage = () => {
     const API_URL = 'http://127.0.0.1:8000/api';
 
     useEffect(() => {
-        if (!token) {
-            navigate('/login');
-            return;
-        }
         fetchSummary();
-    }, []);
+    }, [token]);
 
     const fetchSummary = async () => {
         try {
-            const res = await axios.get(`${API_URL}/my-cart`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            // Lấy mảng items từ data.data.items
-            const allItems = res.data.data?.items || [];
+            let allItems = [];
+            if (token) {
+                const res = await axios.get(`${API_URL}/my-cart`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                allItems = res.data.data?.items || [];
+            } else {
+                try {
+                    const stored = localStorage.getItem('vion_guest_cart');
+                    allItems = stored ? JSON.parse(stored) : [];
+                } catch (e) {
+                    allItems = [];
+                }
+            }
 
             if (selectedItems.length > 0) {
                 const filtered = allItems.filter(item => selectedItems.includes(item.id || item.CartItemID));
@@ -134,25 +156,46 @@ const CheckoutPage = () => {
         e.preventDefault();
 
         // Kiểm tra nhanh thông tin
-        if (!orderInfo.FullName || !orderInfo.Phone || !orderInfo.Address) {
+        if (!orderInfo.FullName || !orderInfo.Phone || !orderInfo.SpecificAddress || !orderInfo.Province || !orderInfo.District || !orderInfo.Ward) {
             Swal.fire('Chú ý', 'Vui lòng nhập đầy đủ thông tin giao hàng!', 'warning');
             return;
         }
+
+        const itemsToSend = token
+            ? selectedItems
+            : cartItems.map(item => ({
+                VariantID: item.VariantID || item.variant?.VariantID,
+                Quantity: item.Quantity
+            }));
+
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
         try {
             const res = await axios.post(`${API_URL}/orders/place`, {
                 FullName: orderInfo.FullName,
                 Phone: orderInfo.Phone,
-                Address: orderInfo.Address,
+                SpecificAddress: orderInfo.SpecificAddress,
+                Province: orderInfo.Province,
+                District: orderInfo.District,
+                Ward: orderInfo.Ward,
                 TotalAmount: calculateFinalTotal(),
                 PaymentMethod: 'COD',
-                SelectedItems: selectedItems,
-                VoucherCode: voucherInfo ? voucherCode : undefined
+                SelectedItems: itemsToSend,
+                VoucherCode: token && voucherInfo ? voucherCode : undefined
             }, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: headers
             });
 
             if (res.data.success) {
+                if (!token) {
+                    let guestCart = [];
+                    try {
+                        guestCart = JSON.parse(localStorage.getItem('vion_guest_cart')) || [];
+                    } catch (errGuest) {}
+                    const updatedCart = guestCart.filter(item => !selectedItems.includes(item.id || item.CartItemID));
+                    localStorage.setItem('vion_guest_cart', JSON.stringify(updatedCart));
+                    window.dispatchEvent(new Event('cartUpdated'));
+                }
                 Swal.fire({
                     icon: 'success',
                     title: 'ĐẶT HÀNG THÀNH CÔNG!',
@@ -203,13 +246,52 @@ const CheckoutPage = () => {
                             />
                         </div>
                         <div className="v-input-field mt-4">
-                            <label><MapPin size={16} /> Địa chỉ chi tiết</label>
+                            <label><MapPin size={16} /> Địa chỉ cụ thể</label>
                             <textarea
                                 required
-                                rows="3"
-                                placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."
-                                onChange={e => setOrderInfo({ ...orderInfo, Address: e.target.value })}
+                                rows="2"
+                                placeholder="Số nhà, tên đường..."
+                                value={orderInfo.SpecificAddress}
+                                onChange={e => setOrderInfo({ ...orderInfo, SpecificAddress: e.target.value })}
                             ></textarea>
+                        </div>
+                        <div className="row mt-4">
+                            <div className="col-md-4">
+                                <div className="v-input-field">
+                                    <label>Tỉnh / Thành phố</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Tỉnh / Thành phố"
+                                        value={orderInfo.Province}
+                                        onChange={e => setOrderInfo({ ...orderInfo, Province: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4">
+                                <div className="v-input-field">
+                                    <label>Quận / Huyện</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Quận / Huyện"
+                                        value={orderInfo.District}
+                                        onChange={e => setOrderInfo({ ...orderInfo, District: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4">
+                                <div className="v-input-field">
+                                    <label>Phường / Xã</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Phường / Xã"
+                                        value={orderInfo.Ward}
+                                        onChange={e => setOrderInfo({ ...orderInfo, Ward: e.target.value })}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -256,71 +338,77 @@ const CheckoutPage = () => {
                             </div>
 
                             {/* VOUCHER SECTION */}
-                            <div className="v-voucher-section">
-                                <div className="v-voucher-label">
-                                    <Tag size={14} /> Mã giảm giá
-                                </div>
-                                {!voucherInfo ? (
-                                    <>
-                                        <div className="v-voucher-input-wrap">
-                                            <input
-                                                type="text"
-                                                className="v-voucher-input"
-                                                placeholder="Nhập mã giảm giá..."
-                                                value={voucherCode}
-                                                onChange={e => setVoucherCode(e.target.value.toUpperCase())}
-                                                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleApplyVoucher())}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="v-voucher-apply-btn"
-                                                onClick={handleApplyVoucher}
-                                                disabled={applyingVoucher}
-                                            >
-                                                {applyingVoucher ? <Loader2 className="v-spin" size={14} /> : 'ÁP DỤNG'}
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="v-voucher-wallet-btn"
-                                                onClick={fetchWalletVouchers}
-                                                title="Chọn từ ví voucher"
-                                            >
-                                                <Ticket size={14} /> Ví
+                            {token ? (
+                                <div className="v-voucher-section">
+                                    <div className="v-voucher-label">
+                                        <Tag size={14} /> Mã giảm giá
+                                    </div>
+                                    {!voucherInfo ? (
+                                        <>
+                                            <div className="v-voucher-input-wrap">
+                                                <input
+                                                    type="text"
+                                                    className="v-voucher-input"
+                                                    placeholder="Nhập mã giảm giá..."
+                                                    value={voucherCode}
+                                                    onChange={e => setVoucherCode(cleanVoucherCode(e.target.value))}
+                                                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleApplyVoucher())}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className="v-voucher-apply-btn"
+                                                    onClick={handleApplyVoucher}
+                                                    disabled={applyingVoucher}
+                                                >
+                                                    {applyingVoucher ? <Loader2 className="v-spin" size={14} /> : 'ÁP DỤNG'}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="v-voucher-wallet-btn"
+                                                    onClick={fetchWalletVouchers}
+                                                    title="Chọn từ ví voucher"
+                                                >
+                                                    <Ticket size={14} /> Ví
+                                                </button>
+                                            </div>
+                                            {showVoucherPicker && (
+                                                <div className="v-voucher-picker">
+                                                    <div className="v-picker-header">
+                                                        <span>🏷️ Chọn voucher từ ví</span>
+                                                        <button type="button" onClick={() => setShowVoucherPicker(false)}><X size={14} /></button>
+                                                    </div>
+                                                    {walletVouchers.length === 0 ? (
+                                                        <div className="v-picker-empty">Ví không có voucher khả dụng</div>
+                                                    ) : walletVouchers.map(v => (
+                                                        <div key={v.id} className="v-picker-item" onClick={() => handleSelectWalletVoucher(v.code)}>
+                                                            <div className="v-picker-code">{v.code}</div>
+                                                            <div className="v-picker-value">
+                                                                {v.type === 'fixed' ? `Giảm ${Number(v.value).toLocaleString()}đ` : `Giảm ${v.value}%${v.max_discount ? ` (tối đa ${Number(v.max_discount).toLocaleString()}đ)` : ''}`}
+                                                            </div>
+                                                            {v.min_order > 0 && <div className="v-picker-min">Đơn tối thiểu: {Number(v.min_order).toLocaleString()}đ</div>}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {voucherError && (
+                                                <div className="v-voucher-error">{voucherError}</div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="v-voucher-applied">
+                                            <Tag size={14} />
+                                            <span>Giảm {voucherDiscount.toLocaleString()}đ</span>
+                                            <button type="button" className="v-voucher-remove" onClick={handleRemoveVoucher}>
+                                                <X size={14} />
                                             </button>
                                         </div>
-                                        {showVoucherPicker && (
-                                            <div className="v-voucher-picker">
-                                                <div className="v-picker-header">
-                                                    <span>🏷️ Chọn voucher từ ví</span>
-                                                    <button type="button" onClick={() => setShowVoucherPicker(false)}><X size={14} /></button>
-                                                </div>
-                                                {walletVouchers.length === 0 ? (
-                                                    <div className="v-picker-empty">Ví không có voucher khả dụng</div>
-                                                ) : walletVouchers.map(v => (
-                                                    <div key={v.id} className="v-picker-item" onClick={() => handleSelectWalletVoucher(v.code)}>
-                                                        <div className="v-picker-code">{v.code}</div>
-                                                        <div className="v-picker-value">
-                                                            {v.type === 'fixed' ? `Giảm ${Number(v.value).toLocaleString()}đ` : `Giảm ${v.value}%${v.max_discount ? ` (tối đa ${Number(v.max_discount).toLocaleString()}đ)` : ''}`}
-                                                        </div>
-                                                        {v.min_order > 0 && <div className="v-picker-min">Đơn tối thiểu: {Number(v.min_order).toLocaleString()}đ</div>}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                        {voucherError && (
-                                            <div className="v-voucher-error">{voucherError}</div>
-                                        )}
-                                    </>
-                                ) : (
-                                    <div className="v-voucher-applied">
-                                        <Tag size={14} />
-                                        <span>Giảm {voucherDiscount.toLocaleString()}đ</span>
-                                        <button type="button" className="v-voucher-remove" onClick={handleRemoveVoucher}>
-                                            <X size={14} />
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="v-voucher-guest-notice p-3 text-center border rounded mb-3 bg-light">
+                                    <span className="text-muted fs-13"> Đăng nhập để sử dụng mã giảm giá!</span>
+                                </div>
+                            )}
 
                             <div className="v-bill-divider my-3"></div>
                             {voucherDiscount > 0 && (
