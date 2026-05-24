@@ -9,6 +9,7 @@ const ProductManager = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [sortBy, setSortBy] = useState('newest');
 
     const [formData, setFormData] = useState({
         Name: '', CategoryID: '', Description: '', Material: '', UsageInstruction: '', MainImage: null, additionalImages: [],
@@ -371,41 +372,52 @@ const ProductManager = () => {
                     <h2>{isEditing ? 'Sửa sản phẩm' : 'Quản lý sản phẩm'}</h2>
                 </div>
                 <div className="v-header-tools">
-                    <div className="v-search-box">
-                        <Search size={16} color="#999" />
-                        <input type="text" placeholder="Tìm kiếm nhanh..." onChange={(e) => setSearchTerm(e.target.value)} />
-                    </div>
-                    <button onClick={fetchData} className="v-refresh-btn"><RefreshCw size={16} /></button>
+                    <button onClick={fetchData} className="v-refresh-btn"><RefreshCw size={16}/></button>
                 </div>
             </div>
 
             <form className="v-inline-form" onSubmit={handleSubmit}>
                 <div className="v-form-grid">
+                    {/* Cột trái: Các trường nhập thông tin ngắn */}
                     <div className="v-col">
-                        <div className="v-input-group"><label>Tên sản phẩm</label><input type="text" value={formData.Name} onChange={(e) => setFormData({ ...formData, Name: e.target.value })} required placeholder="Hoodie Vion..." /></div>
-                        <div className="v-input-group"><label>Danh mục</label><select value={formData.CategoryID} onChange={(e) => setFormData({ ...formData, CategoryID: e.target.value })} required><option value="">-- Chọn danh mục --</option>{categories.map(c => <option key={c.id} value={c.id}>{c.display}</option>)}</select></div>
-                        <div className="v-input-group"><label>Chất liệu</label><input type="text" value={formData.Material} onChange={(e) => setFormData({ ...formData, Material: e.target.value })} placeholder="Cotton 100%, Nỉ bông..." /></div>
-                        <div className="v-input-group"><label>Mô tả</label><textarea rows="2" value={formData.Description} onChange={(e) => setFormData({ ...formData, Description: e.target.value })}></textarea></div>
-                        <div className="v-input-group"><label>Hướng dẫn sử dụng</label><textarea rows="2" value={formData.UsageInstruction} onChange={(e) => setFormData({ ...formData, UsageInstruction: e.target.value })} placeholder="Giặt máy chế độ nhẹ, không dùng chất tẩy..."></textarea></div>
+                        <div className="v-input-group">
+                            <label>Tên sản phẩm</label>
+                            <input type="text" value={formData.Name} onChange={(e) => setFormData({ ...formData, Name: e.target.value })} required placeholder="Hoodie Vion..." />
+                        </div>
+                        <div className="v-input-group">
+                            <label>Danh mục</label>
+                            <select value={formData.CategoryID} onChange={(e) => setFormData({ ...formData, CategoryID: e.target.value })} required>
+                                <option value="">-- Chọn danh mục --</option>
+                                {categories.map(c => <option key={c.id} value={c.id}>{c.display}</option>)}
+                            </select>
+                        </div>
+                        <div className="v-input-group">
+                            <label>Chất liệu</label>
+                            <input type="text" value={formData.Material} onChange={(e) => setFormData({ ...formData, Material: e.target.value })} placeholder="Cotton 100%, Nỉ bông..." />
+                        </div>
                     </div>
+                    
+                    {/* Cột phải: Phần upload ảnh đại diện & ảnh phụ side-by-side */}
                     <div className="v-col">
-                        <label style={{ fontWeight: 700, fontSize: '11px', color: '#999', textTransform: 'uppercase' }}>Hình ảnh</label>
-                        <div className="v-image-uploads">
-                            <label className="v-upload-main">
-                                <Upload size={22} />
-                                <span>{formData.MainImage ? "Đã chọn ảnh chính" : "Ảnh đại diện"}</span>
-                                <input type="file" hidden onChange={handleMainImageChange} />
-                            </label>
-                            <label className="v-upload-sub">
-                                <ImageIcon size={22} />
-                                <span>Ảnh phụ (+{formData.additionalImages.length})</span>
-                                <input type="file" multiple hidden onChange={handleAdditionalImagesChange} />
-                            </label>
+                        <div className="v-input-group">
+                            <label>Hình ảnh sản phẩm</label>
+                            <div className="v-image-uploads">
+                                <label className="v-upload-main">
+                                    <Upload size={22} />
+                                    <span>{formData.MainImage ? "Đã chọn ảnh chính" : "Ảnh đại diện"}</span>
+                                    <input type="file" hidden onChange={handleMainImageChange} />
+                                </label>
+                                <label className="v-upload-sub">
+                                    <ImageIcon size={22} />
+                                    <span>Ảnh phụ (+{formData.additionalImages.length})</span>
+                                    <input type="file" multiple hidden onChange={handleAdditionalImagesChange} />
+                                </label>
+                            </div>
                         </div>
 
                         {/* Lưới hiển thị ảnh xem trước đã chọn (đã cắt) */}
                         {(formData.MainImage || (formData.additionalImages && formData.additionalImages.length > 0)) && (
-                            <div className="v-image-previews-container">
+                            <div className="v-image-previews-container" style={{ marginTop: '12px' }}>
                                 {formData.MainImage && (
                                     <div className="v-preview-card main-preview">
                                         <div className="v-preview-badge">Ảnh chính</div>
@@ -442,6 +454,18 @@ const ProductManager = () => {
                     </div>
                 </div>
 
+                {/* Các trường mô tả rộng chiếm full-width ở bên dưới */}
+                <div className="v-form-fullwidth" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '15px' }}>
+                    <div className="v-input-group" style={{ margin: 0 }}>
+                        <label>Mô tả sản phẩm</label>
+                        <textarea rows="3" value={formData.Description} onChange={(e) => setFormData({ ...formData, Description: e.target.value })} placeholder="Nhập mô tả chi tiết sản phẩm..."></textarea>
+                    </div>
+                    <div className="v-input-group" style={{ margin: 0 }}>
+                        <label>Hướng dẫn sử dụng</label>
+                        <textarea rows="3" value={formData.UsageInstruction} onChange={(e) => setFormData({ ...formData, UsageInstruction: e.target.value })} placeholder="Giặt máy chế độ nhẹ, không dùng chất tẩy..."></textarea>
+                    </div>
+                </div>
+
                 <div className="v-variant-section">
                     <div className="v-section-header">
                         <h3>Biến thể & Giá nhập (Giá vốn)</h3>
@@ -469,16 +493,58 @@ const ProductManager = () => {
                 </div>
             </form>
 
-            <table className="v-table">
-                <thead><tr><th width="80">Ảnh</th><th>Tên sản phẩm</th><th>Danh mục</th><th className="v-actions">Thao tác</th></tr></thead>
+            <div className="v-table-header d-flex justify-content-between align-items-center mb-3 mt-5">
+                <h3 className="fw-800 text-dark m-0" style={{ fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Package size={18} className="v-brand-icon" /> DANH SÁCH SẢN PHẨM ĐÃ ĐĂNG BÁN.
+                </h3>
+                <div className="v-table-tools">
+                    <div className="v-search">
+                        <Search size={16} color="#999" />
+                        <input type="text" placeholder="Tìm kiếm nhanh..." onChange={(e) => setSearchTerm(e.target.value)} />
+                    </div>
+                    <select className="v-sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                        <option value="newest">Mới nhất</option>
+                        <option value="oldest">Cũ nhất</option>
+                        <option value="name_asc">Tên A → Z</option>
+                        <option value="name_desc">Tên Z → A</option>
+                        <option value="stock_asc">Tồn kho tăng dần</option>
+                        <option value="stock_desc">Tồn kho giảm dần</option>
+                        <option value="out_of_stock">Hết hàng trước</option>
+                    </select>
+                </div>
+            </div>
+
+            <table className="v-modern-table">
+                <thead><tr><th width="80">Ảnh</th><th>Tên sản phẩm</th><th>Danh mục</th><th>Tồn kho</th><th className="v-actions">Thao tác</th></tr></thead>
                 <tbody>
                     {loading ? (
-                        <tr><td colSpan="4" style={{ textAlign: 'center', padding: '30px' }}><Loader2 className="v-spin" /> Đang tải...</td></tr>
-                    ) : products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(prod => (
+                        <tr><td colSpan="5" style={{ textAlign: 'center', padding: '30px' }}><Loader2 className="v-spin" /> Đang tải...</td></tr>
+                    ) : products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).sort((a, b) => {
+                        const stockA = a.variants?.reduce((s, v) => s + (v.stock || v.Stock || 0), 0) || 0;
+                        const stockB = b.variants?.reduce((s, v) => s + (v.stock || v.Stock || 0), 0) || 0;
+                        switch (sortBy) {
+                            case 'oldest': return (a.id || 0) - (b.id || 0);
+                            case 'name_asc': return (a.name || '').localeCompare(b.name || '');
+                            case 'name_desc': return (b.name || '').localeCompare(a.name || '');
+                            case 'stock_asc': return stockA - stockB;
+                            case 'stock_desc': return stockB - stockA;
+                            case 'out_of_stock': return stockA - stockB;
+                            case 'newest':
+                            default: return (b.id || 0) - (a.id || 0);
+                        }
+                    }).map(prod => (
                         <tr key={prod.id}>
                             <td><img src={prod.main_image?.startsWith('http') ? prod.main_image : `http://127.0.0.1:8000/storage/${prod.main_image}`} className="v-table-img" alt="" /></td>
                             <td><div className="v-prod-name">{prod.name}</div></td>
                             <td><span className="v-tag">{prod.category?.name}</span></td>
+                            <td>
+                                {(() => {
+                                    const total = prod.variants?.reduce((sum, v) => sum + (v.stock || v.Stock || 0), 0) || 0;
+                                    return total > 0 
+                                        ? <span className="v-stock-num">{total}</span>
+                                        : <span className="v-stock-badge-empty">Hết hàng</span>;
+                                })()}
+                            </td>
                             <td className="v-actions">
                                 <button onClick={() => handleViewDetails(prod)} className="v-view" title="Xem nhanh"><Eye size={16} /></button>
                                 <button onClick={() => startEdit(prod)} className="v-edit" title="Sửa"><Edit2 size={16} /></button>

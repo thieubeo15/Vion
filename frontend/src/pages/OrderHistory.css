@@ -441,4 +441,43 @@
     font-size: 13px;
     color: #555;
     line-height: 1.6;
+}
+
+/* PHÂN HỆ HOÀN HÀNG COD */
+.v-status-label.returnrequested { background: #fef3c7; color: #d97706; }
+.v-status-label.returnapproved { background: #e0f2fe; color: #0369a1; }
+.v-status-label.returnreceived { background: #f3e8ff; color: #7e22ce; }
+.v-status-label.refunded { background: #ecfdf5; color: #047857; }
+.v-status-label.returned { background: #f1f5f9; color: #475569; }
+
+.v-btn-return-action {
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    background: #fff;
+    border: 1px solid #111;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.v-btn-return-action:hover {
+    color: #fff;
+    background: #111;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(17, 17, 17, 0.3);
+}
+
+.v-return-info-box {
+    background: #f0f9ff;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: #0369a1;
+    font-size: 13px;
+    border-top: 1px dashed #bae6fd;
+    border-bottom: 1px dashed #bae6fd;
+    line-height: 1.6;
 }

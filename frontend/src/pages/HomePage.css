@@ -19,15 +19,16 @@ html, body {
     overflow-x: hidden; /* Chỉ để ở lớp này để tránh tràn trang */
 }
 
-/* ================= HERO BANNER SLIDER ================= */
 .hero-section {
     position: relative;
-    height: 85vh;
-    width: 100%;
+    height: 75vh;
+    width: 85%;
     overflow: hidden;
     background-color: #000;
+        margin: 0 auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
-
 /* Mỗi slide chồng lên nhau, chỉ slide active mới hiện */
 .hero-slide {
     position: absolute;

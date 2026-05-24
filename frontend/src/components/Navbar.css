@@ -4,8 +4,8 @@
     position: sticky;
     top: 0;
     z-index: 1000;
-    background-color: #fff;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    background-color: #faf6f0;
+    box-shadow: 0 2px 12px rgba(44, 39, 34, 0.06);
     font-family: 'Lexend Deca', sans-serif;
 }
 
@@ -24,10 +24,14 @@
 .header-logo {
     font-size: 32px;
     font-weight: 800;
-    color: #111;
+    color: #2c2722;
     text-decoration: none;
     letter-spacing: -1.5px;
     flex-shrink: 0;
+    transition: color 0.3s ease;
+}
+.header-logo:hover {
+    color: #EE4D2D;
 }
 
 /* THANH TÌM KIẾM THÔNG MINH */
@@ -43,15 +47,15 @@
     width: 100%;
     display: flex;
     align-items: center;
-    background-color: #f5f5f5;
+    background-color: #f3ede3;
     border-radius: 8px;
     padding: 8px 15px;
-    border: 1px solid transparent;
+    border: 1px solid #e5dac8;
     transition: 0.3s;
 }
 
 .search-input-wrap:focus-within {
-    background-color: #fff;
+    background-color: #ffffff;
     border-color: #EE4D2D;
     box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.1);
 }
@@ -63,6 +67,10 @@
     outline: none;
     padding: 5px 10px;
     font-size: 14px;
+    color: #2c2722;
+}
+.search-input::placeholder {
+    color: #9c9287;
 }
 
 .search-tools {
@@ -78,6 +86,7 @@
 
 .camera-icon {
     cursor: pointer;
+    color: #9c9287;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -103,9 +112,10 @@
     text-decoration: none;
     font-size: 14px;
     font-weight: 600;
-    color: #111;
+    color: #2c2722;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    transition: color 0.3s ease;
 }
 
 .auth-text:hover {
@@ -113,9 +123,10 @@
 }
 
 .action-icon {
-    color: #111;
+    color: #2c2722;
     text-decoration: none;
     position: relative;
+    transition: color 0.3s ease;
 }
 
 .cart-badge {
@@ -135,7 +146,7 @@
 
 /* ================= TẦNG 2: SUB NAV (DANH MỤC) ================= */
 .header-sub {
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid #ede4d7;
     padding: 12px 0;
 }
 
@@ -147,7 +158,7 @@
 
 .category-link {
     text-decoration: none;
-    color: #222;
+    color: #4a4138;
     font-size: 13.5px;
     font-weight: 700;
     transition: 0.2s;
@@ -155,7 +166,7 @@
 }
 
 .category-link:hover {
-    color: #111;
+    color: #EE4D2D;
 }
 .action-icon:hover {
     color: #EE4D2D; /* Rê chuột vào icon User hoặc Đăng xuất sẽ đổi màu cam */
@@ -172,10 +183,10 @@
     right: 0;
     background: #ffffff;
     border-radius: 12px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    box-shadow: 0 15px 40px rgba(44, 39, 34, 0.08);
     z-index: 9999;
     padding: 10px;
-    border: 1px solid #eee;
+    border: 1px solid #e5dac8;
     max-height: 450px;
     overflow-y: auto;
 }
@@ -187,7 +198,7 @@
     text-decoration: none;
     border-radius: 8px;
     transition: 0.2s;
-    border-bottom: 1px solid #f8f8f8;
+    border-bottom: 1px solid #f6f1e9;
 }
 
 .nav-search-item:last-child {
@@ -195,7 +206,7 @@
 }
 
 .nav-search-item:hover {
-    background: #f9f9f9;
+    background: #fdfaf5;
 }
 
 .nav-search-item img {
@@ -215,7 +226,7 @@
     margin: 0;
     font-size: 14px;
     font-weight: 600;
-    color: #111;
+    color: #2c2722;
 }
 
 .nav-search-price {
@@ -246,9 +257,9 @@
     top: 0;
     left: 0;
     width: 100%;
-    background-color: #ffffff; /* Đảm bảo có nền trắng để không bị xuyên thấu khi lướt */
+    background-color: #faf6f0; /* Đảm bảo có nền kem để không bị xuyên thấu khi lướt */
     z-index: 9999; /* Luôn nằm trên cùng các thành phần khác */
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* Đổ bóng nhẹ cho sang */
+    box-shadow: 0 2px 12px rgba(44, 39, 34, 0.06); /* Đổ bóng nhẹ cho sang */
     transition: all 0.3s ease;
 }
 
@@ -264,10 +275,10 @@
     top: 100%;
     left: 50%;
     transform: translateX(-50%);
-    background: #ffffff;
+    background: #faf6f0;
     min-width: 180px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    border: 1px solid #f0f0f0;
+    box-shadow: 0 10px 30px rgba(44, 39, 34, 0.08);
+    border: 1px solid #ede4d7;
     border-radius: 6px;
     z-index: 10001;
     padding: 8px 0;
@@ -283,7 +294,7 @@
     display: block;
     padding: 8px 20px;
     text-decoration: none;
-    color: #333;
+    color: #4a4138;
     font-size: 13px;
     font-weight: 700;
     transition: 0.2s;
@@ -293,7 +304,7 @@
 }
 
 .category-dropdown-link:hover {
-    background: #f9f9f9;
+    background: #f3ede3;
     color: #EE4D2D;
 }
 

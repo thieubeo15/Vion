@@ -9,6 +9,15 @@ const OrderManager = () => {
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState(null); 
     const [filterStatus, setFilterStatus] = useState('All');
+    const [adminNote, setAdminNote] = useState('');
+
+    useEffect(() => {
+        if (selectedOrder) {
+            setAdminNote(selectedOrder.ReturnAdminNote || '');
+        } else {
+            setAdminNote('');
+        }
+    }, [selectedOrder]);
     
     const token = localStorage.getItem('vion_token');
     const API_URL = 'http://127.0.0.1:8000/api';
@@ -131,18 +140,90 @@ const OrderManager = () => {
         }
     };
 
+    const handleUpdateReturnStatus = async (orderId, newStatus) => {
+        const confirm = await Swal.fire({
+            title: 'Xác nhận?',
+            text: `Chuyển trạng thái hoàn trả đơn hàng sang: ${getStatusLabel(newStatus)}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#111',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
+        });
+
+        if (confirm.isConfirmed) {
+            try {
+                const res = await axios.put(`${API_URL}/orders/${orderId}`, {
+                    Status: newStatus,
+                    ReturnAdminNote: adminNote
+                }, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                Swal.fire('Thành công', 'Đã cập nhật trạng thái hoàn hàng!', 'success');
+                setSelectedOrder(res.data);
+                fetchOrders();
+            } catch (err) {
+                Swal.fire('Lỗi', err.response?.data?.message || 'Không thể cập nhật trạng thái', 'error');
+            }
+        }
+    };
+
+    const handleRejectReturn = async (orderId) => {
+        const { value: rejectReason } = await Swal.fire({
+            title: 'Từ chối yêu cầu hoàn hàng?',
+            input: 'textarea',
+            inputLabel: 'Vui lòng nhập lý do từ chối (bắt buộc):',
+            inputPlaceholder: 'Nhập lý do tại đây...',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Xác nhận từ chối',
+            cancelButtonText: 'Quay lại',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Bạn phải nhập lý do từ chối hoàn hàng!';
+                }
+            }
+        });
+
+        if (rejectReason) {
+            try {
+                const res = await axios.put(`${API_URL}/orders/${orderId}`, {
+                    Status: 'Completed',
+                    ReturnAdminNote: `Từ chối hoàn hàng: ${rejectReason}`
+                }, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                Swal.fire('Thành công', 'Đã từ chối hoàn hàng và khôi phục đơn hàng!', 'success');
+                setSelectedOrder(res.data);
+                fetchOrders();
+            } catch (err) {
+                Swal.fire('Lỗi', err.response?.data?.message || 'Không thể từ chối hoàn hàng', 'error');
+            }
+        }
+    };
+
     const getStatusLabel = (status) => {
         const map = { 
             Pending: 'Chờ xử lý', 
             CancelRequested: 'Yêu cầu hủy', 
             Shipping: 'Đang giao', 
             Completed: 'Đã xong', 
-            Cancelled: 'Đã hủy' 
+            Cancelled: 'Đã hủy',
+            ReturnRequested: 'Yêu cầu trả hàng',
+            ReturnApproved: 'Chờ nhận hàng trả',
+            ReturnReceived: 'Đang kiểm hàng',
+            Refunded: 'Đã hoàn tiền',
+            Returned: 'Hoàn hàng hoàn tất'
         };
         return map[status] || status;
     };
 
-    const filteredOrders = filterStatus === 'All' ? orders : orders.filter(o => o.Status === filterStatus);
+    const filteredOrders = filterStatus === 'All' 
+        ? orders 
+        : filterStatus === 'Returns'
+            ? orders.filter(o => ['ReturnRequested', 'ReturnApproved', 'ReturnReceived', 'Refunded', 'Returned'].includes(o.Status))
+            : orders.filter(o => o.Status === filterStatus);
 
     if (loading) return <div className="v-admin-loading">VION ERA đang tải dữ liệu...</div>;
 
@@ -151,13 +232,13 @@ const OrderManager = () => {
             <div className="v-admin-header mb-4">
                 <h2 className="fw-900">QUẢN LÝ ĐƠN HÀNG</h2>
                 <div className="v-filter-bar">
-                    {['All', 'Pending', 'CancelRequested', 'Shipping', 'Completed', 'Cancelled'].map(status => (
+                    {['All', 'Pending', 'CancelRequested', 'Shipping', 'Completed', 'Cancelled', 'Returns'].map(status => (
                         <button 
                             key={status}
                             className={filterStatus === status ? 'active' : ''} 
                             onClick={() => setFilterStatus(status)}
                         >
-                            {status === 'All' ? 'Tất cả' : getStatusLabel(status)}
+                            {status === 'All' ? 'Tất cả' : (status === 'Returns' ? 'Trả hàng' : getStatusLabel(status))}
                         </button>
                     ))}
                 </div>
@@ -199,11 +280,11 @@ const OrderManager = () => {
 
                                         <button 
                                             className="v-btn ship" 
-                                            disabled={order.Status === 'Cancelled' || order.Status === 'Completed'} 
+                                            disabled={order.Status === 'Cancelled' || order.Status === 'Completed' || ['ReturnRequested', 'ReturnApproved', 'ReturnReceived', 'Refunded', 'Returned'].includes(order.Status)} 
                                             onClick={() => updateStatus(order.OrderID || order.id, 'Shipping')}
                                             style={{ 
-                                                opacity: (order.Status === 'Cancelled' || order.Status === 'Completed') ? 0.4 : 1,
-                                                cursor: (order.Status === 'Cancelled' || order.Status === 'Completed') ? 'not-allowed' : 'pointer'
+                                                opacity: (order.Status === 'Cancelled' || order.Status === 'Completed' || ['ReturnRequested', 'ReturnApproved', 'ReturnReceived', 'Refunded', 'Returned'].includes(order.Status)) ? 0.4 : 1,
+                                                cursor: (order.Status === 'Cancelled' || order.Status === 'Completed' || ['ReturnRequested', 'ReturnApproved', 'ReturnReceived', 'Refunded', 'Returned'].includes(order.Status)) ? 'not-allowed' : 'pointer'
                                             }}
                                         >
                                             <Truck size={18}/>
@@ -224,11 +305,11 @@ const OrderManager = () => {
 
                                         <button 
                                             className="v-btn cancel" 
-                                            disabled={order.Status === 'Shipping' || order.Status === 'Completed' || order.Status === 'Cancelled'} 
+                                            disabled={order.Status === 'Shipping' || order.Status === 'Completed' || order.Status === 'Cancelled' || ['ReturnRequested', 'ReturnApproved', 'ReturnReceived', 'Refunded', 'Returned'].includes(order.Status)} 
                                             onClick={() => updateStatus(order.OrderID || order.id, 'Cancelled')}
                                             style={{ 
-                                                opacity: (order.Status === 'Shipping' || order.Status === 'Completed' || order.Status === 'Cancelled') ? 0.4 : 1,
-                                                cursor: (order.Status === 'Shipping' || order.Status === 'Completed' || order.Status === 'Cancelled') ? 'not-allowed' : 'pointer',
+                                                opacity: (order.Status === 'Shipping' || order.Status === 'Completed' || order.Status === 'Cancelled' || ['ReturnRequested', 'ReturnApproved', 'ReturnReceived', 'Refunded', 'Returned'].includes(order.Status)) ? 0.4 : 1,
+                                                cursor: (order.Status === 'Shipping' || order.Status === 'Completed' || order.Status === 'Cancelled' || ['ReturnRequested', 'ReturnApproved', 'ReturnReceived', 'Refunded', 'Returned'].includes(order.Status)) ? 'not-allowed' : 'pointer',
                                                 backgroundColor: order.Status === 'CancelRequested' ? '#fee2e2' : undefined,
                                                 color: order.Status === 'CancelRequested' ? '#dc2626' : undefined,
                                                 width: order.Status === 'CancelRequested' ? 'auto' : undefined,
@@ -287,6 +368,86 @@ const OrderManager = () => {
                                         <label>Lý do hủy:</label> <span className="text-danger fw-700">{selectedOrder.CancelReason}</span>
                                     </div>
                                 )}
+                                {['ReturnRequested', 'ReturnApproved', 'ReturnReceived', 'Refunded', 'Returned'].includes(selectedOrder.Status) && (
+                                    <div className="v-info-item v-return-info mt-4 p-3 rounded" style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', gridColumn: '1 / -1', display: 'block' }}>
+                                        <h6 className="fw-800 text-primary mb-3">📦 THÔNG TIN YÊU CẦU HOÀN HÀNG</h6>
+                                        <div className="mb-2">
+                                            <strong>Lý do hoàn hàng:</strong> <span className="text-dark">{selectedOrder.ReturnReason}</span>
+                                        </div>
+                                        <div className="mb-2">
+                                            <strong>Phương thức nhận tiền:</strong> <span className="text-dark">{selectedOrder.RefundMethod === 'Bank' ? 'Chuyển khoản ngân hàng' : selectedOrder.RefundMethod}</span>
+                                        </div>
+                                        <div className="mb-2">
+                                            <strong>Thông tin tài khoản/ví:</strong> <span className="text-dark">{selectedOrder.RefundDetails}</span>
+                                        </div>
+                                        {selectedOrder.ReturnAdminNote && (
+                                            <div className="mb-2">
+                                                <strong>Ghi chú từ Shop:</strong> <span className="text-muted italic">{selectedOrder.ReturnAdminNote}</span>
+                                            </div>
+                                        )}
+                                        
+                                        {/* Nếu chưa hoàn tất, cho phép Admin chỉnh sửa hoặc nhập AdminNote */}
+                                        {selectedOrder.Status !== 'Returned' && (
+                                            <div className="mt-3">
+                                                <label className="fw-700 fs-13 mb-1 d-block text-dark">Ghi chú của Shop:</label>
+                                                <textarea 
+                                                    className="v-return-admin-note-input"
+                                                    placeholder="Nhập phản hồi, ghi chú kiểm hàng hoặc thông tin nhận hàng trả..."
+                                                    value={adminNote}
+                                                    onChange={(e) => setAdminNote(e.target.value)}
+                                                    rows={2}
+                                                    style={{ width: '100%', borderRadius: '8px', fontSize: '13px', padding: '8px', border: '1px solid #cbd5e1' }}
+                                                />
+                                            </div>
+                                        )}
+
+                                        {/* Nút hành động theo từng bước */}
+                                        <div className="v-return-actions mt-3 d-flex gap-2 flex-wrap">
+                                            {selectedOrder.Status === 'ReturnRequested' && (
+                                                <button 
+                                                    className="btn btn-primary btn-sm fw-700 px-3 py-2"
+                                                    onClick={() => handleUpdateReturnStatus(selectedOrder.OrderID || selectedOrder.id, 'ReturnApproved')}
+                                                >
+                                                    Duyệt yêu cầu (Chờ nhận hàng)
+                                                </button>
+                                            )}
+                                            {selectedOrder.Status === 'ReturnApproved' && (
+                                                <button 
+                                                    className="btn btn-warning btn-sm text-dark fw-700 px-3 py-2"
+                                                    onClick={() => handleUpdateReturnStatus(selectedOrder.OrderID || selectedOrder.id, 'ReturnReceived')}
+                                                >
+                                                    Đã nhận hàng (Kiểm hàng)
+                                                </button>
+                                            )}
+                                            {selectedOrder.Status === 'ReturnReceived' && (
+                                                <button 
+                                                    className="btn btn-info btn-sm text-white fw-700 px-3 py-2"
+                                                    onClick={() => handleUpdateReturnStatus(selectedOrder.OrderID || selectedOrder.id, 'Refunded')}
+                                                >
+                                                    Xác nhận đã hoàn tiền
+                                                </button>
+                                            )}
+                                            {selectedOrder.Status === 'Refunded' && (
+                                                <button 
+                                                    className="btn btn-success btn-sm fw-700 px-3 py-2"
+                                                    onClick={() => handleUpdateReturnStatus(selectedOrder.OrderID || selectedOrder.id, 'Returned')}
+                                                >
+                                                    Hoàn tất (Cộng tồn kho)
+                                                </button>
+                                            )}
+                                            
+                                            {/* Từ chối hoàn hàng */}
+                                            {selectedOrder.Status !== 'Returned' && (
+                                                <button 
+                                                    className="btn btn-outline-danger btn-sm fw-700 px-3 py-2 ms-auto"
+                                                    onClick={() => handleRejectReturn(selectedOrder.OrderID || selectedOrder.id)}
+                                                >
+                                                    Từ chối hoàn hàng
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="v-product-list mt-4">
@@ -310,6 +471,28 @@ const OrderManager = () => {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+
+                            {/* BẢNG CHI TIẾT THANH TOÁN */}
+                            <div className="v-billing-summary mt-4 p-3 bg-light rounded" style={{ fontSize: '14px', border: '1px solid #e2e8f0' }}>
+                                <div className="d-flex justify-content-between mb-2">
+                                    <span className="text-muted">Tổng tiền hàng:</span>
+                                    <span className="fw-700 text-dark">{(selectedOrder.details || []).reduce((sum, item) => sum + (Number(item.Price || item.price) * Number(item.Quantity || item.quantity)), 0).toLocaleString()}đ</span>
+                                </div>
+                                {Number(selectedOrder.DiscountAmount || selectedOrder.discount_amount || 0) > 0 && (
+                                    <div className="d-flex justify-content-between mb-2 text-success">
+                                        <span>Giảm giá voucher:</span>
+                                        <span className="fw-700">-{Number(selectedOrder.DiscountAmount || selectedOrder.discount_amount || 0).toLocaleString()}đ</span>
+                                    </div>
+                                )}
+                                <div className="d-flex justify-content-between mb-0">
+                                    <span className="text-muted">Phí vận chuyển:</span>
+                                    <span className="fw-700 text-dark">
+                                        {Number(selectedOrder.ShippingFee || selectedOrder.shipping_fee || 0) > 0 
+                                            ? `+${Number(selectedOrder.ShippingFee || selectedOrder.shipping_fee || 0).toLocaleString()}đ` 
+                                            : 'Miễn phí'}
+                                    </span>
+                                </div>
                             </div>
 
                             {selectedOrder.Status === 'CancelRequested' && (

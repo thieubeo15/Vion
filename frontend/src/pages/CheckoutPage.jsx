@@ -190,8 +190,29 @@ const CheckoutPage = () => {
         }, 0);
     };
 
+    const getShippingFee = () => {
+        const subtotal = calculateTotal() - (voucherInfo?.Type === 'freeship' ? 0 : voucherDiscount);
+        if (subtotal >= 500000 || !orderInfo.Province) {
+            return 0;
+        }
+        return orderInfo.Province === 'Thành phố Hà Nội' ? 20000 : 35000;
+    };
+
+    const getVoucherDiscount = () => {
+        if (!voucherInfo) return 0;
+        if (voucherInfo.Type === 'freeship') {
+            const shipFee = getShippingFee();
+            const val = Number(voucherInfo.Value || 0);
+            if (val > 0) {
+                return Math.min(shipFee, val);
+            }
+            return shipFee;
+        }
+        return voucherDiscount;
+    };
+
     const calculateFinalTotal = () => {
-        return calculateTotal() - voucherDiscount;
+        return calculateTotal() - getVoucherDiscount() + getShippingFee();
     };
 
     const handleApplyVoucher = async () => {
@@ -201,7 +222,8 @@ const CheckoutPage = () => {
         try {
             const res = await axios.post(`${API_URL}/voucher/apply`, {
                 code: voucherCode,
-                total_amount: calculateTotal()
+                total_amount: calculateTotal(),
+                province: orderInfo.Province
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -242,7 +264,8 @@ const CheckoutPage = () => {
         setVoucherError('');
         try {
             const res = await axios.post(`${API_URL}/voucher/apply`, {
-                code, total_amount: calculateTotal()
+                code, total_amount: calculateTotal(),
+                province: orderInfo.Province
             }, { headers: { Authorization: `Bearer ${token}` } });
             setVoucherDiscount(res.data.discount_amount);
             setVoucherInfo(res.data.voucher_info);
@@ -281,7 +304,8 @@ const CheckoutPage = () => {
                 TotalAmount: calculateFinalTotal(),
                 PaymentMethod: 'COD',
                 SelectedItems: itemsToSend,
-                VoucherCode: token && voucherInfo ? voucherCode : undefined
+                VoucherCode: token && voucherInfo ? voucherCode : undefined,
+                ShippingFee: getShippingFee()
             }, {
                 headers: headers
             });
@@ -433,9 +457,13 @@ const CheckoutPage = () => {
                                 <span>Tạm tính</span>
                                 <span>{calculateTotal().toLocaleString()}đ</span>
                             </div>
-                            <div className="d-flex justify-content-between mb-2 text-success">
+                            <div className="d-flex justify-content-between mb-2">
                                 <span>Phí vận chuyển</span>
-                                <span className="fw-700">MIỄN PHÍ</span>
+                                {getShippingFee() === 0 ? (
+                                    <span className="fw-700 text-success">MIỄN PHÍ</span>
+                                ) : (
+                                    <span className="fw-700 text-dark">+{getShippingFee().toLocaleString()}đ</span>
+                                )}
                             </div>
 
                             {/* VOUCHER SECTION */}
@@ -484,7 +512,11 @@ const CheckoutPage = () => {
                                                         <div key={v.id} className="v-picker-item" onClick={() => handleSelectWalletVoucher(v.code)}>
                                                             <div className="v-picker-code">{v.code}</div>
                                                             <div className="v-picker-value">
-                                                                {v.type === 'fixed' ? `Giảm ${Number(v.value).toLocaleString()}đ` : `Giảm ${v.value}%${v.max_discount ? ` (tối đa ${Number(v.max_discount).toLocaleString()}đ)` : ''}`}
+                                                                {v.type === 'fixed' 
+                                                                    ? `Giảm ${Number(v.value).toLocaleString()}đ` 
+                                                                    : v.type === 'freeship'
+                                                                        ? (Number(v.value) > 0 ? `Freeship tối đa ${Number(v.value).toLocaleString()}đ` : 'Miễn phí vận chuyển')
+                                                                        : `Giảm ${v.value}%${v.max_discount ? ` (tối đa ${Number(v.max_discount).toLocaleString()}đ)` : ''}`}
                                                             </div>
                                                             {v.min_order > 0 && <div className="v-picker-min">Đơn tối thiểu: {Number(v.min_order).toLocaleString()}đ</div>}
                                                         </div>

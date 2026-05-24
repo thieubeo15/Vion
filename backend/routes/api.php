@@ -54,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Đơn hàng
     Route::get('/my-orders', [OrderController::class, 'myOrders']);
     Route::post('/orders/{id}/cancel', [OrderController::class, 'cancelOrder']); // Khách hủy đơn
+    Route::post('/orders/{id}/return', [OrderController::class, 'requestReturn']); // Khách yêu cầu hoàn hàng
     
     // ĐÁNH GIÁ (Quan trọng - Chỉ POST mới cần login)
     Route::post('/reviews', [ReviewController::class, 'store']);

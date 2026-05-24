@@ -10,6 +10,8 @@ import ProfilePage from './pages/ProfilePage';
 import CartPage from './pages/CartPage';
 import ProductsPage from './pages/ProductsPage';
 import SearchResults from './pages/SearchResults'; // Sửa lại đường dẫn cho đúng thư mục của bro
+import AboutUsPage from './pages/AboutUsPage';
+import SupportPage from './pages/SupportPage';
 
 // 2. Nhúng các trang ADMIN
 import AdminLayout from './admin/AdminLayout';
@@ -84,6 +86,8 @@ function App() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/orders" element={<OrderHistory />} />
           <Route path="/search-results" element={<SearchResults />} />
+          <Route path="/about" element={<AboutUsPage />} />
+          <Route path="/support" element={<SupportPage />} />
 
           {/* --- ROUTE ADMIN (Bố cục lồng nhau) --- */}
           <Route path="/admin" element={<AdminLayout />}>

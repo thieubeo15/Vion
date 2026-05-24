@@ -27,6 +27,14 @@ const OrderHistory = () => {
     const [customReason, setCustomReason] = useState('');
     const [cancelling, setCancelling] = useState(false);
 
+    // Return modal state
+    const [showReturnModal, setShowReturnModal] = useState(false);
+    const [returnOrderId, setReturnOrderId] = useState(null);
+    const [returnReason, setReturnReason] = useState('');
+    const [refundMethod, setRefundMethod] = useState('Bank'); // Bank, Momo, ZaloPay
+    const [refundDetails, setRefundDetails] = useState('');
+    const [returning, setReturning] = useState(false);
+
     const token = localStorage.getItem('vion_token');
     const API_URL = 'http://127.0.0.1:8000/api';
     const ASSET_URL = 'http://127.0.0.1:8000/storage/'; // Đường dẫn lấy ảnh
@@ -38,6 +46,7 @@ const OrderHistory = () => {
         { id: 'Shipping', label: 'Đang giao' },
         { id: 'Completed', label: 'Hoàn thành' },
         { id: 'Cancelled', label: 'Đã hủy' },
+        { id: 'Returns', label: 'Trả hàng/Hoàn tiền' }
     ];
 
     useEffect(() => { fetchMyOrders(); }, []);
@@ -55,9 +64,70 @@ const OrderHistory = () => {
         }
     };
 
+    const getTabCount = (tabId) => {
+        if (tabId === 'All') return 0;
+        if (tabId === 'Returns') {
+            return orders.filter(o => ['ReturnRequested', 'ReturnApproved', 'ReturnReceived', 'Refunded', 'Returned'].includes(o.Status)).length;
+        }
+        return orders.filter(o => o.Status === tabId).length;
+    };
+
     const filteredOrders = filterStatus === 'All'
         ? orders
-        : orders.filter(order => order.Status === filterStatus);
+        : filterStatus === 'Returns'
+            ? orders.filter(order => ['ReturnRequested', 'ReturnApproved', 'ReturnReceived', 'Refunded', 'Returned'].includes(order.Status))
+            : orders.filter(order => order.Status === filterStatus);
+
+    const openReturnModal = (orderId) => {
+        setReturnOrderId(orderId);
+        setReturnReason('');
+        setRefundMethod('Bank');
+        setRefundDetails('');
+        setShowReturnModal(true);
+    };
+
+    const closeReturnModal = () => {
+        setShowReturnModal(false);
+        setReturnOrderId(null);
+        setReturnReason('');
+        setRefundMethod('Bank');
+        setRefundDetails('');
+    };
+
+    const handleConfirmReturn = async () => {
+        if (!returnReason.trim()) {
+            Swal.fire('Chú ý', 'Vui lòng nhập lý do hoàn hàng!', 'warning');
+            return;
+        }
+        if (!refundDetails.trim()) {
+            Swal.fire('Chú ý', 'Vui lòng nhập thông tin nhận tiền hoàn!', 'warning');
+            return;
+        }
+        setReturning(true);
+        try {
+            await axios.post(`${API_URL}/orders/${returnOrderId}/return`, {
+                reason: returnReason,
+                refund_method: refundMethod,
+                refund_details: refundDetails
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            closeReturnModal();
+            Swal.fire({
+                icon: 'success',
+                title: 'Gửi yêu cầu thành công',
+                text: 'Yêu cầu hoàn hàng đã được gửi tới Vion Era.',
+                confirmButtonColor: '#111',
+                timer: 2500,
+                timerProgressBar: true,
+            });
+            fetchMyOrders();
+        } catch (err) {
+            Swal.fire('Lỗi', err.response?.data?.message || 'Không thể gửi yêu cầu hoàn hàng!', 'error');
+        } finally {
+            setReturning(false);
+        }
+    };
 
     const openCancelModal = (orderId) => {
         setCancelOrderId(orderId);
@@ -108,6 +178,11 @@ const OrderHistory = () => {
             case 'Shipping': return <Truck size={16} strokeWidth={2.5} />;
             case 'Completed': return <CheckCircle size={16} strokeWidth={2.5} />;
             case 'Cancelled': return <XCircle size={16} strokeWidth={2.5} />;
+            case 'ReturnRequested': return <Clock size={16} strokeWidth={2.5} />;
+            case 'ReturnApproved': return <Truck size={16} strokeWidth={2.5} />;
+            case 'ReturnReceived': return <Inbox size={16} strokeWidth={2.5} />;
+            case 'Refunded': return <CheckCircle size={16} strokeWidth={2.5} />;
+            case 'Returned': return <Package size={16} strokeWidth={2.5} />;
             default: return <Package size={16} strokeWidth={2.5} />;
         }
     };
@@ -118,7 +193,12 @@ const OrderHistory = () => {
             CancelRequested: 'Yêu cầu hủy', 
             Shipping: 'Đang giao', 
             Completed: 'Hoàn thành', 
-            Cancelled: 'Đã hủy' 
+            Cancelled: 'Đã hủy',
+            ReturnRequested: 'Yêu cầu hoàn hàng',
+            ReturnApproved: 'Chờ gửi hàng về shop',
+            ReturnReceived: 'Shop đang kiểm hàng',
+            Refunded: 'Đã hoàn tiền',
+            Returned: 'Hoàn hàng hoàn tất'
         };
         return map[status] || status;
     };
@@ -141,9 +221,9 @@ const OrderHistory = () => {
                         onClick={() => setFilterStatus(tab.id)}
                     >
                         {tab.label}
-                        {tab.id !== 'All' && orders.filter(o => o.Status === tab.id).length > 0 && (
+                        {tab.id !== 'All' && getTabCount(tab.id) > 0 && (
                             <span className="v-tab-count">
-                                {orders.filter(o => o.Status === tab.id).length}
+                                {getTabCount(tab.id)}
                             </span>
                         )}
                     </div>
@@ -201,6 +281,35 @@ const OrderHistory = () => {
                                 ))}
                             </div>
 
+                            {/* CHI TIẾT TÍNH TIỀN */}
+                            <div className="v-order-pricing-summary" style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'flex-end',
+                                padding: '15px 20px',
+                                borderTop: '1px solid #f0f0f0',
+                                borderBottom: '1px solid #f0f0f0',
+                                background: '#fafafb',
+                                fontSize: '13px',
+                                color: '#555',
+                                gap: '5px'
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', width: '220px' }}>
+                                    <span>Tổng tiền hàng:</span>
+                                    <strong className="text-dark">{(order.details || []).reduce((sum, item) => sum + (Number(item.Price) * Number(item.Quantity)), 0).toLocaleString()}đ</strong>
+                                </div>
+                                {Number(order.DiscountAmount) > 0 && (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '220px', color: '#10b981' }}>
+                                        <span>Giảm giá voucher:</span>
+                                        <strong>-{Number(order.DiscountAmount).toLocaleString()}đ</strong>
+                                    </div>
+                                )}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', width: '220px' }}>
+                                    <span>Phí vận chuyển:</span>
+                                    <strong className="text-dark">{Number(order.ShippingFee) > 0 ? `+${Number(order.ShippingFee).toLocaleString()}đ` : 'Miễn phí'}</strong>
+                                </div>
+                            </div>
+
                             {/* THÔNG TIN GIAO HÀNG */}
                             <div className="v-order-shipping-info">
                                 <div className="fw-700 text-dark mb-1">📍 Địa chỉ nhận hàng:</div>
@@ -219,6 +328,23 @@ const OrderHistory = () => {
                                 <div className="v-cancel-reason-box" style={{ background: order.Status === 'CancelRequested' ? '#fffbeb' : '#fef2f2', color: order.Status === 'CancelRequested' ? '#b45309' : '#dc2626' }}>
                                     <AlertTriangle size={16} color={order.Status === 'CancelRequested' ? '#b45309' : '#dc2626'} />
                                     <span>{order.Status === 'CancelRequested' ? 'Lý do khách yêu cầu hủy' : 'Lý do hủy'}: <strong>{order.CancelReason}</strong></span>
+                                </div>
+                            )}
+
+                            {/* LÝ DO HOÀN HÀNG */}
+                            {['ReturnRequested', 'ReturnApproved', 'ReturnReceived', 'Refunded', 'Returned'].includes(order.Status) && (
+                                <div className="v-return-info-box">
+                                    <div className="fw-700 fs-14 text-dark mb-1 d-flex align-items-center gap-1">
+                                        <Package size={16} className="text-primary" /> Chi tiết yêu cầu trả hàng:
+                                    </div>
+                                    <div>Lý do hoàn hàng: <strong>{order.ReturnReason}</strong></div>
+                                    <div>Phương thức hoàn tiền: <strong>{order.RefundMethod === 'Bank' ? 'Chuyển khoản ngân hàng' : order.RefundMethod}</strong></div>
+                                    <div>Thông tin nhận tiền: <strong>{order.RefundDetails}</strong></div>
+                                    {order.ReturnAdminNote && (
+                                        <div style={{ marginTop: '4px', paddingTop: '6px', borderTop: '1px dashed #bae6fd', color: '#0284c7' }}>
+                                            💬 <strong>Phản hồi từ shop:</strong> <span className="text-dark">{order.ReturnAdminNote}</span>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -244,6 +370,14 @@ const OrderHistory = () => {
                                         <span className="v-cancel-requested-badge" style={{ padding: '8px 16px', background: '#fffbeb', color: '#b45309', borderRadius: '8px', fontSize: '13px', fontWeight: 700 }}>
                                             ⏳ Đang chờ admin xác nhận hủy
                                         </span>
+                                    )}
+                                    {order.Status === 'Completed' && (
+                                        <button
+                                            className="v-btn-return-action"
+                                            onClick={() => openReturnModal(order.OrderID)}
+                                        >
+                                            Yêu cầu hoàn hàng
+                                        </button>
                                     )}
                                 </div>
                             </div>
@@ -323,9 +457,99 @@ const OrderHistory = () => {
                             </button>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                  </div>
+              )}
+
+              {/* MODAL HOÀN HÀNG */}
+              {showReturnModal && (
+                  <div className="v-cancel-modal-overlay" onClick={closeReturnModal}>
+                      <div className="v-cancel-modal" onClick={e => e.stopPropagation()}>
+                          <div className="v-cancel-modal-header">
+                              <div className="v-cancel-modal-title">
+                                  <h3>Yêu cầu hoàn hàng</h3>
+                                  <p className="text-muted fs-13 mt-1 mb-0">Vui lòng điền thông tin chi tiết để chúng tôi xử lý hoàn hàng cho bạn.</p>
+                              </div>
+                              <button className="v-cancel-modal-close" onClick={closeReturnModal}><X size={24} /></button>
+                          </div>
+
+                          <div className="v-cancel-modal-body">
+                              {/* LÝ DO HOÀN HÀNG */}
+                              <div className="mb-4">
+                                  <label className="fw-700 fs-14 mb-2 d-block text-dark">Lý do hoàn hàng:</label>
+                                  <textarea
+                                      className="v-custom-reason-input"
+                                      placeholder="Vui lòng nhập lý do hoàn hàng cụ thể (ví dụ: Sản phẩm lỗi, không đúng size, v.v.)..."
+                                      value={returnReason}
+                                      onChange={e => setReturnReason(e.target.value)}
+                                      rows={3}
+                                      style={{ background: '#fff', borderColor: '#eee', color: '#111' }}
+                                  />
+                              </div>
+
+                              {/* PHƯƠNG THỨC HOÀN TIỀN */}
+                              <div className="mb-4">
+                                  <label className="fw-700 fs-14 mb-2 d-block text-dark">Phương thức nhận tiền hoàn:</label>
+                                  <div className="d-flex gap-2">
+                                      {[
+                                          { id: 'Bank', label: 'Chuyển khoản Ngân hàng' },
+                                          { id: 'Momo', label: 'Momo' },
+                                          { id: 'ZaloPay', label: 'ZaloPay' }
+                                      ].map(method => (
+                                          <button
+                                              key={method.id}
+                                              type="button"
+                                              className={`v-cancel-modal-btn-back py-2 px-3 fs-13 ${refundMethod === method.id ? 'active' : ''}`}
+                                              onClick={() => setRefundMethod(method.id)}
+                                              style={{ 
+                                                  flex: 1, 
+                                                  borderColor: refundMethod === method.id ? '#EE4D2D' : '#e0e0e0',
+                                                  background: refundMethod === method.id ? '#fff8f6' : '#fff',
+                                                  color: refundMethod === method.id ? '#EE4D2D' : '#111',
+                                              }}
+                                          >
+                                              {method.label}
+                                          </button>
+                                      ))}
+                                  </div>
+                              </div>
+
+                              {/* THÔNG TIN CHI TIẾT HOÀN TIỀN */}
+                              <div className="mb-2">
+                                  <label className="fw-700 fs-14 mb-2 d-block text-dark">
+                                      {refundMethod === 'Bank' ? 'Thông tin tài khoản ngân hàng:' : 'Thông tin ví điện tử:'}
+                                  </label>
+                                  <textarea
+                                      className="v-custom-reason-input"
+                                      placeholder={
+                                          refundMethod === 'Bank' 
+                                              ? "Nhập: Tên Ngân hàng, Số tài khoản, Tên chủ tài khoản..." 
+                                              : "Nhập: Số điện thoại nhận tiền, Tên chủ tài khoản..."
+                                      }
+                                      value={refundDetails}
+                                      onChange={e => setRefundDetails(e.target.value)}
+                                      rows={3}
+                                      style={{ background: '#fff', borderColor: '#eee', color: '#111' }}
+                                  />
+                              </div>
+                          </div>
+
+                          <div className="v-cancel-modal-footer">
+                              <button className="v-cancel-modal-btn-back" onClick={closeReturnModal}>
+                                  Đóng
+                              </button>
+                              <button
+                                  className="v-cancel-modal-btn-confirm"
+                                  onClick={handleConfirmReturn}
+                                  disabled={returning || !returnReason.trim() || !refundDetails.trim()}
+                                  style={{ background: '#111' }}
+                              >
+                                  {returning ? 'Đang gửi...' : 'Xác nhận yêu cầu'}
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              )}
+          </div>
     );
 };
 

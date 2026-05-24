@@ -97,6 +97,20 @@ const ProductDetail = () => {
         (v.Color === selectedColor || v.color === selectedColor)
     );
     const maxStock = currentVariant?.Stock || currentVariant?.stock || 0;
+    const totalStock = product?.variants?.reduce((sum, v) => sum + (v.Stock || v.stock || 0), 0) || 0;
+
+    const isSizeOutOfStock = (sizeName) => {
+        const sizeVariants = product?.variants?.filter(v => (v.Size === sizeName || v.size === sizeName)) || [];
+        return sizeVariants.length > 0 && sizeVariants.every(v => (v.Stock || v.stock || 0) === 0);
+    };
+
+    const isColorOutOfStock = (colorName) => {
+        const match = product?.variants?.find(v =>
+            (v.Size === selectedSize || v.size === selectedSize) &&
+            (v.Color === colorName || v.color === colorName)
+        );
+        return !match || (match.Stock || match.stock || 0) === 0;
+    };
 
     const handleAddToCart = async (isBuyNow = false) => {
         if (!currentVariant) return Swal.fire('Lỗi', 'Chọn Size & Màu sắc!', 'error');
@@ -290,8 +304,13 @@ const ProductDetail = () => {
 
                 <div className="detail-grid">
                     <div className="gallery-section">
-                        <div className="main-image-wrap" onClick={() => setIsLightboxOpen(true)}>
+                        <div className="main-image-wrap" style={{ position: 'relative' }} onClick={() => setIsLightboxOpen(true)}>
                             <img src={selectedImage?.startsWith('http') ? selectedImage : `${API_BASE_URL}/storage/${selectedImage}`} alt="main" />
+                            {totalStock === 0 && (
+                                <div className="sold-out-overlay">
+                                    <span className="sold-out-badge">TẠM HẾT HÀNG</span>
+                                </div>
+                            )}
                         </div>
                         <div className="thumb-list">
                             <div className={`thumb-item ${selectedImage === (product.main_image || product.MainImage) ? 'active' : ''}`}
@@ -346,9 +365,19 @@ const ProductDetail = () => {
                         <div className="option-group">
                             <label>Kích thước: <span>{selectedSize}</span></label>
                             <div className="btn-options">
-                                {[...new Set(product.variants?.map(v => v.Size || v.size))].filter(Boolean).map(size => (
-                                    <button key={size} className={selectedSize === size ? 'active' : ''} onClick={() => setSelectedSize(size)}>{size}</button>
-                                ))}
+                                {[...new Set(product.variants?.map(v => v.Size || v.size))].filter(Boolean).map(size => {
+                                    const outOfStock = isSizeOutOfStock(size);
+                                    return (
+                                        <button 
+                                            key={size} 
+                                            className={`${selectedSize === size ? 'active' : ''} ${outOfStock ? 'out-of-stock' : ''}`} 
+                                            onClick={() => setSelectedSize(size)}
+                                            title={outOfStock ? 'Tạm hết size này' : ''}
+                                        >
+                                            {size}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -359,9 +388,19 @@ const ProductDetail = () => {
                                     product.variants
                                         ?.filter(v => (v.Size === selectedSize || v.size === selectedSize))
                                         ?.map(v => v.Color || v.color)
-                                )].filter(Boolean).map(color => (
-                                    <button key={color} className={selectedColor === color ? 'active' : ''} onClick={() => setSelectedColor(color)}>{color}</button>
-                                ))}
+                                )].filter(Boolean).map(color => {
+                                    const outOfStock = isColorOutOfStock(color);
+                                    return (
+                                        <button 
+                                            key={color} 
+                                            className={`${selectedColor === color ? 'active' : ''} ${outOfStock ? 'out-of-stock' : ''}`} 
+                                            onClick={() => setSelectedColor(color)}
+                                            title={outOfStock ? 'Tạm hết màu này' : ''}
+                                        >
+                                            {color}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -371,14 +410,16 @@ const ProductDetail = () => {
                                 <input type="number" value={quantity} readOnly />
                                 <button onClick={() => quantity < maxStock && setQuantity(quantity + 1)} disabled={quantity >= maxStock}>+</button>
                             </div>
-                            <span className="stock-label">{maxStock > 0 ? `Kho: ${maxStock} sản phẩm` : 'Hết hàng'}</span>
+                            <span className={`stock-label ${maxStock === 0 ? 'stock-empty' : ''}`}>{maxStock > 0 ? `Kho: ${maxStock} sản phẩm` : 'Hết hàng'}</span>
                         </div>
 
                         <div className="action-buttons">
                             <button className="btn-add-cart" disabled={maxStock === 0} onClick={() => handleAddToCart(false)}>
                                 <ShoppingCart size={20} /> THÊM VÀO GIỎ
                             </button>
-                            <button className="btn-buy-now" disabled={maxStock === 0} onClick={() => handleAddToCart(true)}>MUA NGAY</button>
+                            <button className="btn-buy-now" disabled={maxStock === 0} onClick={() => handleAddToCart(true)}>
+                                {totalStock === 0 ? 'TẠM HẾT HÀNG' : (maxStock === 0 ? 'HẾT HÀNG' : 'MUA NGAY')}
+                            </button>
                         </div>
                     </div>
                 </div>

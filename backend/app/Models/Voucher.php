@@ -82,4 +82,21 @@ class Voucher extends Model
     {
         $this->attributes['Code'] = self::cleanCode($value);
     }
+
+    /**
+     * Lấy mô tả chi tiết giá trị giảm giá của voucher
+     */
+    public function getDiscountDescription()
+    {
+        if ($this->Type === 'fixed') {
+            return number_format($this->Value, 0, ',', '.') . 'đ';
+        } elseif ($this->Type === 'percent') {
+            return $this->Value . '%';
+        } elseif ($this->Type === 'freeship') {
+            return $this->Value > 0 
+                ? 'Freeship tối đa ' . number_format($this->Value, 0, ',', '.') . 'đ' 
+                : 'Freeship 100%';
+        }
+        return '';
+    }
 }

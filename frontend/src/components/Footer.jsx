@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Footer.css';
 // Thay các icon thương hiệu bằng các icon UI cơ bản chắc chắn có
 import { Globe, Mail, Phone, MapPin } from 'lucide-react'; 
@@ -21,18 +22,14 @@ const Footer = () => {
                 <div className="footer-links">
                     <h4>VỀ CHÚNG TÔI</h4>
                     <ul>
-                        <li>Giới thiệu</li>
-                        <li>Tuyển dụng</li>
-                        <li>Hệ thống cửa hàng</li>
+                        <li><Link to="/about">Giới thiệu</Link></li>
                     </ul>
                 </div>
 
                 <div className="footer-links">
                     <h4>HỖ TRỢ</h4>
                     <ul>
-                        <li>Chính sách đổi trả</li>
-                        <li>Hướng dẫn chọn size</li>
-                        <li>Thanh toán</li>
+                        <li><Link to="/support">Chính sách & FAQs</Link></li>
                     </ul>
                 </div>
 

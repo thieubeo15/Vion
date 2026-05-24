@@ -1,0 +1,191 @@
+/* src/pages/AboutUsPage.css */
+
+.about-us-page {
+    background-color: #faf6f0; /* Đồng bộ tone màu trắng kem của Navbar */
+    color: #2c2722; /* Màu chữ chính nâu đen đậm */
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-height: 100vh;
+}
+
+/* HERO SECTION */
+.about-hero {
+    position: relative;
+    height: 45vh;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.about-hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.about-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(44, 39, 34, 0.7); /* Lớp phủ sẫm màu be đậm */
+    z-index: 1;
+}
+
+.about-hero-content {
+    position: relative;
+    z-index: 2;
+    color: #ffffff;
+    padding: 20px;
+}
+
+.about-hero-title {
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 800;
+    letter-spacing: 4px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.about-hero-subtitle {
+    font-size: clamp(14px, 2vw, 18px);
+    font-weight: 500;
+    letter-spacing: 2px;
+    color: #dfd5c4;
+}
+
+/* STORY SECTION */
+.section-subtitle-tag {
+    display: inline-block;
+    color: #EE4D2D;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.story-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #2c2722;
+    line-height: 1.3;
+}
+
+.story-text {
+    font-size: 15.5px;
+    line-height: 1.8;
+    color: #5a5146;
+    margin-bottom: 20px;
+    text-align: justify;
+}
+
+.story-img-wrap img {
+    box-shadow: 0 15px 35px rgba(44, 39, 34, 0.12);
+    border: 8px solid #ffffff;
+    transition: transform 0.4s ease;
+}
+
+.story-img-wrap img:hover {
+    transform: scale(1.02);
+}
+
+/* GIÁ TRỊ CỐT LÕI */
+.about-values {
+    background-color: #f3ede3; /* Nền tối hơn be 1 xíu để phân tách section */
+}
+
+.values-main-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #2c2722;
+}
+
+.value-card {
+    background-color: #ffffff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    text-align: center;
+    height: 100%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #e5dac8;
+}
+
+.value-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(44, 39, 34, 0.08) !important;
+    border-color: #EE4D2D;
+}
+
+.value-icon-box {
+    width: 70px;
+    height: 70px;
+    background-color: #faf6f0;
+    color: #EE4D2D;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    margin: 0 auto 25px;
+    box-shadow: inset 0 0 0 2px rgba(238, 77, 45, 0.1);
+}
+
+.value-card h4 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #2c2722;
+}
+
+.value-card p {
+    font-size: 14px;
+    color: #6a5e51;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* TẦM NHÌN & SỨ MỆNH */
+.vision-img-wrap img {
+    box-shadow: 0 15px 35px rgba(44, 39, 34, 0.12);
+    border: 8px solid #ffffff;
+}
+
+.vision-box {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    border-left: 5px solid #EE4D2D;
+    box-shadow: 0 4px 15px rgba(44, 39, 34, 0.04);
+}
+
+.vision-icon {
+    color: #EE4D2D;
+}
+
+.vision-box h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c2722;
+}
+
+.vision-box p {
+    font-size: 14.5px;
+    color: #5a5146;
+    line-height: 1.7;
+    margin: 10px 0 0 0;
+}
+
+@media (max-width: 991px) {
+    .about-hero {
+        height: 35vh;
+    }
+    .story-title, .values-main-title {
+        font-size: 28px;
+    }
+    .story-img-wrap, .vision-img-wrap {
+        text-align: center;
+    }
+}

@@ -22,6 +22,7 @@ class VoucherController extends Controller
         $request->validate([
             'code'         => 'required|string',
             'total_amount' => 'required|numeric|min:0',
+            'province'     => 'nullable|string',
         ]);
 
         $user = Auth::user();
@@ -94,12 +95,23 @@ class VoucherController extends Controller
         $discountAmount = 0;
         if ($voucher->Type === 'fixed') {
             $discountAmount = $voucher->Value;
-        } else {
-            // percent
+        } elseif ($voucher->Type === 'percent') {
             $discountAmount = ($request->total_amount * $voucher->Value) / 100;
             // Giới hạn theo MaxDiscount nếu có
             if ($voucher->MaxDiscount !== null && $discountAmount > $voucher->MaxDiscount) {
                 $discountAmount = $voucher->MaxDiscount;
+            }
+        } elseif ($voucher->Type === 'freeship') {
+            $province = $request->province;
+            if ($request->total_amount >= 500000) {
+                $discountAmount = 0;
+            } else {
+                $shippingFee = ($province === 'Thành phố Hà Nội') ? 20000 : 35000;
+                if ($voucher->Value > 0) {
+                    $discountAmount = min($shippingFee, $voucher->Value);
+                } else {
+                    $discountAmount = $shippingFee;
+                }
             }
         }
 
@@ -141,11 +153,11 @@ class VoucherController extends Controller
     {
         $request->validate([
             'Code'           => 'required|string|max:50|unique:vouchers,Code',
-            'Type'           => 'required|in:fixed,percent',
+            'Type'           => 'required|in:fixed,percent,freeship',
             'Value'          => 'required|numeric|min:0',
             'MaxDiscount'    => 'nullable|numeric|min:0',
             'MinOrderAmount' => 'nullable|numeric|min:0',
-            'UsageLimit'     => 'nullable|integer|min:1',
+            'UsageLimit'     => 'nullable|integer|min:0',
             'PerUserLimit'   => 'nullable|integer|min:1',
             'StartDate'      => 'required|date',
             'EndDate'        => 'required|date|after:StartDate',
@@ -153,11 +165,17 @@ class VoucherController extends Controller
             'Description'    => 'nullable|string',
         ]);
 
-        $voucher = Voucher::create($request->only([
+        $data = $request->only([
             'Code', 'Type', 'Value', 'MaxDiscount', 'MinOrderAmount',
             'UsageLimit', 'PerUserLimit', 'StartDate', 'EndDate',
             'IsActive', 'Description'
-        ]));
+        ]);
+
+        if (array_key_exists('UsageLimit', $data) && ($data['UsageLimit'] === null || (int)$data['UsageLimit'] === 0)) {
+            $data['UsageLimit'] = null;
+        }
+
+        $voucher = Voucher::create($data);
 
         return response()->json([
             'success' => true,
@@ -179,11 +197,11 @@ class VoucherController extends Controller
 
         $request->validate([
             'Code'           => 'sometimes|string|max:50|unique:vouchers,Code,' . $id . ',VoucherID',
-            'Type'           => 'sometimes|in:fixed,percent',
+            'Type'           => 'sometimes|in:fixed,percent,freeship',
             'Value'          => 'sometimes|numeric|min:0',
             'MaxDiscount'    => 'nullable|numeric|min:0',
             'MinOrderAmount' => 'nullable|numeric|min:0',
-            'UsageLimit'     => 'nullable|integer|min:1',
+            'UsageLimit'     => 'nullable|integer|min:0',
             'PerUserLimit'   => 'nullable|integer|min:1',
             'StartDate'      => 'sometimes|date',
             'EndDate'        => 'sometimes|date|after:StartDate',
@@ -191,11 +209,17 @@ class VoucherController extends Controller
             'Description'    => 'nullable|string',
         ]);
 
-        $voucher->update($request->only([
+        $data = $request->only([
             'Code', 'Type', 'Value', 'MaxDiscount', 'MinOrderAmount',
             'UsageLimit', 'PerUserLimit', 'StartDate', 'EndDate',
             'IsActive', 'Description'
-        ]));
+        ]);
+
+        if (array_key_exists('UsageLimit', $data) && ($data['UsageLimit'] === null || (int)$data['UsageLimit'] === 0)) {
+            $data['UsageLimit'] = null;
+        }
+
+        $voucher->update($data);
 
         return response()->json([
             'success' => true,
@@ -318,7 +342,7 @@ class VoucherController extends Controller
                 \App\Models\Notification::create([
                     'UserID' => $userId,
                     'Title' => 'Mã giảm giá mới được tặng',
-                    'Content' => "Bạn đã nhận được voucher mới: Mã \"{$voucher->Code}\" giảm " . ($voucher->Type === 'fixed' ? number_format($voucher->Value, 0, ',', '.') . "đ" : $voucher->Value . "%") . " từ Vion.",
+                    'Content' => "Bạn đã nhận được voucher mới: Mã \"{$voucher->Code}\" (" . $voucher->getDiscountDescription() . ") từ Vion.",
                     'Type' => 'voucher_gifted',
                     'RedirectUrl' => '/profile',
                     'IsRead' => false,
@@ -353,7 +377,7 @@ class VoucherController extends Controller
             \App\Models\Notification::create([
                 'UserID' => $user->UserID,
                 'Title' => 'Mã giảm giá mới được tặng',
-                'Content' => "Bạn đã nhận được voucher mới: Mã \"{$voucher->Code}\" giảm " . ($voucher->Type === 'fixed' ? number_format($voucher->Value, 0, ',', '.') . "đ" : $voucher->Value . "%") . " từ Vion.",
+                'Content' => "Bạn đã nhận được voucher mới: Mã \"{$voucher->Code}\" (" . $voucher->getDiscountDescription() . ") từ Vion.",
                 'Type' => 'voucher_gifted',
                 'RedirectUrl' => '/profile',
                 'IsRead' => false,
@@ -388,7 +412,7 @@ class VoucherController extends Controller
                 \App\Models\Notification::create([
                     'UserID' => $user->UserID,
                     'Title' => 'Quà tặng sinh nhật từ Vion',
-                    'Content' => "Chúc mừng sinh nhật! Vion gửi tặng bạn voucher chúc mừng: Mã \"{$voucher->Code}\" giảm " . ($voucher->Type === 'fixed' ? number_format($voucher->Value, 0, ',', '.') . "đ" : $voucher->Value . "%") . ".",
+                    'Content' => "Chúc mừng sinh nhật! Vion gửi tặng bạn voucher chúc mừng: Mã \"{$voucher->Code}\" (" . $voucher->getDiscountDescription() . ").",
                     'Type' => 'voucher_gifted',
                     'RedirectUrl' => '/profile',
                     'IsRead' => false,
@@ -487,7 +511,7 @@ class VoucherController extends Controller
             \App\Models\Notification::create([
                 'UserID'              => $user->UserID,
                 'Title'               => 'Mã giảm giá mới được tặng',
-                'Content'             => "Bạn đã nhận được voucher mới: Mã \"{$voucher->Code}\" giảm " . ($voucher->Type === 'fixed' ? number_format($voucher->Value, 0, ',', '.') . "đ" : $voucher->Value . "%") . " từ Vion.",
+                'Content'             => "Bạn đã nhận được voucher mới: Mã \"{$voucher->Code}\" (" . $voucher->getDiscountDescription() . ") từ Vion.",
                 'Type'                => 'voucher_gifted',
                 'RedirectUrl'         => '/profile',
                 'IsRead'              => false,

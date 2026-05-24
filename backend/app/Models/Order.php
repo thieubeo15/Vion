@@ -33,7 +33,12 @@ class Order extends Model
         'PaymentMethod',
         'VoucherCode',
         'DiscountAmount',
-        'CancelReason'
+        'ShippingFee',
+        'CancelReason',
+        'ReturnReason',
+        'RefundMethod',
+        'RefundDetails',
+        'ReturnAdminNote'
     ];
 
     // --- THÊM ĐOẠN NÀY VÀO ---

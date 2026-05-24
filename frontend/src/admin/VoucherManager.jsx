@@ -241,6 +241,9 @@ const VoucherManager = () => {
 
     const formatValue = (voucher) => {
         if (voucher.Type === 'percent') return `${voucher.Value}%`;
+        if (voucher.Type === 'freeship') {
+            return Number(voucher.Value) > 0 ? `Freeship tối đa ${Number(voucher.Value).toLocaleString()}đ` : 'Freeship 100%';
+        }
         return `${Number(voucher.Value).toLocaleString()}đ`;
     };
 
@@ -290,7 +293,7 @@ const VoucherManager = () => {
                             return (
                                 <tr key={v.id || v.ID} className="v-row-parent">
                                     <td className="v-voucher-code-cell">{v.Code}</td>
-                                    <td>{v.Type === 'percent' ? 'Phần trăm' : 'Cố định'}</td>
+                                    <td>{v.Type === 'percent' ? 'Phần trăm' : v.Type === 'freeship' ? 'Miễn phí ship' : 'Cố định'}</td>
                                     <td className="fw-700">{formatValue(v)}</td>
                                     <td>{v.MinOrderAmount ? `${Number(v.MinOrderAmount).toLocaleString()}đ` : '—'}</td>
                                     <td>
@@ -345,13 +348,16 @@ const VoucherManager = () => {
                                         onChange={e => setFormData({ ...formData, Type: e.target.value })}>
                                         <option value="fixed">Cố định (VNĐ)</option>
                                         <option value="percent">Phần trăm (%)</option>
+                                        <option value="freeship">Miễn phí vận chuyển (Freeship)</option>
                                     </select>
                                 </div>
                                 <div className="v-form-group">
-                                    <label>Giá trị {formData.Type === 'percent' ? '(%)' : '(VNĐ)'}</label>
+                                    <label>
+                                        {formData.Type === 'percent' ? 'Giá trị (%)' : formData.Type === 'freeship' ? 'Giảm tối đa (0 = Freeship 100%)' : 'Giá trị (VNĐ)'}
+                                    </label>
                                     <input type="number" required min="0" value={formData.Value}
                                         onChange={e => setFormData({ ...formData, Value: e.target.value })}
-                                        placeholder={formData.Type === 'percent' ? 'VD: 10' : 'VD: 50000'} />
+                                        placeholder={formData.Type === 'percent' ? 'VD: 10' : formData.Type === 'freeship' ? 'VD: 20000' : 'VD: 50000'} />
                                 </div>
                                 {formData.Type === 'percent' && (
                                     <div className="v-form-group">

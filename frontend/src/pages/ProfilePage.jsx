@@ -123,12 +123,16 @@ const ProfilePage = () => {
     };
 
     const formatVoucherValue = (v) => {
-        if (v.type === 'percent' || v.Type === 'percent') {
-            const val = v.value || v.Value;
+        const type = v.type || v.Type;
+        const val = v.value !== undefined ? v.value : v.Value;
+        if (type === 'percent') {
             const max = v.max_discount || v.MaxDiscount;
             return `Giảm ${val}%${max ? ` (tối đa ${Number(max).toLocaleString()}đ)` : ''}`;
         }
-        return `Giảm ${Number(v.value || v.Value).toLocaleString()}đ`;
+        if (type === 'freeship') {
+            return Number(val) > 0 ? `Freeship tối đa ${Number(val).toLocaleString()}đ` : 'Freeship 100%';
+        }
+        return `Giảm ${Number(val).toLocaleString()}đ`;
     };
 
     const getVoucherStatusBadge = (v) => {

@@ -362,3 +362,59 @@
     color: #334155;
     line-height: 1.7;
 }
+
+/* Hiển thị hết hàng cho từng Biến thể (Size / Màu) */
+.btn-options button.out-of-stock {
+    opacity: 0.35;
+    border-color: #ddd;
+    color: #ccc;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.sold-out-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none;
+    backdrop-filter: blur(2px);
+    transition: 0.3s ease;
+}
+
+.sold-out-badge {
+    background: rgba(17, 17, 17, 0.95);
+    color: #fff;
+    padding: 12px 24px;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-transform: uppercase;
+    border-radius: 2px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.35);
+}
+
+/* Kiểu dáng sang trọng cho nút mua hàng bị vô hiệu hóa (Disabled Buy Buttons) */
+.btn-add-cart:disabled, .btn-buy-now:disabled {
+    background: #f2f2f2 !important;
+    border-color: #e0e0e0 !important;
+    color: #aaa !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 0.8;
+}
+
+/* Nhãn tồn kho khi hết hàng */
+.stock-label.stock-empty {
+    color: #EE4D2D;
+    font-weight: 700;
+    font-size: 14px;
+}

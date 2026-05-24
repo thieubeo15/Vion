@@ -224,4 +224,42 @@
     font-size: 13px;
     margin-bottom: 20px;
     line-height: 1.5;
+}
+
+/* PHÂN HỆ HOÀN HÀNG COD */
+.v-status-tag.returnrequested { background: #fef3c7; color: #d97706; }
+.v-status-tag.returnapproved { background: #e0f2fe; color: #0369a1; }
+.v-status-tag.returnreceived { background: #f3e8ff; color: #7e22ce; }
+.v-status-tag.refunded { background: #ecfdf5; color: #047857; }
+.v-status-tag.returned { background: #f1f5f9; color: #475569; }
+
+.v-info-item.v-return-info {
+    grid-column: 1 / -1;
+    border-top: 1px dashed #cbd5e1;
+    border-bottom: 1px dashed #cbd5e1;
+    padding: 16px;
+    margin-top: 16px;
+    background: #f8fafc;
+}
+.v-return-admin-note-input {
+    width: 100%;
+    border-radius: 8px;
+    font-size: 13px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    outline: none;
+    margin-top: 6px;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+}
+.v-return-admin-note-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+.v-return-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
 }

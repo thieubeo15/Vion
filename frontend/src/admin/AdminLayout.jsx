@@ -25,17 +25,28 @@ const AdminLayout = () => {
         }
     }, [token, user.Role, navigate]);
 
-    const handleLogout = async () => {
-        if (window.confirm("Bạn muốn đăng xuất?")) {
-            try {
-                await axios.post('http://127.0.0.1:8000/api/logout', {}, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-            } catch (err) { console.error(err); }
-            localStorage.removeItem('vion_token');
-            localStorage.removeItem('vion_user');
-            navigate('/login');
-        }
+    const handleLogout = () => {
+        Swal.fire({
+            title: 'Đăng xuất?',
+            text: "Bạn có chắc chắn muốn đăng xuất không?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#111',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Đăng xuất',
+            cancelButtonText: 'Hủy'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await axios.post('http://127.0.0.1:8000/api/logout', {}, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                } catch (err) { console.error(err); }
+                localStorage.removeItem('vion_token');
+                localStorage.removeItem('vion_user');
+                navigate('/login');
+            }
+        });
     };
 
     if (!token || user.Role !== 'Admin') {

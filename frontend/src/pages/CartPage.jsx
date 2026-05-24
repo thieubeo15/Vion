@@ -234,7 +234,6 @@ const CartPage = () => {
                             <h5>Tổng đơn hàng</h5>
                         </div>
                         <div className="v-bill-row"><span>Đã chọn ({selectedItems.length} món)</span><span>{calculateTotal().toLocaleString()}đ</span></div>
-                        <div className="v-bill-row"><span>Phí vận chuyển</span><span className="text-success fw-bold">MIỄN PHÍ</span></div>
                         <div className="v-total-divider"></div>
                         <div className="v-bill-row total"><span>TỔNG TIỀN</span><span className="v-final-price">{calculateTotal().toLocaleString()}đ</span></div>
 
