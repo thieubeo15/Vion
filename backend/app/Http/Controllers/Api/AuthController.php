@@ -73,6 +73,83 @@ class AuthController extends Controller
         ]);
     }
 
+    // 🚀 4. ĐĂNG NHẬP BẰNG GOOGLE
+    public function googleLogin(Request $request)
+    {
+        $request->validate([
+            'credential' => 'required|string'
+        ]);
+
+        $credential = $request->credential;
+
+        try {
+            // Xác thực token bằng cách gọi tới Google OAuth2 tokeninfo endpoint
+            $response = \Illuminate\Support\Facades\Http::get("https://oauth2.googleapis.com/tokeninfo", [
+                'id_token' => $credential
+            ]);
+
+            if ($response->failed()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token Google không hợp lệ hoặc đã hết hạn.'
+                ], 400);
+            }
+
+            $payload = $response->json();
+
+            // Xác minh client_id (để chống tấn công giả mạo token từ ứng dụng khác)
+            $clientId = config('services.google.client_id');
+            if ($clientId && $clientId !== 'your-google-client-id.apps.googleusercontent.com') {
+                if (($payload['aud'] ?? '') !== $clientId && ($payload['azp'] ?? '') !== $clientId) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Yêu cầu không hợp lệ (Client ID mismatch).'
+                    ], 400);
+                }
+            }
+
+            $email = $payload['email'] ?? null;
+            $name = $payload['name'] ?? null;
+
+            if (!$email) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không lấy được thông tin Email từ tài khoản Google.'
+                ], 400);
+            }
+
+            // Tìm hoặc tạo User mới
+            $user = User::where('Email', $email)->first();
+
+            if (!$user) {
+                // Đăng ký mới
+                $user = User::create([
+                    'FullName' => $name ?? 'Khách hàng Google',
+                    'Email' => $email,
+                    'Password' => Hash::make(\Illuminate\Support\Str::random(16)), // Mật khẩu ngẫu nhiên
+                    'Role' => 'Customer'
+                ]);
+            }
+
+            // Đăng nhập thành công -> Tạo Sanctum Token
+            $user->tokens()->delete(); // Xóa các token cũ
+            $token = $user->createToken('VionToken')->plainTextToken;
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đăng nhập Google thành công!',
+                'user' => $user,
+                'token' => $token
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi kết nối máy chủ Google: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     // 3. ĐĂNG XUẤT (Giữ nguyên của bạn)
     public function logout(Request $request)
     {

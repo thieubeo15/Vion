@@ -42,4 +42,8 @@ return [
         'folder'     => env('CLOUDINARY_FOLDER', 'vion'),
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+    ],
+
 ];

@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\{
 // --- CÁC ROUTE CÔNG KHAI (Ai cũng xem được) ---
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/auth/google', [AuthController::class, 'googleLogin']);
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendOtp']);
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
@@ -10,6 +10,61 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const handleGoogleLoginResponse = async (response) => {
+        setError('');
+        try {
+            setLoading(true);
+            const res = await axios.post('http://127.0.0.1:8000/api/auth/google', {
+                credential: response.credential
+            });
+            
+            if (res.data.success) {
+                localStorage.setItem('vion_token', res.data.token);
+                localStorage.setItem('vion_user', JSON.stringify(res.data.user));
+                window.location.href = '/';
+            } else {
+                setError(res.data.message || 'Đăng nhập Google thất bại.');
+            }
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.message || 'Không thể kết nối đến máy chủ Google!');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const loadGoogleScript = () => {
+            if (document.querySelector('script[src="https://accounts.google.com/gsi/client"]')) {
+                initializeGoogleBtn();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = 'https://accounts.google.com/gsi/client';
+            script.async = true;
+            script.defer = true;
+            script.onload = initializeGoogleBtn;
+            document.body.appendChild(script);
+        };
+
+        const initializeGoogleBtn = () => {
+            if (window.google) {
+                const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1008719970978-hb24n2dstb40o45avcl46cotftg283u3.apps.googleusercontent.com';
+                window.google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: handleGoogleLoginResponse
+                });
+                window.google.accounts.id.renderButton(
+                    document.getElementById("google-signin-btn"),
+                    { theme: "outline", size: "large", width: "320" }
+                );
+            }
+        };
+
+        const timer = setTimeout(loadGoogleScript, 100);
+        return () => clearTimeout(timer);
+    }, []);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -127,6 +182,12 @@ const LoginPage = () => {
                                 {loading ? "Đang xử lý..." : "Đăng nhập"}
                             </button>
                         </form>
+
+                        <div className="divider">HOẶC</div>
+
+                        <div className="google-btn-wrapper" style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
+                            <div id="google-signin-btn"></div>
+                        </div>
 
                         <p className="register">
                             Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
