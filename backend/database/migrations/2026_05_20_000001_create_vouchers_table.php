@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('vouchers', function (Blueprint $table) {
@@ -24,14 +21,12 @@ return new class extends Migration
             $table->dateTime('StartDate');
             $table->dateTime('EndDate');
             $table->boolean('IsActive')->default(true);
+            $table->enum('Visibility', ['public', 'private'])->default('public');
             $table->text('Description')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('vouchers');

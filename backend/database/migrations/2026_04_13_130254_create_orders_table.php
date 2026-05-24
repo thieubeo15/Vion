@@ -6,35 +6,31 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
- public function up(): void
-{
-    Schema::create('orders', function (Blueprint $table) {
-        $table->id('OrderID');
-        $table->unsignedBigInteger('UserID')->nullable();
-        
-        // --- CÁC CỘT CÒN THIẾU CẦN THÊM VÀO ---
-        $table->string('FullName'); 
-        $table->string('Phone');
-        $table->text('Address');
-        $table->string('PaymentMethod')->default('COD');
-        // --------------------------------------
+    public function up(): void
+    {
+        Schema::create('orders', function (Blueprint $table) {
+            $table->id('OrderID');
+            $table->unsignedBigInteger('UserID')->nullable();
+            $table->string('FullName');
+            $table->string('Phone');
+            $table->text('Address');
+            $table->string('SpecificAddress')->nullable();
+            $table->string('Province')->nullable();
+            $table->string('District')->nullable();
+            $table->string('Ward')->nullable();
+            $table->string('PaymentMethod')->default('COD');
+            $table->string('VoucherCode')->nullable();
+            $table->decimal('DiscountAmount', 12, 2)->default(0);
+            $table->dateTime('OrderDate');
+            $table->decimal('TotalAmount', 18, 2);
+            $table->string('Status', 50)->default('Pending');
+            $table->text('CancelReason')->nullable();
+            $table->timestamps();
 
-        $table->dateTime('OrderDate');
-        $table->decimal('TotalAmount', 18, 2);
-        $table->string('Status', 50)->default('Pending');
-        
-        $table->timestamps(); // Nên thêm cái này để theo dõi thời gian tạo đơn
+            $table->foreign('UserID')->references('UserID')->on('users')->onDelete('set null');
+        });
+    }
 
-        $table->foreign('UserID')->references('UserID')->on('users')->onDelete('set null');
-    });
-}
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('orders');

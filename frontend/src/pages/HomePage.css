@@ -19,15 +19,30 @@ html, body {
     overflow-x: hidden; /* Chỉ để ở lớp này để tránh tràn trang */
 }
 
-/* ================= HERO BANNER (GIỮ NGUYÊN) ================= */
+/* ================= HERO BANNER SLIDER ================= */
 .hero-section {
     position: relative;
     height: 85vh;
     width: 100%;
-    display: flex;
-    align-items: center;
     overflow: hidden;
     background-color: #000;
+}
+
+/* Mỗi slide chồng lên nhau, chỉ slide active mới hiện */
+.hero-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+}
+
+.hero-slide.active {
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 1;
 }
 
 .hero-bg {
@@ -50,6 +65,97 @@ html, body {
     inset: 0;
     background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
     z-index: 1;
+}
+
+/* Nút mũi tên - chỉ icon, không ô tròn */
+.hero-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.75);
+    font-size: 80px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+    padding: 0;
+    font-weight: 200;
+    user-select: none;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+
+.hero-arrow:hover {
+    color: #EE4D2D;
+    transform: translateY(-50%) scale(1.15);
+    text-shadow: 0 4px 20px rgba(238,77,45,0.6);
+}
+
+.hero-arrow:active {
+    transform: translateY(-50%) scale(0.9);
+}
+
+.hero-arrow-prev { left: 20px; }
+.hero-arrow-next { right: 20px; }
+
+/* Badge số thứ tự */
+.hero-counter {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    z-index: 10;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    letter-spacing: 2px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Chấm chỉ báo */
+.hero-dots {
+    position: absolute;
+    bottom: 34px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.hero-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.7);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.35s ease;
+    padding: 0;
+}
+
+.hero-dot.active {
+    background: #EE4D2D;
+    border-color: #EE4D2D;
+    width: 32px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(238,77,45,0.6);
+}
+
+.hero-dot:hover:not(.active) {
+    background: rgba(255,255,255,0.6);
+    border-color: #fff;
+    transform: scale(1.2);
 }
 
 .hero-content {

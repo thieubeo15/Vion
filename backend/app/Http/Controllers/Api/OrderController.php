@@ -28,7 +28,7 @@ class OrderController extends Controller
             'Phone' => 'required|string|max:20',
             'SpecificAddress' => 'required|string|max:500',
             'Province' => 'required|string|max:255',
-            'District' => 'required|string|max:255',
+            'District' => 'nullable|string|max:255',
             'Ward' => 'required|string|max:255',
             'TotalAmount' => 'required|numeric',
             'SelectedItems' => 'required|array|min:1',
@@ -38,8 +38,14 @@ class OrderController extends Controller
         $user = Auth::guard('sanctum')->user();
         
         try {
-            // Nối địa chỉ đầy đủ cho tương thích ngược
-            $fullAddress = $request->SpecificAddress . ', ' . $request->Ward . ', ' . $request->District . ', ' . $request->Province;
+            // Nối địa chỉ đầy đủ cho tương thích ngược, loại bỏ phần tử rỗng
+            $addressParts = array_filter([
+                $request->SpecificAddress,
+                $request->Ward,
+                $request->District,
+                $request->Province
+            ]);
+            $fullAddress = implode(', ', $addressParts);
 
             if ($user) {
                 // Lấy giỏ hàng kèm theo các item và thông tin sản phẩm từ DB
@@ -74,10 +80,13 @@ class OrderController extends Controller
                         throw new \Exception("Sản phẩm phân loại #{$variantId} không tồn tại!");
                     }
 
+                    $priceToUse = ($variant->DiscountPrice !== null && $variant->DiscountPrice < $variant->Price)
+                        ? $variant->DiscountPrice
+                        : $variant->Price;
                     $selectedItems->push((object)[
                         'VariantID' => $variantId,
                         'Quantity' => (int)$quantity,
-                        'Price' => $variant->Price,
+                        'Price' => $priceToUse,
                         'variant' => $variant
                     ]);
                 }
@@ -87,7 +96,16 @@ class OrderController extends Controller
                 // Tính TotalAmount phía server (không tin client)
                 $totalAmount = 0;
                 foreach ($selectedItems as $item) {
-                    $price = $item->Price ?? $item->variant->Price ?? 0;
+                    $variant = $item->variant ?? null;
+                    if (isset($item->Price) && $item->Price) {
+                        $price = $item->Price;
+                    } elseif ($variant) {
+                        $price = ($variant->DiscountPrice !== null && $variant->DiscountPrice < $variant->Price)
+                            ? $variant->DiscountPrice
+                            : $variant->Price;
+                    } else {
+                        $price = 0;
+                    }
                     $totalAmount += $price * $item->Quantity;
                 }
 
@@ -177,7 +195,13 @@ class OrderController extends Controller
                         throw new \Exception("Sản phẩm {$variant->product->Name} không đủ tồn kho!");
                     }
 
-                    $finalPrice = $item->Price ?? $variant->Price ?? 0;
+                    if (isset($item->Price) && $item->Price) {
+                        $finalPrice = $item->Price;
+                    } else {
+                        $finalPrice = ($variant->DiscountPrice !== null && $variant->DiscountPrice < $variant->Price)
+                            ? $variant->DiscountPrice
+                            : $variant->Price;
+                    }
 
                     // Tạo chi tiết đơn hàng
                     OrderDetail::create([

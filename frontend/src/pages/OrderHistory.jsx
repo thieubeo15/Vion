@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Package, Clock, Truck, CheckCircle, XCircle, Inbox, X, AlertTriangle, ChevronRight } from 'lucide-react';
+import { Package, Clock, Truck, CheckCircle, XCircle, Inbox, X, AlertTriangle, ChevronRight, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import './OrderHistory.css';
 
@@ -14,6 +15,7 @@ const CANCEL_REASONS = [
 ];
 
 const OrderHistory = () => {
+    const navigate = useNavigate();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState('All');
@@ -125,6 +127,9 @@ const OrderHistory = () => {
 
     return (
         <div className="v-order-history container py-5">
+            <div className="v-back-action mb-4" onClick={() => navigate(-1)}>
+                <ArrowLeft size={18} /> <span>Quay lại</span>
+            </div>
             <h2 className="fw-900 mb-4 text-center">ĐƠN MUA CỦA TÔI</h2>
 
             {/* THANH TAB PHÂN LOẠI */}
@@ -172,7 +177,7 @@ const OrderHistory = () => {
                                     <div key={index} className="v-product-row d-flex align-items-center">
                                         <div className="v-product-img-box">
                                             <img 
-                                                src={item.variant?.product?.MainImage ? `${ASSET_URL}${item.variant.product.MainImage}` : 'https://via.placeholder.com/80'} 
+                                                src={item.variant?.product?.MainImage ? (item.variant.product.MainImage.startsWith('http') ? item.variant.product.MainImage : `${ASSET_URL}${item.variant.product.MainImage}`) : 'https://via.placeholder.com/80'} 
                                                 alt={item.variant?.product?.Name} 
                                                 className="v-product-img"
                                             />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ShoppingCart, ChevronRight, Star, MessageSquare, PackageCheck, Trash2 } from 'lucide-react';
+import { ShoppingCart, ChevronRight, Star, MessageSquare, PackageCheck, Trash2, ArrowLeft } from 'lucide-react';
 import Swal from 'sweetalert2';
 import './ProductDetail.css';
 
@@ -78,6 +78,20 @@ const ProductDetail = () => {
         window.scrollTo(0, 0);
     }, [id]);
 
+    useEffect(() => {
+        if (!product || !selectedSize) return;
+        
+        const availableColors = [...new Set(
+            product.variants
+                ?.filter(v => (v.Size === selectedSize || v.size === selectedSize))
+                ?.map(v => v.Color || v.color)
+        )].filter(Boolean);
+
+        if (availableColors.length > 0 && !availableColors.includes(selectedColor)) {
+            setSelectedColor(availableColors[0]);
+        }
+    }, [selectedSize, product]);
+
     const currentVariant = product?.variants?.find(v =>
         (v.Size === selectedSize || v.size === selectedSize) &&
         (v.Color === selectedColor || v.color === selectedColor)
@@ -115,18 +129,27 @@ const ProductDetail = () => {
                     Swal.fire('Thất bại', `Vượt quá tồn kho! Kho chỉ còn ${maxStock} sản phẩm.`, 'error');
                     return;
                 }
+                const originalPrice = Number(currentVariant.Price || currentVariant.price || 0);
+                const discountPrice = currentVariant.DiscountPrice !== undefined ? currentVariant.DiscountPrice : currentVariant.discount_price;
+                const sellingPrice = (discountPrice !== null && discountPrice !== undefined && Number(discountPrice) < originalPrice)
+                    ? Number(discountPrice)
+                    : originalPrice;
+
                 const guestItem = {
                     id: `guest_${variantId}`,
                     CartItemID: `guest_${variantId}`,
                     VariantID: variantId,
                     Quantity: quantity,
-                    Price: currentVariant.Price || currentVariant.price || 0,
+                    Price: sellingPrice,
                     variant: {
                         id: variantId,
                         VariantID: variantId,
                         Size: selectedSize,
                         Color: selectedColor,
-                        Price: currentVariant.Price || currentVariant.price || 0,
+                        Price: originalPrice,
+                        DiscountPrice: discountPrice,
+                        discount_price: discountPrice,
+                        discount_percent: currentVariant.discount_percent || 0,
                         Stock: maxStock,
                         product: {
                             ProductID: product.ProductID || product.id,
@@ -229,7 +252,17 @@ const ProductDetail = () => {
 
     if (loading || !product) return <div className="v-loading">VION ERA ĐANG TẢI...</div>;
 
-    const displayPrice = currentVariant ? (currentVariant.Price || currentVariant.price) : (product.variants?.[0]?.Price || 0);
+    const getPriceDetails = () => {
+        const variant = currentVariant || (product.variants && product.variants.length > 0 ? product.variants[0] : null);
+        if (!variant) return { price: 0, discountPrice: null, discountPercent: 0, hasDiscount: false };
+        const price = variant.price !== undefined ? variant.price : variant.Price;
+        const discountPrice = variant.discount_price !== undefined ? variant.discount_price : variant.DiscountPrice;
+        const discountPercent = variant.discount_percent !== undefined ? variant.discount_percent : variant.DiscountPercent || 0;
+        const hasDiscount = discountPrice !== null && discountPrice !== undefined && Number(discountPrice) < Number(price);
+        return { price, discountPrice, discountPercent, hasDiscount };
+    };
+
+    const { price: vPrice, discountPrice: vDiscountPrice, discountPercent: vDiscountPercent, hasDiscount: vHasDiscount } = getPriceDetails();
     const averageRating = product.average_rating || 0;
     const reviews = product.reviews || [];
 
@@ -240,11 +273,15 @@ const ProductDetail = () => {
         <div className="product-detail-page">
             {isLightboxOpen && (
                 <div className="lightbox-overlay" onClick={() => setIsLightboxOpen(false)}>
-                    <img src={`${API_BASE_URL}/storage/${selectedImage}`} alt="Zoom" className="lightbox-img" />
+                    <img src={selectedImage?.startsWith('http') ? selectedImage : `${API_BASE_URL}/storage/${selectedImage}`} alt="Zoom" className="lightbox-img" />
                 </div>
             )}
 
             <div className="container">
+                <button className="v-back-btn" onClick={() => navigate(-1)}>
+                    <ArrowLeft size={16} /> Quay lại
+                </button>
+
                 <nav className="v-breadcrumb">
                     <Link to="/">Trang chủ</Link> <ChevronRight size={14} />
                     <span>{product.category?.name || product.category?.Name}</span> <ChevronRight size={14} />
@@ -254,17 +291,17 @@ const ProductDetail = () => {
                 <div className="detail-grid">
                     <div className="gallery-section">
                         <div className="main-image-wrap" onClick={() => setIsLightboxOpen(true)}>
-                            <img src={`${API_BASE_URL}/storage/${selectedImage}`} alt="main" />
+                            <img src={selectedImage?.startsWith('http') ? selectedImage : `${API_BASE_URL}/storage/${selectedImage}`} alt="main" />
                         </div>
                         <div className="thumb-list">
                             <div className={`thumb-item ${selectedImage === (product.main_image || product.MainImage) ? 'active' : ''}`}
                                 onClick={() => setSelectedImage(product.main_image || product.MainImage)}>
-                                <img src={`${API_BASE_URL}/storage/${product.main_image || product.MainImage}`} alt="thumb" />
+                                <img src={(product.main_image || product.MainImage)?.startsWith('http') ? (product.main_image || product.MainImage) : `${API_BASE_URL}/storage/${product.main_image || product.MainImage}`} alt="thumb" />
                             </div>
-                            {product.images?.map((img, idx) => (
+                            {product.images?.filter(img => (img.url || img.Url) !== (product.main_image || product.MainImage)).map((img, idx) => (
                                 <div key={idx} className={`thumb-item ${selectedImage === (img.url || img.Url) ? 'active' : ''}`}
                                     onClick={() => setSelectedImage(img.url || img.Url)}>
-                                    <img src={`${API_BASE_URL}/storage/${img.url || img.Url}`} alt="thumb" />
+                                    <img src={(img.url || img.Url)?.startsWith('http') ? (img.url || img.Url) : `${API_BASE_URL}/storage/${img.url || img.Url}`} alt="thumb" />
                                 </div>
                             ))}
                         </div>
@@ -287,7 +324,23 @@ const ProductDetail = () => {
                             <div className="p-sold">Đã bán {product.sold_count || 0}</div>
                         </div>
 
-                        <div className="p-price-big">{Number(displayPrice).toLocaleString()}đ</div>
+                        {vHasDiscount ? (
+                            <div className="p-price-big-container" style={{ display: 'flex', alignItems: 'baseline', gap: '15px', marginBottom: '25px', flexWrap: 'wrap' }}>
+                                <span className="p-price-big-current" style={{ fontSize: '30px', fontWeight: '900', color: '#EE4D2D' }}>
+                                    {Number(vDiscountPrice).toLocaleString()}đ
+                                </span>
+                                <span className="p-price-big-original" style={{ fontSize: '18px', textDecoration: 'line-through', color: '#999', fontWeight: '500' }}>
+                                    {Number(vPrice).toLocaleString()}đ
+                                </span>
+                                <span className="p-price-big-discount-badge" style={{ fontSize: '14px', fontWeight: '700', color: '#EE4D2D', backgroundColor: '#FFF0EE', padding: '3px 8px', borderRadius: '3px', border: '1px solid #FCD5D0' }}>
+                                    GIẢM {vDiscountPercent}%
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="p-price-big" style={{ fontSize: '30px', fontWeight: '900', color: '#111', marginBottom: '25px' }}>
+                                {Number(vPrice).toLocaleString()}đ
+                            </div>
+                        )}
                         <div className="p-divider"></div>
 
                         <div className="option-group">
@@ -302,7 +355,11 @@ const ProductDetail = () => {
                         <div className="option-group">
                             <label>Màu sắc: <span>{selectedColor}</span></label>
                             <div className="btn-options">
-                                {[...new Set(product.variants?.map(v => v.Color || v.color))].filter(Boolean).map(color => (
+                                {[...new Set(
+                                    product.variants
+                                        ?.filter(v => (v.Size === selectedSize || v.size === selectedSize))
+                                        ?.map(v => v.Color || v.color)
+                                )].filter(Boolean).map(color => (
                                     <button key={color} className={selectedColor === color ? 'active' : ''} onClick={() => setSelectedColor(color)}>{color}</button>
                                 ))}
                             </div>
@@ -332,6 +389,24 @@ const ProductDetail = () => {
                         <div className="desc-content" style={{ whiteSpace: 'pre-line', color: '#333', lineHeight: '1.6' }}>
                             {product.description || product.Description || "Sản phẩm này hiện chưa có mô tả chi tiết."}
                         </div>
+                        
+                        {(product.material || product.usage_instruction) && (
+                            <div className="product-specs-box">
+                                <h4 className="specs-box-title">Thông số chi tiết</h4>
+                                {product.material && (
+                                    <div className="spec-item">
+                                        <span className="spec-label">Chất liệu</span>
+                                        <span className="spec-value">{product.material}</span>
+                                    </div>
+                                )}
+                                {product.usage_instruction && (
+                                    <div className="spec-item usage-instruction-item">
+                                        <span className="spec-label">Hướng dẫn sử dụng</span>
+                                        <div className="spec-value instruction-text">{product.usage_instruction}</div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="reviews-right" id="review-section">
@@ -396,19 +471,49 @@ const ProductDetail = () => {
                     
                     {relatedProducts.length > 0 ? (
                         <div className="related-grid">
-                            {relatedProducts.map(relProd => (
-                                <Link key={relProd.id} to={`/product/${relProd.id}`} className="rel-card">
-                                    <div className="rel-img">
-                                        <img src={relProd.main_image || relProd.MainImage ? `${API_BASE_URL}/storage/${relProd.main_image || relProd.MainImage}` : 'https://via.placeholder.com/300x400'} alt={relProd.name || relProd.Name} />
-                                    </div>
-                                    <div className="rel-info">
-                                        <p className="rel-name">{relProd.name || relProd.Name}</p>
-                                        <p className="rel-price">
-                                            {relProd.variants?.[0] ? Number(relProd.variants[0].Price || relProd.variants[0].price).toLocaleString() : '0'}đ
-                                        </p>
-                                    </div>
-                                </Link>
-                            ))}
+                            {relatedProducts.map(relProd => {
+                                const v = relProd.variants && relProd.variants.length > 0 ? relProd.variants[0] : null;
+                                const price = v ? (v.price !== undefined ? v.price : v.Price) : null;
+                                const discountPrice = v ? (v.discount_price !== undefined ? v.discount_price : v.DiscountPrice) : null;
+                                const discountPercent = v ? (v.discount_percent !== undefined ? v.discount_percent : v.DiscountPercent) : null;
+                                const hasDiscount = v && discountPrice !== null && discountPrice !== undefined && Number(discountPrice) < Number(price);
+
+                                return (
+                                    <Link key={relProd.id} to={`/product/${relProd.id}`} className="rel-card">
+                                        <div className="rel-img" style={{ position: 'relative' }}>
+                                            <img src={relProd.main_image || relProd.MainImage ? ((relProd.main_image || relProd.MainImage).startsWith('http') ? (relProd.main_image || relProd.MainImage) : `${API_BASE_URL}/storage/${relProd.main_image || relProd.MainImage}`) : 'https://via.placeholder.com/300x400'} alt={relProd.name || relProd.Name} />
+                                            {hasDiscount && (
+                                                <div className="discount-badge-overlay" style={{ top: '5px', left: '5px', fontSize: '9px', padding: '2px 5px' }}>
+                                                    -{discountPercent}%
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="rel-info">
+                                            <p className="rel-name">{relProd.name || relProd.Name}</p>
+                                            {v ? (
+                                                hasDiscount ? (
+                                                    <div className="p-price-container" style={{ margin: '0' }}>
+                                                        <span className="p-price-current">
+                                                            {Number(discountPrice).toLocaleString()}đ
+                                                        </span>
+                                                        <span className="p-price-original">
+                                                            {Number(price).toLocaleString()}đ
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <p className="rel-price">
+                                                        {Number(price).toLocaleString()}đ
+                                                    </p>
+                                                )
+                                            ) : (
+                                                <p className="rel-price" style={{ color: '#999' }}>
+                                                    Liên hệ
+                                                </p>
+                                            )}
+                                        </div>
+                                    </Link>
+                                );
+                            })}
                         </div>
                     ) : (
                         <p style={{ textAlign: 'center', color: '#888', marginTop: '20px' }}>Hiện chưa có sản phẩm cùng danh mục.</p>

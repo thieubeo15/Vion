@@ -18,6 +18,8 @@ class UpdateProductRequest extends FormRequest
             'Name' => 'sometimes|required|string|max:255',
             'MainImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
             'Description' => 'nullable|string',
+            'Material' => 'nullable|string|max:255',
+            'UsageInstruction' => 'nullable|string',
             'variants' => 'nullable|string', // Chuỗi JSON từ React
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120', // Gallery images
         ];

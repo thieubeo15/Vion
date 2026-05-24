@@ -146,19 +146,23 @@ class ProductSearchController extends Controller
                     continue;
                 }
 
-                // Tìm đường dẫn file vật lý trên ổ cứng
-                $fullPath = storage_path('app/public/' . $path);
-                if (!file_exists($fullPath)) {
-                    $cleanedPath = str_replace(['storage/', 'public/'], '', $path);
-                    $fullPath = storage_path('app/public/' . $cleanedPath);
-                }
-                if (!file_exists($fullPath)) {
-                    $fullPath = public_path($path);
-                }
+                if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+                    $fullPath = $path;
+                } else {
+                    // Tìm đường dẫn file vật lý trên ổ cứng
+                    $fullPath = storage_path('app/public/' . $path);
+                    if (!file_exists($fullPath)) {
+                        $cleanedPath = str_replace(['storage/', 'public/'], '', $path);
+                        $fullPath = storage_path('app/public/' . $cleanedPath);
+                    }
+                    if (!file_exists($fullPath)) {
+                        $fullPath = public_path($path);
+                    }
 
-                if (!file_exists($fullPath)) {
-                    $reportErrors[] = "Ảnh ID {$imgId}: Không tìm thấy file thật tại: " . $fullPath;
-                    continue;
+                    if (!file_exists($fullPath)) {
+                        $reportErrors[] = "Ảnh ID {$imgId}: Không tìm thấy file thật tại: " . $fullPath;
+                        continue;
+                    }
                 }
 
                 // Gọi hàm nội bộ để xử lý dịch và lưu
@@ -186,14 +190,18 @@ class ProductSearchController extends Controller
     // 🎯 HÀM 3: TRỢ LÝ REAL-TIME (Dùng để gọi từ file ProductController.php khi thêm sản phẩm)
     public static function vectorizeSingleImage($imgId, $relativePath)
     {
-        $fullPath = storage_path('app/public/' . $relativePath);
-        if (!file_exists($fullPath)) {
-            $fullPath = public_path($relativePath);
-        }
-        
-        if (!file_exists($fullPath)) {
-            \Log::error("Tự động Vector thất bại: Không tìm thấy file tại " . $fullPath);
-            return false;
+        if (str_starts_with($relativePath, 'http://') || str_starts_with($relativePath, 'https://')) {
+            $fullPath = $relativePath;
+        } else {
+            $fullPath = storage_path('app/public/' . $relativePath);
+            if (!file_exists($fullPath)) {
+                $fullPath = public_path($relativePath);
+            }
+            
+            if (!file_exists($fullPath)) {
+                \Log::error("Tự động Vector thất bại: Không tìm thấy file tại " . $fullPath);
+                return false;
+            }
         }
 
         return self::executeVectorization($imgId, $fullPath, true);

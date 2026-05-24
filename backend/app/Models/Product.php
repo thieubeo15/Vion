@@ -12,7 +12,7 @@ class Product extends Model
     // Tự động quản lý created_at, updated_at
     public $timestamps = true;
 
-  protected $fillable = ['Name', 'CategoryID', 'MainImage', 'Description', 'sold_count'];
+  protected $fillable = ['Name', 'CategoryID', 'MainImage', 'Description', 'sold_count', 'Material', 'UsageInstruction'];
 
     /**
      * Thuộc về một danh mục

@@ -70,7 +70,7 @@
 
 .v-variant-header {
     display: grid; 
-    grid-template-columns: 1fr 1fr 1.2fr 1.2fr 1fr 40px; 
+    grid-template-columns: 0.8fr 1.2fr 1.5fr 1.5fr 1.5fr 0.8fr 40px; 
     gap: 12px;
     padding: 0 0 10px 0; 
     font-size: 11px; 
@@ -82,7 +82,7 @@
 
 .v-variant-row { 
     display: grid; 
-    grid-template-columns: 1fr 1fr 1.2fr 1.2fr 1fr 40px; 
+    grid-template-columns: 0.8fr 1.2fr 1.5fr 1.5fr 1.5fr 0.8fr 40px; 
     gap: 12px; 
     margin-bottom: 10px; 
     align-items: center;

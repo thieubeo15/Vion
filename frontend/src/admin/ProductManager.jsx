@@ -11,8 +11,8 @@ const ProductManager = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const [formData, setFormData] = useState({
-        Name: '', CategoryID: '', Description: '', MainImage: null, additionalImages: [],
-        variants: [{ size: '', color: '', price: '', stock: '', importPrice: '' }] // Thêm importPrice vào đây
+        Name: '', CategoryID: '', Description: '', Material: '', UsageInstruction: '', MainImage: null, additionalImages: [],
+        variants: [{ size: '', color: '', price: '', discountPrice: '', stock: '', importPrice: '' }]
     });
 
     const [isEditing, setIsEditing] = useState(false);
@@ -71,10 +71,12 @@ const ProductManager = () => {
             html: `
                 <div style="text-align: left; font-family: 'Plus Jakarta Sans'; font-size: 14px;">
                     <div style="display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
-                        <img src="http://127.0.0.1:8000/storage/${prod.main_image}" style="width: 80px; height: 110px; object-fit: cover; border-radius: 8px;" />
+                        <img src="${prod.main_image?.startsWith('http') ? prod.main_image : 'http://127.0.0.1:8000/storage/' + prod.main_image}" style="width: 80px; height: 110px; object-fit: cover; border-radius: 8px;" />
                         <div>
                             <h4 style="margin: 0 0 5px 0; font-size: 16px;">${prod.name}</h4>
                             <p style="margin: 0; color: #EE4D2D; font-weight: 700;">Danh mục: ${prod.category?.name || 'N/A'}</p>
+                            <p style="margin: 5px 0 0 0; font-size: 13px; color: #555;"><b>Chất liệu:</b> ${prod.material || 'Chưa cập nhật'}</p>
+                            <p style="margin: 5px 0 0 0; font-size: 13px; color: #555; white-space: pre-line;"><b>HD sử dụng:</b> ${prod.usage_instruction || 'Chưa cập nhật'}</p>
                             <p style="font-size: 13px; color: #777; margin-top: 8px;">${prod.description || 'Không có mô tả.'}</p>
                         </div>
                     </div>
@@ -85,6 +87,7 @@ const ProductManager = () => {
                                 <th style="padding: 10px; border-bottom: 1px solid #eee; text-align: left;">Size</th>
                                 <th style="padding: 10px; border-bottom: 1px solid #eee; text-align: left;">Màu</th>
                                 <th style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">Giá bán</th>
+                                <th style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">Giá giảm</th>
                                 <th style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">Giá nhập</th>
                                 <th style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">Kho</th>
                             </tr>
@@ -95,6 +98,7 @@ const ProductManager = () => {
                                     <td style="padding: 10px; border-bottom: 1px solid #eee;">${v.size || v.Size || '-'}</td>
                                     <td style="padding: 10px; border-bottom: 1px solid #eee;">${v.color || v.Color || '-'}</td>
                                     <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">${Number(v.price || v.Price || 0).toLocaleString()}đ</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700; color: #EE4D2D;">${v.discount_price || v.DiscountPrice ? `${Number(v.discount_price || v.DiscountPrice).toLocaleString()}đ` : '-'}</td>
                                     <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">${Number(v.importPrice || v.import_price || v.ImportPrice || 0).toLocaleString()}đ</td>
                                     <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${v.stock || v.Stock || 0}</td>
                                 </tr>
@@ -292,6 +296,8 @@ const ProductManager = () => {
         data.append('Name', formData.Name);
         data.append('CategoryID', formData.CategoryID);
         data.append('Description', formData.Description || '');
+        data.append('Material', formData.Material || '');
+        data.append('UsageInstruction', formData.UsageInstruction || '');
         if (formData.MainImage instanceof File) data.append('MainImage', formData.MainImage);
 
         // Gửi các ảnh phụ (Gallery)
@@ -334,11 +340,13 @@ const ProductManager = () => {
         setIsEditing(true); setEditId(prod.id);
         setFormData({
             Name: prod.name, CategoryID: prod.category_id, Description: prod.description || '',
+            Material: prod.material || '', UsageInstruction: prod.usage_instruction || '',
             MainImage: null, additionalImages: [],
             variants: prod.variants?.map(v => ({
                 size: v.size || v.Size,
                 color: v.color || v.Color,
                 price: v.price || v.Price,
+                discountPrice: v.discount_price || v.DiscountPrice || '',
                 stock: v.stock || v.Stock,
                 importPrice: v.import_price || v.ImportPrice || '' // Lấy giá vốn từ API
             })) || []
@@ -351,7 +359,7 @@ const ProductManager = () => {
         if (formData.additionalImages) {
             formData.additionalImages.forEach(revokePreview);
         }
-        setFormData({ Name: '', CategoryID: '', Description: '', MainImage: null, additionalImages: [], variants: [{ size: '', color: '', price: '', importPrice: '', stock: '' }] });
+        setFormData({ Name: '', CategoryID: '', Description: '', Material: '', UsageInstruction: '', MainImage: null, additionalImages: [], variants: [{ size: '', color: '', price: '', discountPrice: '', importPrice: '', stock: '' }] });
         setIsEditing(false); setEditId(null);
     };
 
@@ -376,7 +384,9 @@ const ProductManager = () => {
                     <div className="v-col">
                         <div className="v-input-group"><label>Tên sản phẩm</label><input type="text" value={formData.Name} onChange={(e) => setFormData({ ...formData, Name: e.target.value })} required placeholder="Hoodie Vion..." /></div>
                         <div className="v-input-group"><label>Danh mục</label><select value={formData.CategoryID} onChange={(e) => setFormData({ ...formData, CategoryID: e.target.value })} required><option value="">-- Chọn danh mục --</option>{categories.map(c => <option key={c.id} value={c.id}>{c.display}</option>)}</select></div>
+                        <div className="v-input-group"><label>Chất liệu</label><input type="text" value={formData.Material} onChange={(e) => setFormData({ ...formData, Material: e.target.value })} placeholder="Cotton 100%, Nỉ bông..." /></div>
                         <div className="v-input-group"><label>Mô tả</label><textarea rows="2" value={formData.Description} onChange={(e) => setFormData({ ...formData, Description: e.target.value })}></textarea></div>
+                        <div className="v-input-group"><label>Hướng dẫn sử dụng</label><textarea rows="2" value={formData.UsageInstruction} onChange={(e) => setFormData({ ...formData, UsageInstruction: e.target.value })} placeholder="Giặt máy chế độ nhẹ, không dùng chất tẩy..."></textarea></div>
                     </div>
                     <div className="v-col">
                         <label style={{ fontWeight: 700, fontSize: '11px', color: '#999', textTransform: 'uppercase' }}>Hình ảnh</label>
@@ -435,7 +445,7 @@ const ProductManager = () => {
                 <div className="v-variant-section">
                     <div className="v-section-header">
                         <h3>Biến thể & Giá nhập (Giá vốn)</h3>
-                        <button type="button" onClick={() => setFormData({ ...formData, variants: [...formData.variants, { size: '', color: '', price: '', importPrice: '', stock: '' }] })} className="v-btn-add-var">+ Thêm dòng</button>
+                        <button type="button" onClick={() => setFormData({ ...formData, variants: [...formData.variants, { size: '', color: '', price: '', discountPrice: '', importPrice: '', stock: '' }] })} className="v-btn-add-var">+ Thêm dòng</button>
                     </div>
 
                     {formData.variants.map((v, i) => (
@@ -443,6 +453,7 @@ const ProductManager = () => {
                             <input type="text" placeholder="Size" value={v.size} onChange={(e) => { const n = [...formData.variants]; n[i].size = e.target.value; setFormData({ ...formData, variants: n }); }} />
                             <input type="text" placeholder="Màu" value={v.color} onChange={(e) => { const n = [...formData.variants]; n[i].color = e.target.value; setFormData({ ...formData, variants: n }); }} />
                             <input type="number" placeholder="Giá bán" value={v.price} onChange={(e) => { const n = [...formData.variants]; n[i].price = e.target.value; setFormData({ ...formData, variants: n }); }} />
+                            <input type="number" placeholder="Giá giảm" value={v.discountPrice || ''} onChange={(e) => { const n = [...formData.variants]; n[i].discountPrice = e.target.value; setFormData({ ...formData, variants: n }); }} />
                             <input type="number" placeholder="Giá nhập" value={v.importPrice} onChange={(e) => { const n = [...formData.variants]; n[i].importPrice = e.target.value; setFormData({ ...formData, variants: n }); }} />
                             <input type="number" placeholder="Kho" value={v.stock} onChange={(e) => { const n = [...formData.variants]; n[i].stock = e.target.value; setFormData({ ...formData, variants: n }); }} />
                             <button type="button" onClick={() => setFormData({ ...formData, variants: formData.variants.filter((_, idx) => idx !== i) })} className="v-del-var"><X size={16} /></button>
@@ -465,7 +476,7 @@ const ProductManager = () => {
                         <tr><td colSpan="4" style={{ textAlign: 'center', padding: '30px' }}><Loader2 className="v-spin" /> Đang tải...</td></tr>
                     ) : products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(prod => (
                         <tr key={prod.id}>
-                            <td><img src={`http://127.0.0.1:8000/storage/${prod.main_image}`} className="v-table-img" alt="" /></td>
+                            <td><img src={prod.main_image?.startsWith('http') ? prod.main_image : `http://127.0.0.1:8000/storage/${prod.main_image}`} className="v-table-img" alt="" /></td>
                             <td><div className="v-prod-name">{prod.name}</div></td>
                             <td><span className="v-tag">{prod.category?.name}</span></td>
                             <td className="v-actions">

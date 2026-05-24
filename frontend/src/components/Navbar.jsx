@@ -9,6 +9,7 @@ import './Navbar.css';
 const Navbar = () => {
     const [cartCount, setCartCount] = useState(0);
     const [allProducts, setAllProducts] = useState([]); 
+    const [categories, setCategories] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const imageInputRef = useRef(null);
@@ -26,8 +27,12 @@ const Navbar = () => {
 
     const loadInitialData = async () => {
         try {
-            const prodRes = await axios.get(`${API_BASE_URL}/api/products`);
+            const [prodRes, catRes] = await Promise.all([
+                axios.get(`${API_BASE_URL}/api/products`),
+                axios.get(`${API_BASE_URL}/api/categories`)
+            ]);
             setAllProducts(prodRes.data.data || []);
+            setCategories(catRes.data.data || []);
 
             const token = localStorage.getItem('vion_token');
             if (user && token) {
@@ -207,7 +212,7 @@ const Navbar = () => {
                                             className="nav-search-item"
                                             onClick={() => setSearchTerm('')}
                                         >
-                                            <img src={`${API_BASE_URL}/storage/${prod.main_image}`} alt="" />
+                                            <img src={prod.main_image?.startsWith('http') ? prod.main_image : `${API_BASE_URL}/storage/${prod.main_image}`} alt="" />
                                             <div className="nav-search-info">
                                                 <p className="nav-search-name">{prod.name}</p>
                                                 <p className="nav-search-price">
@@ -246,6 +251,26 @@ const Navbar = () => {
                     )}
                 </div>
             </div>
+
+            {/* TẦNG 2: SUB NAV (DANH MỤC) */}
+            {categories.length > 0 && (
+                <div className="header-sub">
+                    <div className="category-nav">
+                        {categories.map((cat) => (
+                            <div key={cat.id} className="category-item-nav">
+                                <Link to={`/category/${cat.id}`} className="category-link">{cat.name.toUpperCase()}</Link>
+                                {cat.children && cat.children.length > 0 && (
+                                    <div className="category-dropdown-menu">
+                                        {cat.children.map((child) => (
+                                            <Link key={child.id} to={`/category/${child.id}`} className="category-dropdown-link">{child.name}</Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </header>
     );
 };

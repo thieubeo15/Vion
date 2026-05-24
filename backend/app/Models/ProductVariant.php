@@ -16,6 +16,7 @@ class ProductVariant extends Model
         'Size',
         'Color',
         'Price',
+        'DiscountPrice',
         'Stock',
         'ImportPrice'
     ];

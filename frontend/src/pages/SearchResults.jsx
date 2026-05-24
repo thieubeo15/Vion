@@ -120,6 +120,10 @@ const SearchResults = () => {
 
     return (
         <div className="search-results-page">
+            <button className="sr-back-action-btn" onClick={() => navigate(-1)}>
+                <ArrowLeft size={16} /> Quay lại
+            </button>
+
             {/* BREADCRUMB */}
             <nav className="sr-breadcrumb">
                 <Link to="/">Trang chủ</Link>
@@ -185,12 +189,28 @@ const SearchResults = () => {
                                 )}
 
                                 {/* ẢNH */}
-                                <div className="sr-product-image-wrap">
+                                <div className="sr-product-image-wrap" style={{ position: 'relative' }}>
                                     <img 
-                                        src={`${API_BASE_URL}/storage/${prod.main_image || prod.MainImage}`}
+                                        src={(prod.main_image || prod.MainImage)?.startsWith('http') ? (prod.main_image || prod.MainImage) : `${API_BASE_URL}/storage/${prod.main_image || prod.MainImage}`}
                                         alt={prod.name || prod.Name}
                                         className="sr-product-image"
                                     />
+                                    {(() => {
+                                        const v = prod.variants && prod.variants.length > 0 ? prod.variants[0] : null;
+                                        if (!v) return null;
+                                        const price = v.price !== undefined ? v.price : v.Price;
+                                        const discountPrice = v.discount_price !== undefined ? v.discount_price : v.DiscountPrice;
+                                        const discountPercent = v.discount_percent !== undefined ? v.discount_percent : v.DiscountPercent;
+                                        const hasDiscount = discountPrice !== null && discountPrice !== undefined && Number(discountPrice) < Number(price);
+                                        if (hasDiscount) {
+                                            return (
+                                                <div className="discount-badge-overlay" style={{ top: '8px', left: '8px' }}>
+                                                    -{discountPercent}%
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
                                 </div>
 
                                 {/* THÔNG TIN */}
@@ -198,14 +218,32 @@ const SearchResults = () => {
                                     <h3 className="sr-product-name">
                                         {prod.name || prod.Name}
                                     </h3>
-                                    <p className="sr-product-price">
-                                        {(() => {
-                                            const variant = prod.variants?.[0];
-                                            if (!variant) return '0';
-                                            const priceValue = variant.price ?? variant.Price ?? 0;
-                                            return Number(priceValue).toLocaleString();
-                                        })()}đ
-                                    </p>
+                                    {(() => {
+                                        const v = prod.variants && prod.variants.length > 0 ? prod.variants[0] : null;
+                                        if (!v) return <p className="sr-product-price">Liên hệ</p>;
+                                        const price = v.price !== undefined ? v.price : v.Price;
+                                        const discountPrice = v.discount_price !== undefined ? v.discount_price : v.DiscountPrice;
+                                        const discountPercent = v.discount_percent !== undefined ? v.discount_percent : v.DiscountPercent;
+                                        const hasDiscount = discountPrice !== null && discountPrice !== undefined && Number(discountPrice) < Number(price);
+
+                                        if (hasDiscount) {
+                                            return (
+                                                <div className="p-price-container" style={{ justifyContent: 'center', margin: '0' }}>
+                                                    <span className="p-price-current">
+                                                        {Number(discountPrice).toLocaleString()}đ
+                                                    </span>
+                                                    <span className="p-price-original">
+                                                        {Number(price).toLocaleString()}đ
+                                                    </span>
+                                                </div>
+                                            );
+                                        }
+                                        return (
+                                            <p className="sr-product-price">
+                                                {Number(price).toLocaleString()}đ
+                                            </p>
+                                        );
+                                    })()}
 
                                     {/* THANH SIMILARITY */}
                                     {score !== null && (

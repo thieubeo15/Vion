@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { User, Package, Camera, Lock, Loader2, CheckCircle, AlertTriangle, LayoutDashboard, X, Ticket, Copy, Tag } from 'lucide-react';
+import { User, Package, Camera, Lock, Loader2, CheckCircle, AlertTriangle, LayoutDashboard, X, Ticket, Copy, Tag, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './ProfilePage.css';
 
@@ -174,6 +174,12 @@ const ProfilePage = () => {
                     </div>
                 </div>
             )}
+
+            <div className="vion-profile-container" style={{ maxWidth: '1000px', margin: '0 auto 10px', padding: '0 20px' }}>
+                <div className="v-profile-back" onClick={() => navigate('/')}>
+                    <ArrowLeft size={18} /> <span>Quay lại Trang chủ</span>
+                </div>
+            </div>
 
             <div className="vion-profile-wrapper">
                 {/* SIDEBAR */}

@@ -107,4 +107,26 @@
 .v-picker-code { font-weight: 800; font-size: 14px; letter-spacing: 1px; color: #111; margin-bottom: 3px; }
 .v-picker-value { font-size: 13px; font-weight: 700; color: #EE4D2D; }
 .v-picker-min { font-size: 11px; color: #aaa; margin-top: 2px; }
-.v-picker-empty { padding: 16px; text-align: center; font-size: 13px; color: #aaa; }
+.v-picker-empty { padding: 16px; text-align: center; font-size: 13px; color: #aaa; }
+
+/* Location Dropdowns select styling */
+.v-checkout-select {
+    width: 100%;
+    border: 1.5px solid #eee;
+    padding: 14px 20px;
+    border-radius: 12px;
+    outline: none;
+    transition: 0.3s;
+    font-size: 14px;
+    background-color: #fff;
+    cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.v-checkout-select:focus {
+    border-color: #111;
+}
+.v-checkout-select:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    color: #999;
+}

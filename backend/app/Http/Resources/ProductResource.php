@@ -15,6 +15,8 @@ class ProductResource extends JsonResource
             'name' => $this->Name,
             'main_image' => $this->MainImage,
             'description' => $this->Description,
+            'material' => $this->Material,
+            'usage_instruction' => $this->UsageInstruction,
             'sold_count' => (int) ($this->sold_count ?? 0),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
@@ -29,6 +31,10 @@ class ProductResource extends JsonResource
                         'size' => $v->Size,
                         'color' => $v->Color,
                         'price' => $v->Price,
+                        'discount_price' => $v->DiscountPrice,
+                        'discount_percent' => ($v->DiscountPrice !== null && $v->DiscountPrice < $v->Price) 
+                            ? (int) round((($v->Price - $v->DiscountPrice) / $v->Price) * 100) 
+                            : 0,
                         'stock' => $v->Stock,
                     ];
 

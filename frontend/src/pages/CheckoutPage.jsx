@@ -44,6 +44,97 @@ const CheckoutPage = () => {
     const token = localStorage.getItem('vion_token');
     const API_URL = 'http://127.0.0.1:8000/api';
 
+    // Các state phục vụ cho việc chọn địa chỉ động sáp nhập mới (2 cấp: Tỉnh -> Phường/Xã)
+    const [provinces, setProvinces] = useState([]);
+    const [wards, setWards] = useState([]);
+
+    const [selectedProvinceCode, setSelectedProvinceCode] = useState('');
+
+    const [loadingProvinces, setLoadingProvinces] = useState(false);
+    const [loadingWards, setLoadingWards] = useState(false);
+
+    // Tải danh sách tỉnh/thành phố khi component mount
+    useEffect(() => {
+        const fetchProvinces = async () => {
+            setLoadingProvinces(true);
+            try {
+                const res = await axios.get('https://provinces.open-api.vn/api/v2/p/');
+                setProvinces(res.data || []);
+            } catch (err) {
+                console.error("Lỗi khi tải danh sách tỉnh/thành phố:", err);
+                // Fallback mặc định
+                setProvinces([
+                    { code: 'hn', name: 'Thành phố Hà Nội' },
+                    { code: 'hcm', name: 'Thành phố Hồ Chí Minh' },
+                    { code: 'dn', name: 'Thành phố Đà Nẵng' },
+                    { code: 'hp', name: 'Thành phố Hải Phòng' },
+                    { code: 'ct', name: 'Thành phố Cần Thơ' }
+                ]);
+            } finally {
+                setLoadingProvinces(false);
+            }
+        };
+        fetchProvinces();
+    }, []);
+
+    // Xử lý khi đổi Tỉnh/Thành phố
+    const handleProvinceChange = async (e) => {
+        const provinceCode = e.target.value;
+        const selectedProv = provinces.find(p => String(p.code) === String(provinceCode));
+        const provinceName = selectedProv ? selectedProv.name : '';
+
+        setSelectedProvinceCode(provinceCode);
+        setOrderInfo(prev => ({ ...prev, Province: provinceName, District: '', Ward: '' }));
+        setWards([]);
+
+        if (!provinceCode) return;
+
+        // Xử lý fallback tĩnh
+        const staticCodes = ['hn', 'hcm', 'dn', 'hp', 'ct'];
+        if (staticCodes.includes(String(provinceCode))) {
+            if (provinceCode === 'hn') {
+                setWards([
+                    { code: 'hn_w1', name: 'Phường Ba Đình' },
+                    { code: 'hn_w2', name: 'Phường Hoàn Kiếm' },
+                    { code: 'hn_w3', name: 'Phường Cầu Giấy' }
+                ]);
+            } else if (provinceCode === 'hcm') {
+                setWards([
+                    { code: 'hcm_w1', name: 'Phường Bến Nghé' },
+                    { code: 'hcm_w2', name: 'Phường Đa Kao' },
+                    { code: 'hcm_w3', name: 'Phường Tân Định' }
+                ]);
+            } else if (provinceCode === 'dn') {
+                setWards([
+                    { code: 'dn_w1', name: 'Phường Hải Châu I' },
+                    { code: 'dn_w2', name: 'Phường Hải Châu II' }
+                ]);
+            } else {
+                setWards([
+                    { code: 'fb_w1', name: 'Phường 1' },
+                    { code: 'fb_w2', name: 'Phường 2' }
+                ]);
+            }
+            return;
+        }
+
+        setLoadingWards(true);
+        try {
+            const res = await axios.get(`https://provinces.open-api.vn/api/v2/p/${provinceCode}?depth=2`);
+            setWards(res.data.wards || []);
+        } catch (err) {
+            console.error("Lỗi khi tải danh sách phường/xã từ tỉnh:", err);
+        } finally {
+            setLoadingWards(false);
+        }
+    };
+
+    // Xử lý khi đổi Phường/Xã
+    const handleWardChange = (e) => {
+        const wardName = e.target.value;
+        setOrderInfo(prev => ({ ...prev, Ward: wardName }));
+    };
+
     useEffect(() => {
         fetchSummary();
     }, [token]);
@@ -81,10 +172,19 @@ const CheckoutPage = () => {
         }
     };
 
+    const getCartItemPrice = (item) => {
+        const originalPrice = Number(item.variant?.Price || item.variant?.price || item.Price || item.price || 0);
+        const discountPrice = item.variant?.DiscountPrice !== undefined ? item.variant.DiscountPrice : (item.variant?.discount_price !== undefined ? item.variant.discount_price : (item.DiscountPrice || item.discount_price));
+        if (discountPrice !== null && discountPrice !== undefined && Number(discountPrice) < originalPrice) {
+            return Number(discountPrice);
+        }
+        return originalPrice;
+    };
+
     // FIX LỖI NaN: Hàm tính tổng cực mạnh, chấp cả chữ hoa lẫn chữ thường
     const calculateTotal = () => {
         return cartItems.reduce((sum, item) => {
-            const price = Number(item.Price || item.price || item.variant?.Price || item.variant?.price || 0);
+            const price = getCartItemPrice(item);
             const qty = Number(item.Quantity || item.quantity || 0);
             return sum + (price * qty);
         }, 0);
@@ -156,7 +256,7 @@ const CheckoutPage = () => {
         e.preventDefault();
 
         // Kiểm tra nhanh thông tin
-        if (!orderInfo.FullName || !orderInfo.Phone || !orderInfo.SpecificAddress || !orderInfo.Province || !orderInfo.District || !orderInfo.Ward) {
+        if (!orderInfo.FullName || !orderInfo.Phone || !orderInfo.SpecificAddress || !orderInfo.Province || !orderInfo.Ward) {
             Swal.fire('Chú ý', 'Vui lòng nhập đầy đủ thông tin giao hàng!', 'warning');
             return;
         }
@@ -256,40 +356,41 @@ const CheckoutPage = () => {
                             ></textarea>
                         </div>
                         <div className="row mt-4">
-                            <div className="col-md-4">
+                            <div className="col-md-6">
                                 <div className="v-input-field">
                                     <label>Tỉnh / Thành phố</label>
-                                    <input
-                                        type="text"
+                                    <select
                                         required
-                                        placeholder="Tỉnh / Thành phố"
-                                        value={orderInfo.Province}
-                                        onChange={e => setOrderInfo({ ...orderInfo, Province: e.target.value })}
-                                    />
+                                        value={selectedProvinceCode}
+                                        onChange={handleProvinceChange}
+                                        className="v-checkout-select"
+                                    >
+                                        <option value="">
+                                            {loadingProvinces ? 'Đang tải...' : '-- Chọn Tỉnh/Thành --'}
+                                        </option>
+                                        {provinces.map(p => (
+                                            <option key={p.code} value={p.code}>{p.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
-                            <div className="col-md-4">
-                                <div className="v-input-field">
-                                    <label>Quận / Huyện</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder="Quận / Huyện"
-                                        value={orderInfo.District}
-                                        onChange={e => setOrderInfo({ ...orderInfo, District: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div className="col-md-4">
+                            <div className="col-md-6">
                                 <div className="v-input-field">
                                     <label>Phường / Xã</label>
-                                    <input
-                                        type="text"
+                                    <select
                                         required
-                                        placeholder="Phường / Xã"
                                         value={orderInfo.Ward}
-                                        onChange={e => setOrderInfo({ ...orderInfo, Ward: e.target.value })}
-                                    />
+                                        onChange={handleWardChange}
+                                        className="v-checkout-select"
+                                        disabled={!selectedProvinceCode || loadingWards}
+                                    >
+                                        <option value="">
+                                            {loadingWards ? 'Đang tải...' : '-- Chọn Phường/Xã --'}
+                                        </option>
+                                        {wards.map(w => (
+                                            <option key={w.code} value={w.name}>{w.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -321,7 +422,7 @@ const CheckoutPage = () => {
                                         <div className="text-muted fs-12">Size: {item.variant?.Size} | SL: x{item.Quantity}</div>
                                     </div>
                                     <div className="fw-800 text-dark">
-                                        {(Number(item.Price || item.price || item.variant?.Price || item.variant?.price || 0) * Number(item.Quantity || item.quantity || 0)).toLocaleString()}đ
+                                        {(getCartItemPrice(item) * Number(item.Quantity || item.quantity || 0)).toLocaleString()}đ
                                     </div>
                                 </div>
                             ))}

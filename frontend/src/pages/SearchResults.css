@@ -9,6 +9,26 @@
     font-family: 'Lexend Deca', sans-serif;
 }
 
+.sr-back-action-btn {
+    cursor: pointer;
+    color: #888;
+    font-weight: 700;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+    background: none;
+    border: none;
+    padding: 0;
+    transition: 0.3s;
+    outline: none;
+    font-family: 'Lexend Deca', sans-serif;
+}
+.sr-back-action-btn:hover {
+    color: #EE4D2D;
+}
+
 /* ==================== BREADCRUMB ==================== */
 .sr-breadcrumb {
     display: flex;

@@ -1,68 +1,437 @@
-.banner-admin-wrapper {
-    padding: 20px;
-    background: #f8f9fa;
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.banner-admin-container {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    padding: 30px;
+    background-color: #f6f8fb;
     min-height: 100vh;
 }
 
-.banner-header h3 {
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.upload-box {
-    background: #fff;
-    padding: 25px;
-    border-radius: 15px;
-    margin-top: 20px;
-}
-
-.btn-upload {
-    background: #111;
+/* ================= HEADER STYLE ================= */
+.banner-dashboard-header {
+    background: linear-gradient(135deg, #111 0%, #2a2a2a 100%);
     color: #fff;
-    border: none;
-    width: 15%;
-    padding: 12px;
-    font-weight: 700;
-    border-radius: 8px;
-    transition: 0.3s;
-}
-
-.btn-upload:hover {
-    background: #EE4D2D;
-    transform: translateY(-2px);
-}
-
-.banner-card {
-    background: #fff;
-    border-radius: 12px;
-    overflow: hidden;
-    position: relative;
-}
-
-.banner-card img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-}
-
-.banner-info {
-    padding: 12px;
+    padding: 25px 30px;
+    border-radius: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
-.btn-del {
-    background: #fff5f5;
-    color: #ff4d4f;
-    border: 1px solid #ffccc7;
-    padding: 5px 8px;
-    border-radius: 6px;
+.banner-header-info h2 {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 5px 0;
+    letter-spacing: -0.5px;
 }
 
-.btn-del:hover {
-    background: #ff4d4f;
+.banner-header-info p {
+    margin: 0;
+    color: #ccc;
+    font-size: 14px;
+}
+
+.banner-badge {
+    background-color: rgba(238, 77, 45, 0.15);
+    color: #EE4D2D;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.banner-stats .stat-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 12px 25px;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 140px;
+    backdrop-filter: blur(5px);
+}
+
+.stat-num {
+    display: block;
+    font-size: 28px;
+    font-weight: 800;
+    color: #EE4D2D;
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #bbb;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* ================= UPLOAD SIDEBAR ================= */
+.upload-sidebar-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.sidebar-header {
+    border-bottom: 1.5px solid #f1f3f7;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.sidebar-header h5 {
+    font-weight: 800;
+    font-size: 17px;
+    margin: 0;
+    color: #111;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Dropzone styling */
+.upload-zone-wrapper {
+    position: relative;
+}
+
+.upload-dropzone {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    background: #fafafa;
+    min-height: 180px;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.upload-dropzone:hover {
+    border-color: #EE4D2D;
+    background: #fff8f6;
+}
+
+.upload-dropzone.has-preview {
+    border: 1px solid #eee;
+    background: #fff;
+}
+
+.upload-placeholder {
+    padding: 20px;
+    text-align: center;
+}
+
+.upload-placeholder h6 {
+    font-weight: 700;
+    font-size: 14px;
+    margin-top: 10px;
+    color: #333;
+}
+
+.upload-placeholder p {
+    font-size: 11px;
+    margin: 5px 0 0 0;
+}
+
+/* Preview Image container */
+.preview-container {
+    width: 100%;
+    height: 180px;
+    position: relative;
+}
+
+.img-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     color: #fff;
+    opacity: 0;
+    transition: 0.3s ease;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.preview-container:hover .preview-overlay {
+    opacity: 1;
+}
+
+/* Custom inputs styling */
+.form-group-custom {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label-custom {
+    font-weight: 700;
+    font-size: 13px;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-control-custom {
+    font-family: inherit;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: #1a202c;
+    transition: all 0.2s ease;
+    background-color: #fff;
+}
+
+.form-control-custom:focus {
+    outline: none;
+    border-color: #111;
+    box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.05);
+}
+
+.btn-upload-submit {
+    width: 100%;
+    background-color: #111;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-upload-submit:hover:not(:disabled) {
+    background-color: #EE4D2D;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(238, 77, 45, 0.2);
+}
+
+.btn-upload-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* ================= BANNERS LIST GALLERY ================= */
+.banners-list-container {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    min-height: 500px;
+}
+
+.list-header h5 {
+    font-weight: 800;
+    font-size: 17px;
+    color: #111;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.empty-banners-placeholder {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border: 2px dashed #e2e8f0;
+    border-radius: 16px;
+    padding: 60px 20px;
+    background: #fbfbfe;
+    color: #718096;
+}
+
+.empty-banners-placeholder h5 {
+    font-weight: 700;
+    margin-top: 15px;
+    color: #2d3748;
+}
+
+/* Premium Banner Cards */
+.premium-banner-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #edf2f7;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    height: 100%;
+}
+
+.premium-banner-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;
+}
+
+.banner-image-wrapper {
+    position: relative;
+    height: 160px;
+    overflow: hidden;
+}
+
+.banner-img-fluid {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.premium-banner-card:hover .banner-img-fluid {
+    transform: scale(1.05);
+}
+
+.banner-status-tag {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+    font-size: 11px;
+    font-weight: 700;
+    color: #2f855a;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* Pulse animation for active dot */
+.pulse-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #38a169;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+}
+
+.pulse-dot::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #38a169;
+    border-radius: 50%;
+    animation: dot-pulse-animation 1.5s infinite ease-in-out;
+}
+
+@keyframes dot-pulse-animation {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+.banner-delete-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    color: #e53e3e;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    opacity: 0.9;
+}
+
+.banner-delete-btn:hover {
+    background: #e53e3e;
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.banner-details {
+    padding: 16px;
+}
+
+.card-banner-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0 0 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-banner-subtitle {
+    font-size: 13px;
+    margin: 0 0 10px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-banner-link-badge {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    color: #4a5568;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+}
+
+.card-banner-link-badge span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Animations */
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }

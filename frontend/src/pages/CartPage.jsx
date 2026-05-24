@@ -127,11 +127,20 @@ const CartPage = () => {
         });
     };
 
+    const getCartItemPrice = (item) => {
+        const originalPrice = Number(item.variant?.Price || item.variant?.price || item.Price || item.price || 0);
+        const discountPrice = item.variant?.DiscountPrice !== undefined ? item.variant.DiscountPrice : (item.variant?.discount_price !== undefined ? item.variant.discount_price : (item.DiscountPrice || item.discount_price));
+        if (discountPrice !== null && discountPrice !== undefined && Number(discountPrice) < originalPrice) {
+            return Number(discountPrice);
+        }
+        return originalPrice;
+    };
+
     const calculateTotal = () => {
         return cartItems
             .filter(item => selectedItems.includes(item.CartItemID || item.id))
             .reduce((sum, item) => {
-                const price = Number(item.Price || item.price || item.variant?.Price || item.variant?.price || 0);
+                const price = getCartItemPrice(item);
                 return sum + (price * item.Quantity);
             }, 0);
     };
@@ -171,11 +180,33 @@ const CartPage = () => {
                                         onClick={() => navigate(`/product/${item.variant?.product?.ProductID || item.variant?.product?.id}`)}
                                         title="Nhấn để xem chi tiết sản phẩm"
                                     >
-                                        <img src={`http://127.0.0.1:8000/storage/${item.variant?.product?.MainImage}`} className="v-card-img mb-0" alt="prod" />
+                                        <img src={item.variant?.product?.MainImage?.startsWith('http') ? item.variant?.product?.MainImage : `http://127.0.0.1:8000/storage/${item.variant?.product?.MainImage}`} className="v-card-img mb-0" alt="prod" />
                                         <div className="v-card-details">
                                             <h5 className="v-product-name hover-text-primary">{item.variant?.product?.Name}</h5>
                                             <p className="v-product-meta">Size: {item.variant?.Size} | Màu: {item.variant?.Color}</p>
-                                            <div className="v-price-unit">{Number(item.Price || item.price || item.variant?.Price || item.variant?.price || 0).toLocaleString()}đ</div>
+                                            {(() => {
+                                                const originalPrice = Number(item.variant?.Price || item.variant?.price || item.Price || item.price || 0);
+                                                const discountPrice = item.variant?.DiscountPrice !== undefined ? item.variant.DiscountPrice : (item.variant?.discount_price !== undefined ? item.variant.discount_price : (item.DiscountPrice || item.discount_price));
+                                                const hasDiscount = discountPrice !== null && discountPrice !== undefined && Number(discountPrice) < originalPrice;
+
+                                                if (hasDiscount) {
+                                                    return (
+                                                        <div className="p-price-container">
+                                                            <span className="p-price-current">
+                                                                {Number(discountPrice).toLocaleString()}đ
+                                                            </span>
+                                                            <span className="p-price-original" style={{ fontSize: '11px' }}>
+                                                                {Number(originalPrice).toLocaleString()}đ
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                }
+                                                return (
+                                                    <div className="v-price-unit">
+                                                        {Number(originalPrice).toLocaleString()}đ
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                     </div>
                                     <div className="v-qty-selector">
@@ -183,7 +214,7 @@ const CartPage = () => {
                                         <span>{item.Quantity}</span>
                                         <button onClick={() => updateQty(item.CartItemID || item.id, item.Quantity, 1)}><Plus size={14} /></button>
                                     </div>
-                                    <div className="v-card-subtotal">{(Number(item.Price || item.price || item.variant?.Price || item.variant?.price || 0) * item.Quantity).toLocaleString()}đ</div>
+                                    <div className="v-card-subtotal">{(getCartItemPrice(item) * item.Quantity).toLocaleString()}đ</div>
                                     <button className="v-btn-del" onClick={() => handleRemove(item.CartItemID || item.id)}><Trash2 size={18} /></button>
                                 </div>
                             ))}

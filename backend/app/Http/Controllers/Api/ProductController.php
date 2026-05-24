@@ -8,8 +8,8 @@ use Illuminate\Http\Request;
 use App\Http\Resources\ProductResource;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
-use Illuminate\Support\Facades\DB; 
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use App\Services\CloudinaryService;
 
 class ProductController extends Controller
 {
@@ -35,16 +35,29 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         return DB::transaction(function () use ($request) {
-            $productData = $request->only(['Name', 'CategoryID', 'Description']);
+            $productData = $request->only(['Name', 'CategoryID', 'Description', 'Material', 'UsageInstruction']);
 
-            // 1. Lưu Ảnh chính
+            // 1. Upload Ảnh chính lên Cloudinary
             if ($request->hasFile('MainImage')) {
-                $path = $request->file('MainImage')->store('products', 'public');
-                $productData['MainImage'] = $path;
+                $cloudinary = new CloudinaryService();
+                $productData['MainImage'] = $cloudinary->upload(
+                    $request->file('MainImage')->getRealPath(),
+                    'vion/products'
+                );
             }
 
             // 2. Tạo sản phẩm
             $product = Product::create($productData);
+
+            // Tự động thêm MainImage vào product_images để vectorize
+            if (!empty($product->MainImage)) {
+                $mainImageRecord = $product->images()->create(['Url' => $product->MainImage]);
+                
+                \App\Http\Controllers\Api\ProductSearchController::vectorizeSingleImage(
+                    $mainImageRecord->ImageID ?? $mainImageRecord->id ?? $mainImageRecord->getKey(),
+                    $product->MainImage
+                );
+            }
 
             // 3. Lưu Biến thể (Variants)
             if ($request->filled('variants')) {
@@ -54,23 +67,26 @@ class ProductController extends Controller
                         'Size'  => $v['size'],
                         'Color' => $v['color'],
                         'Price' => $v['price'],
+                        'DiscountPrice' => isset($v['discountPrice']) && $v['discountPrice'] !== '' ? $v['discountPrice'] : null,
                         'Stock' => $v['stock'],
                         'ImportPrice' => $v['importPrice'] ?? 0,
                     ]);
                 }
             }
 
-            // 4. Lưu Nhiều ảnh phụ (Gallery)
+            // 4. Upload Nhiều ảnh phụ (Gallery) lên Cloudinary
             if ($request->hasFile('images')) {
+                $cloudinary = new CloudinaryService();
                 foreach ($request->file('images') as $img) {
-                    $imgPath = $img->store('products/gallery', 'public');
-                    // Gán vào biến để lấy bản ghi ảnh phụ vừa tạo
-                    $galleryImage = $product->images()->create(['Url' => $imgPath]);
+                    $imgUrl = $cloudinary->upload(
+                        $img->getRealPath(),
+                        'vion/products/gallery'
+                    );
+                    $galleryImage = $product->images()->create(['Url' => $imgUrl]);
 
-                    // 🚀 CHÈN MỚI TẠI ĐÂY: Tự động gọi Python dịch ảnh mới sang mã Vector AI
                     \App\Http\Controllers\Api\ProductSearchController::vectorizeSingleImage(
                         $galleryImage->ImageID ?? $galleryImage->id ?? $galleryImage->getKey(),
-                        $imgPath
+                        $imgUrl
                     );
                 }
             }
@@ -120,10 +136,32 @@ class ProductController extends Controller
         return DB::transaction(function () use ($request, $product) {
             $data = $request->validated();
 
-            // 1. Xử lý Ảnh chính mới (Nếu có upload file mới)
+            // 1. Upload Ảnh chính mới lên Cloudinary (nếu có)
             if ($request->hasFile('MainImage')) {
-                $path = $request->file('MainImage')->store('products', 'public');
-                $data['MainImage'] = $path;
+                $cloudinary = new CloudinaryService();
+                $oldMainImage = $product->MainImage;
+                // Xóa ảnh cũ trên Cloudinary nếu là URL Cloudinary
+                if ($oldMainImage && str_contains($oldMainImage, 'cloudinary.com')) {
+                    $cloudinary->deleteByUrl($oldMainImage);
+                }
+                $newMainImage = $cloudinary->upload(
+                    $request->file('MainImage')->getRealPath(),
+                    'vion/products'
+                );
+                $data['MainImage'] = $newMainImage;
+
+                // Cập nhật hoặc tạo mới trong product_images
+                $imgRecord = $product->images()->where('Url', $oldMainImage)->first();
+                if ($imgRecord) {
+                    $imgRecord->update(['Url' => $newMainImage]);
+                } else {
+                    $imgRecord = $product->images()->create(['Url' => $newMainImage]);
+                }
+
+                \App\Http\Controllers\Api\ProductSearchController::vectorizeSingleImage(
+                    $imgRecord->ImageID ?? $imgRecord->id ?? $imgRecord->getKey(),
+                    $newMainImage
+                );
             }
 
             $product->update($data);
@@ -142,6 +180,7 @@ class ProductController extends Controller
                         if ($variant) {
                             $variant->update([
                                 'Price' => $v['price'],
+                                'DiscountPrice' => isset($v['discountPrice']) && $v['discountPrice'] !== '' ? $v['discountPrice'] : null,
                                 'Stock' => $v['stock'],
                                 'ImportPrice' => isset($v['importPrice']) && $v['importPrice'] !== '' ? $v['importPrice'] : $variant->ImportPrice,
                             ]);
@@ -151,6 +190,7 @@ class ProductController extends Controller
                                 'Size'  => $v['size'],
                                 'Color' => $v['color'],
                                 'Price' => $v['price'],
+                                'DiscountPrice' => isset($v['discountPrice']) && $v['discountPrice'] !== '' ? $v['discountPrice'] : null,
                                 'Stock' => $v['stock'],
                                 'ImportPrice' => isset($v['importPrice']) && $v['importPrice'] !== '' ? $v['importPrice'] : 0,
                             ]);
@@ -162,17 +202,19 @@ class ProductController extends Controller
                 }
             }
 
-            // 3. Lưu Thêm ảnh phụ (Gallery)
+            // 3. Upload Thêm ảnh phụ (Gallery) lên Cloudinary
             if ($request->hasFile('images')) {
+                $cloudinary = new CloudinaryService();
                 foreach ($request->file('images') as $img) {
-                    $imgPath = $img->store('products/gallery', 'public');
-                    // Gán vào biến để lấy bản ghi ảnh phụ vừa tạo
-                    $galleryImage = $product->images()->create(['Url' => $imgPath]);
+                    $imgUrl = $cloudinary->upload(
+                        $img->getRealPath(),
+                        'vion/products/gallery'
+                    );
+                    $galleryImage = $product->images()->create(['Url' => $imgUrl]);
 
-                    // 🚀 CHÈN MỚI TẠI ĐÂY: Tự động gọi Python dịch ảnh phụ mới sang mã Vector AI
                     \App\Http\Controllers\Api\ProductSearchController::vectorizeSingleImage(
                         $galleryImage->ImageID ?? $galleryImage->id ?? $galleryImage->getKey(),
-                        $imgPath
+                        $imgUrl
                     );
                 }
             }
