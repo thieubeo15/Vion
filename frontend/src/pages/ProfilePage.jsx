@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { User, Package, Camera, Lock, Loader2, CheckCircle, AlertTriangle, LayoutDashboard, X, Ticket, Copy, Tag, ArrowLeft } from 'lucide-react';
+import { User, Camera, Lock, Loader2, CheckCircle, AlertTriangle, LayoutDashboard, X, Ticket, Copy, Tag, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './ProfilePage.css';
 
@@ -152,7 +152,7 @@ const ProfilePage = () => {
         return map[source] || { label: source, cls: 'v-badge-saved' };
     };
 
-    if (loading) return <div className="vion-loading-box">Vion Era đang tải dữ liệu...</div>;
+    if (loading && !userData.Email) return <div className="vion-loading-box">Vion Era đang tải dữ liệu...</div>;
 
     return (
         <div className="vion-profile-page">
@@ -207,9 +207,6 @@ const ProfilePage = () => {
                         </div>
                         <div className={`v-nav-item ${activeTab === 'password' ? 'active' : ''}`} onClick={() => setActiveTab('password')}>
                             <Lock size={18} /> Đổi mật khẩu
-                        </div>
-                        <div className="v-nav-item" onClick={() => navigate('/orders')}>
-                            <Package size={18} /> Đơn mua của tôi
                         </div>
                         <div className={`v-nav-item ${activeTab === 'vouchers' ? 'active' : ''}`} onClick={() => { setActiveTab('vouchers'); fetchMyVouchers(); }}>
                             <Ticket size={18} /> Voucher của tôi

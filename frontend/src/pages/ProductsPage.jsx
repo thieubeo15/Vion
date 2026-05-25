@@ -82,7 +82,8 @@ const ProductsPage = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            setLoading(true);
+            const isFirstLoad = products.length === 0;
+            if (isFirstLoad) setLoading(true);
             try {
                 // 1. Lấy keyword từ URL
                 const queryParams = new URLSearchParams(location.search);
@@ -235,10 +236,9 @@ const ProductsPage = () => {
         };
 
         fetchData();
-        window.scrollTo(0, 0);
     }, [categoryId, sort, location.search, selectedPriceRange, customMinPrice, customMaxPrice, selectedSizes, selectedColors, selectedMaterials]);
 
-    if (loading) return <div className="vion-loading">ĐANG TẢI...</div>;
+    if (loading && products.length === 0) return <div className="vion-loading">ĐANG TẢI...</div>;
 
     return (
         <div className="products-page">
@@ -259,8 +259,8 @@ const ProductsPage = () => {
                                 <li>
                                     <button 
                                         type="button" 
-                                        className={`category-filter-btn ${!tempCategoryId ? 'active' : ''}`}
-                                        onClick={() => setTempCategoryId('')}
+                                        className={`category-filter-btn ${!categoryId ? 'active' : ''}`}
+                                        onClick={() => { setTempCategoryId(''); navigate('/products'); }}
                                     >
                                         Tất cả sản phẩm
                                     </button>
@@ -269,8 +269,8 @@ const ProductsPage = () => {
                                     <li key={cat.id} className="cat-parent-item">
                                         <button 
                                             type="button" 
-                                            className={`category-filter-btn ${tempCategoryId == cat.id ? 'active' : ''}`}
-                                            onClick={() => setTempCategoryId(cat.id)}
+                                            className={`category-filter-btn ${categoryId == cat.id ? 'active' : ''}`}
+                                            onClick={() => { setTempCategoryId(cat.id); navigate(`/category/${cat.id}`); }}
                                         >
                                             {cat.name}
                                         </button>
@@ -280,8 +280,8 @@ const ProductsPage = () => {
                                                     <li key={child.id}>
                                                         <button 
                                                             type="button" 
-                                                            className={`category-filter-btn ${tempCategoryId == child.id ? 'active' : ''}`}
-                                                            onClick={() => setTempCategoryId(child.id)}
+                                                            className={`category-filter-btn ${categoryId == child.id ? 'active' : ''}`}
+                                                            onClick={() => { setTempCategoryId(child.id); navigate(`/category/${child.id}`); }}
                                                         >
                                                             {child.name}
                                                         </button>

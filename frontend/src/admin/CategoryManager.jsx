@@ -103,7 +103,6 @@ const CategoryManager = () => {
             name: cat.name || cat.Name || cat.CategoryName, 
             parent_id: cat.parent_id || cat.ParentID || '' 
         });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const cancelEdit = () => {
@@ -143,7 +142,7 @@ const CategoryManager = () => {
             <div className="v-card-header">
                 <div className="v-title-box">
                     <Layers className="v-brand-icon" />
-                    <h2>{isEditing ? 'Sửa danh mục' : 'Quản lý danh mục'}</h2>
+                    <h2>Quản lý danh mục</h2>
                 </div>
                 <div className="v-header-tools">
                     <div className="v-search-box">
@@ -159,33 +158,70 @@ const CategoryManager = () => {
                 </div>
             </div>
 
-            <form className={`v-inline-form ${isEditing ? 'v-edit-active' : ''}`} onSubmit={handleSubmit}>
-                <div className="v-input-wrapper">
-                    <input 
-                        type="text" 
-                        placeholder="Tên danh mục mới..." 
-                        value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        required
-                    />
-                    <select value={formData.parent_id} onChange={(e) => setFormData({...formData, parent_id: e.target.value})}>
-                        <option value="">-- Danh mục --</option>
-                        {allCategories.filter(c => c.id !== editId).map(cat => (
-                            <option key={cat.id} value={cat.id}>{cat.display}</option>
-                        ))}
-                    </select>
-                    <div className="v-form-btns">
-                        <button type="submit" className={isEditing ? 'v-btn-save' : 'v-btn-add'}>
-                            {isEditing ? <><Save size={18} /> Lưu</> : <><Plus size={18} /> Thêm</>}
-                        </button>
-                        {isEditing && (
-                            <button type="button" className="v-btn-cancel" onClick={cancelEdit}>
-                                <X size={18} />
+            {/* FORM THÊM MỚI (INLINE) */}
+            {!isEditing && (
+                <form className="v-inline-form" onSubmit={handleSubmit}>
+                    <div className="v-input-wrapper">
+                        <input 
+                            type="text" 
+                            placeholder="Tên danh mục mới..." 
+                            value={formData.name}
+                            onChange={(e) => setFormData({...formData, name: e.target.value})}
+                            required
+                        />
+                        <select value={formData.parent_id} onChange={(e) => setFormData({...formData, parent_id: e.target.value})}>
+                            <option value="">-- Danh mục cha (nếu có) --</option>
+                            {allCategories.map(cat => (
+                                <option key={cat.id} value={cat.id}>{cat.display}</option>
+                            ))}
+                        </select>
+                        <div className="v-form-btns">
+                            <button type="submit" className="v-btn-add">
+                                <Plus size={18} /> Thêm
                             </button>
-                        )}
+                        </div>
+                    </div>
+                </form>
+            )}
+
+            {/* MODAL SỬA DANH MỤC */}
+            {isEditing && (
+                <div className="v-modal-overlay" onClick={cancelEdit}>
+                    <div className="v-modal-content v-category-modal" onClick={e => e.stopPropagation()}>
+                        <div className="v-modal-header">
+                            <h3>Sửa danh mục</h3>
+                            <button className="v-modal-close" onClick={cancelEdit}><X size={20} /></button>
+                        </div>
+                        <form onSubmit={handleSubmit} className="v-modal-form">
+                            <div className="v-form-group">
+                                <label>Tên danh mục</label>
+                                <input 
+                                    type="text" 
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                    required
+                                    placeholder="Tên danh mục..." 
+                                />
+                            </div>
+                            <div className="v-form-group">
+                                <label>Danh mục cha</label>
+                                <select value={formData.parent_id} onChange={(e) => setFormData({...formData, parent_id: e.target.value})}>
+                                    <option value="">-- Không có (Danh mục gốc) --</option>
+                                    {allCategories.filter(c => c.id !== editId).map(cat => (
+                                        <option key={cat.id} value={cat.id}>{cat.display}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="v-modal-actions">
+                                <button type="button" className="v-btn-cancel" onClick={cancelEdit}>Hủy</button>
+                                <button type="submit" className="v-btn-save">
+                                    <Save size={16} /> Lưu thay đổi
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </form>
+            )}
 
             <div className="v-table-wrapper">
                 <table className="v-table">

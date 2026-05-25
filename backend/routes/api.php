@@ -31,6 +31,7 @@ Route::get('/banners', [BannerController::class, 'index']);
 // Chatbot routes
 Route::post('/chatbot/send', [ChatbotController::class, 'sendMessage']);
 Route::get('/chatbot/history', [ChatbotController::class, 'getHistory']);
+Route::post('/chatbot/clear', [ChatbotController::class, 'clearHistory']);
 
 // Đặt hàng (Công khai, hỗ trợ cả đăng nhập và khách vãng lai)
 Route::post('/orders/place', [OrderController::class, 'placeOrder']);

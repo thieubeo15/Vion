@@ -64,9 +64,27 @@ const ChatWidgetControl = () => {
   return <ChatWidget />;
 };
 
+// Hỗ trợ tự động cuộn lên đầu trang khi chuyển trang (Route change)
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+    const adminMain = document.querySelector('.vion-admin-main');
+    if (adminMain) {
+      adminMain.scrollTo(0, 0);
+    }
+  }, [pathname]);
+
+  return null;
+};
+
 function App() {
   return (
     <BrowserRouter>
+      {/* Tự động cuộn lên đầu trang khi chuyển Route */}
+      <ScrollToTop />
+
       {/* Thanh điều hướng khách hàng */}
       <MenuBar />
 

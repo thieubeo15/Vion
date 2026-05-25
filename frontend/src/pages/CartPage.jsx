@@ -13,13 +13,18 @@ const CartPage = () => {
     const token = localStorage.getItem('vion_token');
     const API_URL = 'http://127.0.0.1:8000/api';
 
-    const handleSelect = (id) => {
+    const handleSelect = (id, isOutOfStock) => {
+        if (isOutOfStock) return;
         setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
     };
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
-            setSelectedItems(cartItems.map(item => item.CartItemID || item.id));
+            const inStockItems = cartItems.filter(item => {
+                const stock = item.variant?.Stock || item.variant?.stock || 0;
+                return stock > 0;
+            }).map(item => item.CartItemID || item.id);
+            setSelectedItems(inStockItems);
         } else {
             setSelectedItems([]);
         }
@@ -29,8 +34,15 @@ const CartPage = () => {
         fetchCart();
     }, [token]);
 
+    useEffect(() => {
+        const validItemIds = cartItems
+            .filter(item => (item.variant?.Stock || item.variant?.stock || 0) > 0)
+            .map(item => item.CartItemID || item.id);
+        setSelectedItems(prev => prev.filter(id => validItemIds.includes(id)));
+    }, [cartItems]);
+
     const fetchCart = async () => {
-        setLoading(true);
+        if (cartItems.length === 0) setLoading(true);
         if (!token) {
             let guestCart = [];
             try {
@@ -138,14 +150,18 @@ const CartPage = () => {
 
     const calculateTotal = () => {
         return cartItems
-            .filter(item => selectedItems.includes(item.CartItemID || item.id))
+            .filter(item => {
+                const isSelected = selectedItems.includes(item.CartItemID || item.id);
+                const stock = item.variant?.Stock || item.variant?.stock || 0;
+                return isSelected && stock > 0;
+            })
             .reduce((sum, item) => {
                 const price = getCartItemPrice(item);
                 return sum + (price * item.Quantity);
             }, 0);
     };
 
-    if (loading) return (
+    if (loading && cartItems.length === 0) return (
         <div className="v-loading-screen">
             <Loader2 className="v-spin mb-3" size={48} color="#111" />
             <p className="fw-800" style={{ letterSpacing: '2px', color: '#111' }}>ĐANG TẢI GIỎ HÀNG...</p>
@@ -165,59 +181,97 @@ const CartPage = () => {
                         <div className="v-cart-list-wrapper">
                             <div className="v-cart-select-all mb-3 bg-white p-3 rounded-4 border">
                                 <label className="v-checkbox-wrapper d-flex align-items-center mb-0" style={{ cursor: 'pointer' }}>
-                                    <input type="checkbox" checked={cartItems.length > 0 && selectedItems.length === cartItems.length} onChange={handleSelectAll} className="v-custom-checkbox" />
-                                    <span className="fw-800" style={{ fontSize: '14px', marginLeft: '12px' }}>CHỌN TẤT CẢ ({cartItems.length} SẢN PHẨM)</span>
+                                    {(() => {
+                                        const inStockItems = cartItems.filter(item => (item.variant?.Stock || item.variant?.stock || 0) > 0);
+                                        const isAllSelected = inStockItems.length > 0 && inStockItems.every(item => selectedItems.includes(item.CartItemID || item.id));
+                                        return (
+                                            <input 
+                                                type="checkbox" 
+                                                checked={isAllSelected} 
+                                                onChange={handleSelectAll} 
+                                                className="v-custom-checkbox" 
+                                                disabled={inStockItems.length === 0}
+                                            />
+                                        );
+                                    })()}
+                                    <span className="fw-800" style={{ fontSize: '14px', marginLeft: '12px' }}>CHỌN TẤT CẢ ({cartItems.filter(item => (item.variant?.Stock || item.variant?.stock || 0) > 0).length} SẢN PHẨM CÒN HÀNG)</span>
                                 </label>
                             </div>
-                            {cartItems.map(item => (
-                                <div key={item.CartItemID || item.id} className="v-cart-card position-relative">
-                                    <div className="v-item-check-col" style={{ display: 'flex', alignItems: 'center', height: '100%', paddingRight: '10px' }}>
-                                        <input type="checkbox" checked={selectedItems.includes(item.CartItemID || item.id)} onChange={() => handleSelect(item.CartItemID || item.id)} className="v-custom-checkbox" style={{ cursor: 'pointer', zoom: '1.5' }} />
-                                    </div>
-                                    <div
-                                        className="d-flex align-items-center"
-                                        style={{ cursor: 'pointer', flex: 1, gap: '24px' }}
-                                        onClick={() => navigate(`/product/${item.variant?.product?.ProductID || item.variant?.product?.id}`)}
-                                        title="Nhấn để xem chi tiết sản phẩm"
-                                    >
-                                        <img src={item.variant?.product?.MainImage?.startsWith('http') ? item.variant?.product?.MainImage : `http://127.0.0.1:8000/storage/${item.variant?.product?.MainImage}`} className="v-card-img mb-0" alt="prod" />
-                                        <div className="v-card-details">
-                                            <h5 className="v-product-name hover-text-primary">{item.variant?.product?.Name}</h5>
-                                            <p className="v-product-meta">Size: {item.variant?.Size} | Màu: {item.variant?.Color}</p>
-                                            {(() => {
-                                                const originalPrice = Number(item.variant?.Price || item.variant?.price || item.Price || item.price || 0);
-                                                const discountPrice = item.variant?.DiscountPrice !== undefined ? item.variant.DiscountPrice : (item.variant?.discount_price !== undefined ? item.variant.discount_price : (item.DiscountPrice || item.discount_price));
-                                                const hasDiscount = discountPrice !== null && discountPrice !== undefined && Number(discountPrice) < originalPrice;
+                            {cartItems.map(item => {
+                                const stock = item.variant?.Stock || item.variant?.stock || 0;
+                                const isOutOfStock = stock <= 0;
+                                return (
+                                    <div key={item.CartItemID || item.id} className={`v-cart-card position-relative ${isOutOfStock ? 'v-cart-card-out-of-stock' : ''}`}>
+                                        <div className="v-item-check-col" style={{ display: 'flex', alignItems: 'center', height: '100%', paddingRight: '10px' }}>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={!isOutOfStock && selectedItems.includes(item.CartItemID || item.id)} 
+                                                onChange={() => handleSelect(item.CartItemID || item.id, isOutOfStock)} 
+                                                disabled={isOutOfStock}
+                                                className="v-custom-checkbox" 
+                                                style={{ cursor: isOutOfStock ? 'not-allowed' : 'pointer', zoom: '1.5' }} 
+                                            />
+                                        </div>
+                                        <div
+                                            className="d-flex align-items-center"
+                                            style={{ cursor: isOutOfStock ? 'default' : 'pointer', flex: 1, gap: '24px' }}
+                                            onClick={() => !isOutOfStock && navigate(`/product/${item.variant?.product?.ProductID || item.variant?.product?.id}`)}
+                                            title={isOutOfStock ? "Sản phẩm hết hàng" : "Nhấn để xem chi tiết sản phẩm"}
+                                        >
+                                            <img src={item.variant?.product?.MainImage?.startsWith('http') ? item.variant?.product?.MainImage : `http://127.0.0.1:8000/storage/${item.variant?.product?.MainImage}`} className="v-card-img mb-0" alt="prod" />
+                                            <div className="v-card-details">
+                                                <h5 className="v-product-name hover-text-primary">{item.variant?.product?.Name}</h5>
+                                                <p className="v-product-meta" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                                                    <span>Size: {item.variant?.Size} | Màu: {item.variant?.Color}</span>
+                                                    {isOutOfStock && <span className="badge bg-danger text-white py-1 px-2 rounded-pill fw-bold" style={{ fontSize: '10px', letterSpacing: '0.5px' }}>HẾT HÀNG</span>}
+                                                </p>
+                                                {(() => {
+                                                    const originalPrice = Number(item.variant?.Price || item.variant?.price || item.Price || item.price || 0);
+                                                    const discountPrice = item.variant?.DiscountPrice !== undefined ? item.variant.DiscountPrice : (item.variant?.discount_price !== undefined ? item.variant.discount_price : (item.DiscountPrice || item.discount_price));
+                                                    const hasDiscount = discountPrice !== null && discountPrice !== undefined && Number(discountPrice) < originalPrice;
 
-                                                if (hasDiscount) {
+                                                    if (hasDiscount) {
+                                                        return (
+                                                            <div className="p-price-container">
+                                                                <span className="p-price-current">
+                                                                    {Number(discountPrice).toLocaleString()}đ
+                                                                </span>
+                                                                <span className="p-price-original" style={{ fontSize: '11px' }}>
+                                                                    {Number(originalPrice).toLocaleString()}đ
+                                                                </span>
+                                                            </div>
+                                                        );
+                                                    }
                                                     return (
-                                                        <div className="p-price-container">
-                                                            <span className="p-price-current">
-                                                                {Number(discountPrice).toLocaleString()}đ
-                                                            </span>
-                                                            <span className="p-price-original" style={{ fontSize: '11px' }}>
-                                                                {Number(originalPrice).toLocaleString()}đ
-                                                            </span>
+                                                        <div className="v-price-unit">
+                                                            {Number(originalPrice).toLocaleString()}đ
                                                         </div>
                                                     );
-                                                }
-                                                return (
-                                                    <div className="v-price-unit">
-                                                        {Number(originalPrice).toLocaleString()}đ
-                                                    </div>
-                                                );
-                                            })()}
+                                                })()}
+                                            </div>
                                         </div>
+                                        <div className="v-qty-selector">
+                                            <button 
+                                                onClick={() => !isOutOfStock && updateQty(item.CartItemID || item.id, item.Quantity, -1)}
+                                                disabled={isOutOfStock}
+                                                style={{ cursor: isOutOfStock ? 'not-allowed' : 'pointer' }}
+                                            >
+                                                <Minus size={14} />
+                                            </button>
+                                            <span>{item.Quantity}</span>
+                                            <button 
+                                                onClick={() => !isOutOfStock && updateQty(item.CartItemID || item.id, item.Quantity, 1)}
+                                                disabled={isOutOfStock}
+                                                style={{ cursor: isOutOfStock ? 'not-allowed' : 'pointer' }}
+                                            >
+                                                <Plus size={14} />
+                                            </button>
+                                        </div>
+                                        <div className="v-card-subtotal">{(getCartItemPrice(item) * item.Quantity).toLocaleString()}đ</div>
+                                        <button className="v-btn-del" onClick={() => handleRemove(item.CartItemID || item.id)}><Trash2 size={18} /></button>
                                     </div>
-                                    <div className="v-qty-selector">
-                                        <button onClick={() => updateQty(item.CartItemID || item.id, item.Quantity, -1)}><Minus size={14} /></button>
-                                        <span>{item.Quantity}</span>
-                                        <button onClick={() => updateQty(item.CartItemID || item.id, item.Quantity, 1)}><Plus size={14} /></button>
-                                    </div>
-                                    <div className="v-card-subtotal">{(getCartItemPrice(item) * item.Quantity).toLocaleString()}đ</div>
-                                    <button className="v-btn-del" onClick={() => handleRemove(item.CartItemID || item.id)}><Trash2 size={18} /></button>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
                         <div className="v-empty-box">

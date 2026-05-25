@@ -56,9 +56,7 @@ const HomePage = () => {
 
     const handleSeeMore = (e) => {
         e.preventDefault();
-        const token = localStorage.getItem('vion_token');
-        if (token) navigate('/products');
-        else navigate('/login');
+        navigate('/products');
     };
 
     const ProductCard = ({ prod }) => {
@@ -110,7 +108,7 @@ const HomePage = () => {
         );
     };
 
-    if (loading) return <div className="vion-loading">VION ERA ĐANG CHUẨN BỊ...</div>;
+    if (loading && products.length === 0) return <div className="vion-loading">VION ERA ĐANG CHUẨN BỊ...</div>;
 
     return (
         <div className="home-page">

@@ -47,3 +47,42 @@
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
+
+/* Global Loading Styles to prevent Footer Jumping */
+.vion-loading,
+.v-loading,
+.vion-loading-box,
+.v-loading-screen,
+.v-checkout-loading {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    letter-spacing: 2px;
+    background-color: #fff;
+    text-transform: uppercase;
+}
+
+/* Spinner animation for loading states that don't have built-in icons */
+.vion-loading::before,
+.v-loading::before,
+.vion-loading-box::before {
+    content: "";
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #EE4D2D;
+    border-radius: 50%;
+    animation: vion-spin 1s linear infinite;
+}
+
+@keyframes vion-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+

@@ -52,6 +52,7 @@ const OrderHistory = () => {
     useEffect(() => { fetchMyOrders(); }, []);
 
     const fetchMyOrders = async () => {
+        if (orders.length === 0) setLoading(true);
         try {
             const res = await axios.get(`${API_URL}/my-orders`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -203,7 +204,7 @@ const OrderHistory = () => {
         return map[status] || status;
     };
 
-    if (loading) return <div className="v-loading">Đang tải đơn mua...</div>;
+    if (loading && orders.length === 0) return <div className="v-loading">Đang tải đơn mua...</div>;
 
     return (
         <div className="v-order-history container py-5">

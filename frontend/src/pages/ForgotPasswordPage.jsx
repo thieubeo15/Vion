@@ -148,7 +148,7 @@ const ForgotPasswordPage = () => {
             {/* HEADER */}
             <header className="forgot-header">
                 <Link to="/" className="logo">Vion.</Link>
-                <a href="/help" className="help-link">Trợ giúp</a>
+                <Link to="/support" className="help-link">Trợ giúp</Link>
             </header>
 
             <main className="forgot-main">

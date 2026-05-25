@@ -61,7 +61,7 @@ const AdminDashboard = () => {
         { title: 'Banner', value: stats.totalBanners, icon: <ImageIcon />, color: '#8b5cf6', path: '/admin/banners' },
     ];
 
-    if (loading) return <div className="admin-loading"><Loader2 className="spin-icon" /> Đang tải dữ liệu...</div>;
+    if (loading && stats.totalOrders === 0 && stats.recentOrders.length === 0) return <div className="admin-loading"><Loader2 className="spin-icon" /> Đang tải dữ liệu...</div>;
 
     return (
         <div className="admin-dashboard-content">

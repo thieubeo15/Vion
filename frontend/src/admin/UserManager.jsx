@@ -40,7 +40,7 @@ const UserManager = () => {
     // Lấy danh sách users
     const fetchUsers = async (page = 1) => {
         try {
-            setLoading(true);
+            if (users.length === 0) setLoading(true);
             const response = await axios.get(`http://127.0.0.1:8000/api/admin/users`, {
                 params: {
                     page: page,
@@ -258,7 +258,7 @@ const UserManager = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {loading ? (
+                                {loading && users.length === 0 ? (
                                     <tr>
                                         <td colSpan="6" className="text-center py-5">
                                             <div className="spinner-border text-primary" role="status">

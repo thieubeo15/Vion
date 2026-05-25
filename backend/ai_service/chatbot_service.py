@@ -1,4 +1,7 @@
 import os
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
+sys.stderr.reconfigure(encoding='utf-8')
 import uvicorn
 import pymysql
 from fastapi import FastAPI, HTTPException
@@ -10,6 +13,7 @@ from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, ToolMessage
 from langchain_core.tools import tool
 from langchain_ollama import ChatOllama
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 # 1. Tải các biến môi trường từ file .env của Laravel
@@ -169,10 +173,13 @@ def search_products_fn(query: str, searched_products_list: list) -> str:
 
                 # Tránh trùng sản phẩm
                 if not any(p["id"] == p_id for p in searched_products_list):
+                    img_path = p_info["MainImage"]
+                    if img_path and not (img_path.startswith("http://") or img_path.startswith("https://")):
+                        img_path = f"/storage/{img_path}"
                     searched_products_list.append({
                         "id": p_id,
                         "name": p_info["Name"],
-                        "image": f"/storage/{p_info['MainImage']}" if p_info["MainImage"] else None,
+                        "image": img_path,
                         "price": price
                     })
 
@@ -183,8 +190,11 @@ def search_products_fn(query: str, searched_products_list: list) -> str:
                 p_str = f"Sản phẩm: {p_info['Name']} (Mã ID: {p_id})\n"
                 p_str += f"- Mô tả: {p_info['Description']}\n"
 
-                if p_info["MainImage"]:
-                    p_str += f"- Ảnh chính: /storage/{p_info['MainImage']}\n"
+                img_path = p_info["MainImage"]
+                if img_path:
+                    if not (img_path.startswith("http://") or img_path.startswith("https://")):
+                        img_path = f"/storage/{img_path}"
+                    p_str += f"- Ảnh chính: {img_path}\n"
                 else:
                     p_str += "- Ảnh chính: Chưa có ảnh\n"
 
@@ -291,16 +301,33 @@ class ChatRequest(BaseModel):
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest):
     try:
-        # Lấy tên mô hình Ollama từ file .env hoặc sử dụng mặc định là qwen2.5:3b
-        ollama_model = os.environ.get("OLLAMA_MODEL", "qwen2.5:3b")
-        ollama_base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+        # Lấy API Key từ request hoặc .env
+        api_key = request.gemini_api_key or os.environ.get("GEMINI_API_KEY")
+        if api_key and "," in api_key:
+            import random
+            keys = [k.strip() for k in api_key.split(",") if k.strip()]
+            if keys:
+                api_key = random.choice(keys)
 
-        # Khởi tạo mô hình Ollama Local
-        llm = ChatOllama(
-            model=ollama_model,
-            base_url=ollama_base_url,
-            temperature=0.0
-        )
+        if api_key:
+            print("DEBUG: Using Gemini (langchain_google_genai) for Chatbot Service")
+            llm = ChatGoogleGenerativeAI(
+                model="gemini-2.5-flash",
+                google_api_key=api_key,
+                temperature=0.0
+            )
+        else:
+            print("DEBUG: Using Ollama for Chatbot Service (No Gemini API Key found)")
+            # Lấy tên mô hình Ollama từ file .env hoặc sử dụng mặc định là qwen2.5:3b
+            ollama_model = os.environ.get("OLLAMA_MODEL", "qwen2.5:3b")
+            ollama_base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+
+            # Khởi tạo mô hình Ollama Local
+            llm = ChatOllama(
+                model=ollama_model,
+                base_url=ollama_base_url,
+                temperature=0.0
+            )
 
         searched_products = []
 

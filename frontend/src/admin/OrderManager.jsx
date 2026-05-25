@@ -225,7 +225,7 @@ const OrderManager = () => {
             ? orders.filter(o => ['ReturnRequested', 'ReturnApproved', 'ReturnReceived', 'Refunded', 'Returned'].includes(o.Status))
             : orders.filter(o => o.Status === filterStatus);
 
-    if (loading) return <div className="v-admin-loading">VION ERA đang tải dữ liệu...</div>;
+    if (loading && orders.length === 0) return <div className="v-admin-loading">VION ERA đang tải dữ liệu...</div>;
 
     return (
         <div className="v-order-manager">

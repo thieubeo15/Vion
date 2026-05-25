@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; 
-import { Search, Camera, ShoppingBag, User, LogOut } from 'lucide-react';
+import { Search, Camera, ShoppingBag, User, LogOut, Settings, Package, LayoutDashboard } from 'lucide-react';
 import axios from 'axios';
 import Swal from 'sweetalert2'; // 🚀 1. Import thư viện Swal
 import NotificationBell from './NotificationBell';
@@ -12,7 +12,9 @@ const Navbar = () => {
     const [categories, setCategories] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
+    const [showUserDropdown, setShowUserDropdown] = useState(false);
     const imageInputRef = useRef(null);
+    const dropdownRef = useRef(null);
     
     const navigate = useNavigate();
     const API_BASE_URL = 'http://127.0.0.1:8000';
@@ -61,6 +63,16 @@ const Navbar = () => {
         const handleCartChange = () => loadInitialData();
         window.addEventListener('cartUpdated', handleCartChange);
         return () => window.removeEventListener('cartUpdated', handleCartChange);
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowUserDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const handleSearchSubmit = (e) => {
@@ -238,13 +250,48 @@ const Navbar = () => {
                     </Link>
 
                     {user ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                            <Link to="/profile" className="action-icon" title="Trang cá nhân">
+                        <div className="user-dropdown-container" ref={dropdownRef}>
+                            <button 
+                                className="action-icon user-trigger-btn" 
+                                onClick={() => setShowUserDropdown(!showUserDropdown)} 
+                                title="Tài khoản"
+                                style={{ background: 'none', border: 'none', padding: 0 }}
+                            >
                                 <User size={24} strokeWidth={1.5} />
-                            </Link>
-                            <div className="action-icon" onClick={handleLogout} title="Đăng xuất" style={{ cursor: 'pointer' }}>
-                                <LogOut size={20} strokeWidth={1.5} />
-                            </div>
+                            </button>
+                            
+                            {showUserDropdown && (
+                                <div className="user-dropdown-menu">
+                                    <div className="user-dropdown-info">
+                                        <p className="user-name">{user.FullName}</p>
+                                        <p className="user-email">{user.Email}</p>
+                                    </div>
+                                    <div className="user-dropdown-divider"></div>
+                                    
+                                    {user.Role === 'Admin' && (
+                                        <Link to="/admin" className="user-dropdown-item" onClick={() => setShowUserDropdown(false)}>
+                                            <LayoutDashboard size={16} strokeWidth={1.5} />
+                                            <span>Trang quản trị</span>
+                                        </Link>
+                                    )}
+                                    <Link to="/profile" className="user-dropdown-item" onClick={() => setShowUserDropdown(false)}>
+                                        <Settings size={16} strokeWidth={1.5} />
+                                        <span>Cài đặt tài khoản</span>
+                                    </Link>
+                                    <Link to="/orders" className="user-dropdown-item" onClick={() => setShowUserDropdown(false)}>
+                                        <Package size={16} strokeWidth={1.5} />
+                                        <span>Lịch sử đơn hàng</span>
+                                    </Link>
+                                    <div className="user-dropdown-divider"></div>
+                                    <button 
+                                        className="user-dropdown-item logout-btn" 
+                                        onClick={() => { setShowUserDropdown(false); handleLogout(); }}
+                                    >
+                                        <LogOut size={16} strokeWidth={1.5} />
+                                        <span>Đăng xuất</span>
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <Link to="/login" className="auth-text">Đăng nhập</Link>

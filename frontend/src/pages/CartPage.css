@@ -120,3 +120,29 @@
 .v-loading-screen { height: 70vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; color: #555; }
 .v-spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Out of Stock Styling */
+.v-cart-card.v-cart-card-out-of-stock {
+    opacity: 0.65;
+    background-color: #fafafa;
+    border-color: #eee;
+}
+
+.v-cart-card.v-cart-card-out-of-stock:hover {
+    transform: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+.v-cart-card.v-cart-card-out-of-stock .v-qty-selector {
+    background-color: #eee;
+    border-color: #ddd;
+    color: #999;
+}
+
+.v-cart-card.v-cart-card-out-of-stock .v-card-subtotal {
+    color: #999;
+}
+
+.v-cart-card.v-cart-card-out-of-stock .v-custom-checkbox {
+    cursor: not-allowed !important;
+}

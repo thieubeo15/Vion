@@ -362,9 +362,6 @@ class OrderController extends Controller
                 foreach ($order->details as $detail) {
                     if ($detail->variant) {
                         $detail->variant->increment('Stock', $detail->Quantity);
-                        if ($detail->variant->product) {
-                            $detail->variant->product->decrement('sold_count', $detail->Quantity);
-                        }
                     }
                 }
             });

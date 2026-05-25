@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { MessageCircle, Send, X, Bot, User, Loader2, Minus } from 'lucide-react';
+import { MessageCircle, Send, X, Bot, User, Loader2, Minus, Trash2 } from 'lucide-react';
 import './ChatWidget.css';
 
 // Hàm helper để tách phần tin nhắn text và danh sách sản phẩm JSON đính kèm
 const parseMessageContent = (content) => {
     if (!content) return { text: '', products: [] };
-    const regex = /\[PRODUCTS_JSON:\s*(.*?)\]/s;
+    const regex = /\[PRODUCTS_JSON:\s*(.*)\]/s;
     const match = content.match(regex);
     if (match) {
         try {
@@ -116,6 +116,30 @@ const ChatWidget = () => {
         }
     };
 
+    const handleClearHistory = async () => {
+        if (!window.confirm("Bạn có chắc chắn muốn xóa lịch sử trò chuyện không?")) return;
+        
+        const token = localStorage.getItem('vion_token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        
+        try {
+            const res = await axios.post(`${API_URL}/chatbot/clear`, {
+                session_id: sessionId
+            }, { headers });
+            
+            if (res.data.success) {
+                setMessages([]);
+                if (!token) {
+                    const newSId = 'sess_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                    localStorage.setItem('vion_chatbot_session', newSId);
+                    setSessionId(newSId);
+                }
+            }
+        } catch (err) {
+            console.error('Lỗi khi xóa lịch sử chat:', err);
+        }
+    };
+
     // Định dạng thời gian gửi tin nhắn
     const formatTime = (timeStr) => {
         if (!timeStr) return '';
@@ -147,8 +171,11 @@ const ChatWidget = () => {
                                 <small className="v-chatbot-subtitle"><span className="v-online-dot"></span>Trợ lý AI đang trực tuyến</small>
                             </div>
                         </div>
-                        <div className="v-chatbot-actions">
-                            <button className="v-chatbot-close-btn" onClick={() => setIsOpen(false)}>
+                        <div className="v-chatbot-actions d-flex gap-1 align-items-center">
+                            <button className="v-chatbot-close-btn" onClick={handleClearHistory} title="Xóa lịch sử trò chuyện">
+                                <Trash2 size={16} />
+                            </button>
+                            <button className="v-chatbot-close-btn" onClick={() => setIsOpen(false)} title="Ẩn khung chat">
                                 <Minus size={20} />
                             </button>
                         </div>
@@ -202,6 +229,21 @@ const ChatWidget = () => {
                                                             className="v-product-card-click-area d-flex align-items-center gap-2 flex-grow-1 text-decoration-none"
                                                             style={{ color: 'inherit', minWidth: 0 }}
                                                         >
+                                                            {(() => {
+                                                                if (!prod.image) return null;
+                                                                let src = prod.image;
+                                                                if (src.startsWith('/storage/http')) {
+                                                                    src = src.replace('/storage/', '');
+                                                                }
+                                                                const finalSrc = src.startsWith('http') ? src : `http://${backendHost}:8000${src}`;
+                                                                return (
+                                                                    <img 
+                                                                        src={finalSrc}
+                                                                        alt={prod.name} 
+                                                                        className="v-product-card-img" 
+                                                                    />
+                                                                );
+                                                            })()}
                                                             <div className="v-product-card-info flex-grow-1" style={{ minWidth: 0 }}>
                                                                 <h6 className="v-product-card-title mb-0 text-truncate">{prod.name}</h6>
                                                                 <span className="v-product-card-price">{prod.price ? `${prod.price.toLocaleString('vi-VN')}đ` : 'Liên hệ'}</span>

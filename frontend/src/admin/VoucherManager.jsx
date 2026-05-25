@@ -52,7 +52,7 @@ const VoucherManager = () => {
     });
 
     const fetchVouchers = async () => {
-        setLoading(true);
+        if (vouchers.length === 0) setLoading(true);
         try {
             const res = await axios.get(API_URL, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -284,7 +284,7 @@ const VoucherManager = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {loading ? (
+                        {loading && vouchers.length === 0 ? (
                             <tr><td colSpan="8" className="v-loading"><Loader2 className="v-spin" /> Đang tải...</td></tr>
                         ) : filteredVouchers.length === 0 ? (
                             <tr><td colSpan="8" className="v-loading">Không tìm thấy voucher nào</td></tr>

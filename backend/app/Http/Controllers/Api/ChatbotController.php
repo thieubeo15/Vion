@@ -140,4 +140,35 @@ class ChatbotController extends Controller
             'data'    => $history
         ]);
     }
+
+    /**
+     * Xóa lịch sử hội thoại
+     */
+    public function clearHistory(Request $request)
+    {
+        $user = $request->user('sanctum');
+        $userId = $user ? $user->UserID : null;
+        $sessionId = $request->session_id;
+
+        if (!$userId && !$sessionId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Thiếu thông tin session_id hoặc người dùng chưa đăng nhập!'
+            ], 400);
+        }
+
+        $query = ChatbotMessage::query();
+        if ($userId) {
+            $query->where('UserID', $userId);
+        } else {
+            $query->where('session_id', $sessionId);
+        }
+
+        $query->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã xóa lịch sử trò chuyện thành công!'
+        ]);
+    }
 }
