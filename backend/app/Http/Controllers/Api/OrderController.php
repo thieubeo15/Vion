@@ -491,6 +491,15 @@ class OrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Chỉ có thể yêu cầu hoàn hàng với đơn hàng đã hoàn thành!'], 400);
         }
 
+        // Kiểm tra thời hạn hoàn hàng (Tối đa 7 ngày từ lúc hoàn thành đơn hàng)
+        $completedTime = $order->updated_at;
+        if ($completedTime && now()->diffInDays($completedTime) > 7) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Đơn hàng đã hoàn thành quá 7 ngày. Bạn không thể yêu cầu hoàn hàng theo chính sách của Vion!'
+            ], 400);
+        }
+
         $request->validate([
             'reason' => 'required|string|max:500',
             'refund_method' => 'required|string|in:Bank,Momo,ZaloPay',

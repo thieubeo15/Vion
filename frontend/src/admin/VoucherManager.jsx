@@ -79,7 +79,7 @@ const VoucherManager = () => {
 
     const openEditModal = (voucher) => {
         setIsEditing(true);
-        setEditId(voucher.id || voucher.ID);
+        setEditId(voucher.VoucherID || voucher.id || voucher.ID);
         setFormData({
             Code: voucher.Code || '',
             Type: voucher.Type || 'fixed',
@@ -165,7 +165,7 @@ const VoucherManager = () => {
     };
 
     const handleToggleActive = async (voucher) => {
-        const id = voucher.id || voucher.VoucherID;
+        const id = voucher.VoucherID || voucher.id;
         try {
             await axios.put(`${API_URL}/${id}`, {
                 ...voucher,
@@ -291,7 +291,7 @@ const VoucherManager = () => {
                         ) : filteredVouchers.map(v => {
                             const status = getStatus(v);
                             return (
-                                <tr key={v.id || v.ID} className="v-row-parent">
+                                <tr key={v.VoucherID || v.id || v.ID} className="v-row-parent">
                                     <td className="v-voucher-code-cell">{v.Code}</td>
                                     <td>{v.Type === 'percent' ? 'Phần trăm' : v.Type === 'freeship' ? 'Miễn phí ship' : 'Cố định'}</td>
                                     <td className="fw-700">{formatValue(v)}</td>
@@ -317,7 +317,7 @@ const VoucherManager = () => {
                                         </button>
                                         <button onClick={() => openGiftModal(v)} className="v-gift-icon" title="Tặng voucher"><Gift size={16} /></button>
                                         <button onClick={() => openEditModal(v)} className="v-edit-icon"><Edit2 size={16} /></button>
-                                        <button onClick={() => handleDelete(v.id || v.VoucherID)} className="v-del-icon"><Trash2 size={16} /></button>
+                                        <button onClick={() => handleDelete(v.VoucherID || v.id)} className="v-del-icon"><Trash2 size={16} /></button>
                                     </td>
                                 </tr>
                             );

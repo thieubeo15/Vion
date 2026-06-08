@@ -151,6 +151,12 @@ class VoucherController extends Controller
      */
     public function store(Request $request)
     {
+        if ($request->has('Code')) {
+            $request->merge([
+                'Code' => Voucher::cleanCode($request->Code)
+            ]);
+        }
+
         $request->validate([
             'Code'           => 'required|string|max:50|unique:vouchers,Code',
             'Type'           => 'required|in:fixed,percent,freeship',
@@ -163,6 +169,11 @@ class VoucherController extends Controller
             'EndDate'        => 'required|date|after:StartDate',
             'IsActive'       => 'nullable|boolean',
             'Description'    => 'nullable|string',
+        ], [
+            'Code.required' => 'Mã voucher là bắt buộc.',
+            'Code.unique'   => 'Mã voucher này đã tồn tại, vui lòng nhập mã khác.',
+            'Code.max'      => 'Mã voucher không được quá 50 ký tự.',
+            'EndDate.after' => 'Ngày kết thúc phải sau ngày bắt đầu.',
         ]);
 
         $data = $request->only([
@@ -195,6 +206,12 @@ class VoucherController extends Controller
             return response()->json(['message' => 'Không tìm thấy mã giảm giá!'], 404);
         }
 
+        if ($request->has('Code')) {
+            $request->merge([
+                'Code' => Voucher::cleanCode($request->Code)
+            ]);
+        }
+
         $request->validate([
             'Code'           => 'sometimes|string|max:50|unique:vouchers,Code,' . $id . ',VoucherID',
             'Type'           => 'sometimes|in:fixed,percent,freeship',
@@ -207,6 +224,11 @@ class VoucherController extends Controller
             'EndDate'        => 'sometimes|date|after:StartDate',
             'IsActive'       => 'nullable|boolean',
             'Description'    => 'nullable|string',
+        ], [
+            'Code.required' => 'Mã voucher là bắt buộc.',
+            'Code.unique'   => 'Mã voucher này đã tồn tại, vui lòng nhập mã khác.',
+            'Code.max'      => 'Mã voucher không được quá 50 ký tự.',
+            'EndDate.after' => 'Ngày kết thúc phải sau ngày bắt đầu.',
         ]);
 
         $data = $request->only([

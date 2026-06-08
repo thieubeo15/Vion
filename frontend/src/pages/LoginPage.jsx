@@ -22,7 +22,11 @@ const LoginPage = () => {
             if (res.data.success) {
                 localStorage.setItem('vion_token', res.data.token);
                 localStorage.setItem('vion_user', JSON.stringify(res.data.user));
-                window.location.href = '/';
+                if (res.data.user?.Role === 'Admin') {
+                    window.location.href = '/admin';
+                } else {
+                    window.location.href = '/';
+                }
             } else {
                 setError(res.data.message || 'Đăng nhập Google thất bại.');
             }
@@ -89,7 +93,11 @@ const LoginPage = () => {
             
             localStorage.setItem('vion_token', response.data.token);
             localStorage.setItem('vion_user', JSON.stringify(response.data.user));
-            window.location.href = '/';
+            if (response.data.user?.Role === 'Admin') {
+                window.location.href = '/admin';
+            } else {
+                window.location.href = '/';
+            }
             
         } catch (err) {
             // 🚀 ĐÂY LÀ CHỖ HỨNG LỖI TỪ LARAVEL BACKEND GỬI VỀ

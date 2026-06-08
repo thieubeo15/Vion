@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import { 
     Search, Plus, Edit2, Trash2, UserPlus, 
     ChevronLeft, ChevronRight, Mail, Phone, 
-    MapPin, Calendar, Shield, X 
+    MapPin, Calendar, Shield, X, Users
 } from 'lucide-react';
 import './UserManager.css';
 
@@ -170,7 +170,7 @@ const UserManager = () => {
             confirmButtonColor: '#EE4D2D',
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Đồng ý xóa',
-            cancelButtonText: 'Hủy bỏ'
+            cancelButtonText: 'Hủy'
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
@@ -202,7 +202,10 @@ const UserManager = () => {
             {/* Header */}
             <div className="v-manager-header d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 className="v-title mb-1">Quản lý Thành viên</h2>
+                    <h2 className="v-title mb-1">
+                        <Users className="v-brand-icon" size={24} />
+                        Quản lý người dùng
+                    </h2>
                     <p className="v-subtitle text-muted mb-0">Hệ thống phân quyền & quản lý tài khoản người dùng ({totalUsers})</p>
                 </div>
                 <button className="v-add-btn btn d-flex align-items-center gap-2" onClick={openAddModal}>

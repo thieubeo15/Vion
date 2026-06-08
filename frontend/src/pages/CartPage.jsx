@@ -111,7 +111,8 @@ const CartPage = () => {
     const handleRemove = (itemId) => {
         Swal.fire({
             title: 'Xóa khỏi giỏ?', icon: 'warning', showCancelButton: true,
-            confirmButtonColor: '#111', confirmButtonText: 'Xóa ngay'
+            confirmButtonColor: '#111', confirmButtonText: 'Xóa ngay',
+            cancelButtonText: 'Hủy'
         }).then(async (result) => {
             if (result.isConfirmed) {
                 if (!token) {

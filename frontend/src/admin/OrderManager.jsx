@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Eye, Truck, CheckCircle, XCircle, Package, Search, X } from 'lucide-react';
+import { Eye, Truck, CheckCircle, XCircle, Package, Search, X, ShoppingCart } from 'lucide-react';
 import Swal from 'sweetalert2';
 import './OrderManager.css';
 
@@ -123,7 +123,8 @@ const OrderManager = () => {
             text: `Chuyển trạng thái đơn hàng sang ${newStatus}?`,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#111'
+            confirmButtonColor: '#111',
+            cancelButtonText: 'Hủy'
         });
 
         if (confirm.isConfirmed) {
@@ -230,7 +231,10 @@ const OrderManager = () => {
     return (
         <div className="v-order-manager">
             <div className="v-admin-header mb-4">
-                <h2 className="fw-900">QUẢN LÝ ĐƠN HÀNG</h2>
+                <h2>
+                    <ShoppingCart className="v-brand-icon" size={24} />
+                    Quản lý đơn hàng
+                </h2>
                 <div className="v-filter-bar">
                     {['All', 'Pending', 'CancelRequested', 'Shipping', 'Completed', 'Cancelled', 'Returns'].map(status => (
                         <button 

@@ -22,7 +22,7 @@ class StoreCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'Name' => 'required|string|max:255',
+            'Name' => 'required|string|max:255|unique:categories,Name',
             'ParentID' => 'nullable|integer|exists:categories,CategoryID',
         ];
     }
@@ -32,6 +32,7 @@ class StoreCategoryRequest extends FormRequest
         return [
             'Name.required' => 'Tên danh mục là bắt buộc.',
             'Name.max' => 'Tên danh mục không được vượt quá 255 ký tự.',
+            'Name.unique' => 'Tên danh mục đã tồn tại trong hệ thống.',
             'ParentID.integer' => 'ID danh mục cha phải là số nguyên.',
             'ParentID.exists' => 'Danh mục cha không tồn tại.',
         ];

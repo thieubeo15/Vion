@@ -803,7 +803,7 @@ const ProductManager = () => {
                                 className="v-crop-btn-cancel" 
                                 onClick={() => setCropModal({ isOpen: false, imgSrc: '', fileName: '', onCropDone: null, title: '' })}
                             >
-                                HỦY BỎ
+                                HỦY
                             </button>
                             <button 
                                 type="button" 

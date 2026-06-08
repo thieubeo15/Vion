@@ -172,7 +172,7 @@ const ProfilePage = () => {
                         <h3>Xác nhận lưu hồ sơ?</h3>
                         <p>Dữ liệu cá nhân của bạn sẽ được cập nhật trên toàn hệ thống Vion.</p>
                         <div className="modal-actions">
-                            <button className="btn-no" onClick={() => setShowConfirm(false)}>Hủy bỏ</button>
+                            <button className="btn-no" onClick={() => setShowConfirm(false)}>Hủy</button>
                             <button className="btn-yes" onClick={handleUpdateProfile}>Đồng ý lưu</button>
                         </div>
                     </div>

@@ -88,7 +88,7 @@ const BannerManager = () => {
             confirmButtonColor: '#ff4d4f',
             cancelButtonColor: '#111',
             confirmButtonText: 'Đồng ý xóa',
-            cancelButtonText: 'Hủy bỏ'
+            cancelButtonText: 'Hủy'
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {

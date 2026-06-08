@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Package, Clock, Truck, CheckCircle, XCircle, Inbox, X, AlertTriangle, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Package, Clock, Truck, CheckCircle, XCircle, Inbox, X, AlertTriangle, ChevronRight, ArrowLeft, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import './OrderHistory.css';
@@ -34,6 +34,64 @@ const OrderHistory = () => {
     const [refundMethod, setRefundMethod] = useState('Bank'); // Bank, Momo, ZaloPay
     const [refundDetails, setRefundDetails] = useState('');
     const [returning, setReturning] = useState(false);
+
+    // Review modal state
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [reviewProductId, setReviewProductId] = useState(null);
+    const [reviewProductName, setReviewProductName] = useState('');
+    const [reviewProductImage, setReviewProductImage] = useState('');
+    const [reviewRating, setReviewRating] = useState(5);
+    const [reviewComment, setReviewComment] = useState('');
+    const [submittingReview, setSubmittingReview] = useState(false);
+
+    const openReviewModal = (productId, productName, productImage) => {
+        setReviewProductId(productId);
+        setReviewProductName(productName);
+        setReviewProductImage(productImage);
+        setReviewRating(5);
+        setReviewComment('');
+        setShowReviewModal(true);
+    };
+
+    const closeReviewModal = () => {
+        setShowReviewModal(false);
+        setReviewProductId(null);
+        setReviewProductName('');
+        setReviewProductImage('');
+        setReviewRating(5);
+        setReviewComment('');
+    };
+
+    const handleSubmitReview = async () => {
+        if (!reviewComment.trim()) {
+            Swal.fire('Chú ý', 'Vui lòng nhập nội dung đánh giá!', 'warning');
+            return;
+        }
+        setSubmittingReview(true);
+        try {
+            await axios.post(`${API_URL}/reviews`, {
+                ProductID: reviewProductId,
+                Rating: reviewRating,
+                Comment: reviewComment
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            closeReviewModal();
+            Swal.fire({
+                icon: 'success',
+                title: 'Đánh giá thành công',
+                text: 'Cảm ơn bạn đã gửi đánh giá cho sản phẩm!',
+                confirmButtonColor: '#111',
+                timer: 2500,
+                timerProgressBar: true,
+            });
+            fetchMyOrders();
+        } catch (err) {
+            Swal.fire('Lỗi', err.response?.data?.message || 'Không thể gửi đánh giá sản phẩm!', 'error');
+        } finally {
+            setSubmittingReview(false);
+        }
+    };
 
     const token = localStorage.getItem('vion_token');
     const API_URL = 'http://127.0.0.1:8000/api';
@@ -172,6 +230,15 @@ const OrderHistory = () => {
         }
     };
 
+    const isWithin7Days = (dateStr) => {
+        if (!dateStr) return false;
+        const completedDate = new Date(dateStr);
+        const now = new Date();
+        const diffTime = Math.abs(now - completedDate);
+        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+        return diffDays <= 7;
+    };
+
     const getStatusIcon = (status) => {
         switch (status) {
             case 'Pending': return <Clock size={16} strokeWidth={2.5} />;
@@ -254,32 +321,54 @@ const OrderHistory = () => {
 
                             {/* DANH SÁCH SẢN PHẨM */}
                             <div className="v-order-body">
-                                {order.details.map((item, index) => (
-                                    <div key={index} className="v-product-row d-flex align-items-center">
-                                        <div className="v-product-img-box">
-                                            <img 
-                                                src={item.variant?.product?.MainImage ? (item.variant.product.MainImage.startsWith('http') ? item.variant.product.MainImage : `${ASSET_URL}${item.variant.product.MainImage}`) : 'https://via.placeholder.com/80'} 
-                                                alt={item.variant?.product?.Name} 
-                                                className="v-product-img"
-                                            />
-                                        </div>
-                                        <div className="v-product-info flex-grow-1">
-                                            <h6 className="mb-1 fw-700 text-dark v-text-truncate">{item.variant?.product?.Name}</h6>
-                                            <div className="text-muted fs-13 mb-1">
-                                                Phân loại: {item.variant?.Color} / {item.variant?.Size}
+                                {order.details.map((item, index) => {
+                                    const productId = item.variant?.product?.ProductID || item.variant?.product?.id || item.variant?.ProductID;
+                                    return (
+                                        <div 
+                                            key={index} 
+                                            className="v-product-row d-flex align-items-center"
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => productId && navigate(`/product/${productId}`)}
+                                        >
+                                            <div className="v-product-img-box">
+                                                <img 
+                                                    src={item.variant?.product?.MainImage ? (item.variant.product.MainImage.startsWith('http') ? item.variant.product.MainImage : `${ASSET_URL}${item.variant.product.MainImage}`) : 'https://via.placeholder.com/80'} 
+                                                    alt={item.variant?.product?.Name} 
+                                                    className="v-product-img"
+                                                />
                                             </div>
-                                            <div className="fw-600 fs-14">x{item.Quantity}</div>
-                                        </div>
-                                        <div className="v-product-price text-end">
-                                            <div className="fw-800 text-danger fs-15">{(item.Price * item.Quantity).toLocaleString()}đ</div>
-                                            {item.Price !== (item.variant?.Price || item.Price) && (
-                                                <div className="text-muted text-decoration-line-through fs-12 mt-1">
-                                                    {(item.variant?.Price * item.Quantity).toLocaleString()}đ
+                                            <div className="v-product-info flex-grow-1">
+                                                <h6 className="mb-1 fw-700 text-dark v-text-truncate">{item.variant?.product?.Name}</h6>
+                                                <div className="text-muted fs-13 mb-1">
+                                                    Phân loại: {item.variant?.Color} / {item.variant?.Size}
                                                 </div>
-                                            )}
+                                                <div className="fw-600 fs-14">x{item.Quantity}</div>
+                                                {order.Status === 'Completed' && (
+                                                    <button 
+                                                        className="v-btn-product-review"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const pId = item.variant?.product?.ProductID || item.variant?.product?.id || item.variant?.ProductID;
+                                                            const pName = item.variant?.product?.Name || '';
+                                                            const pImage = item.variant?.product?.MainImage || '';
+                                                            openReviewModal(pId, pName, pImage);
+                                                        }}
+                                                    >
+                                                        Đánh giá sản phẩm
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="v-product-price text-end">
+                                                <div className="fw-800 text-danger fs-15">{(item.Price * item.Quantity).toLocaleString()}đ</div>
+                                                {item.Price !== (item.variant?.Price || item.Price) && (
+                                                    <div className="text-muted text-decoration-line-through fs-12 mt-1">
+                                                        {(item.variant?.Price * item.Quantity).toLocaleString()}đ
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
 
                             {/* CHI TIẾT TÍNH TIỀN */}
@@ -373,12 +462,18 @@ const OrderHistory = () => {
                                         </span>
                                     )}
                                     {order.Status === 'Completed' && (
-                                        <button
-                                            className="v-btn-return-action"
-                                            onClick={() => openReturnModal(order.OrderID)}
-                                        >
-                                            Yêu cầu hoàn hàng
-                                        </button>
+                                        isWithin7Days(order.updated_at || order.UpdatedAt) ? (
+                                            <button
+                                                className="v-btn-return-action"
+                                                onClick={() => openReturnModal(order.OrderID)}
+                                            >
+                                                Yêu cầu hoàn hàng
+                                            </button>
+                                        ) : (
+                                            <span className="v-cancel-requested-badge" style={{ padding: '8px 16px', background: '#f1f5f9', color: '#64748b', borderRadius: '8px', fontSize: '13px', fontWeight: 700 }}>
+                                                ❌ Quá hạn đổi trả (Hạn 7 ngày)
+                                            </span>
+                                        )
                                     )}
                                 </div>
                             </div>
@@ -549,8 +644,89 @@ const OrderHistory = () => {
                           </div>
                       </div>
                   </div>
-              )}
-          </div>
+               )}
+               {/* MODAL ĐÁNH GIÁ SẢN PHẨM */}
+               {showReviewModal && (
+                   <div className="v-cancel-modal-overlay" onClick={closeReviewModal}>
+                       <div className="v-cancel-modal" onClick={e => e.stopPropagation()}>
+                           <div className="v-cancel-modal-header">
+                               <div className="v-cancel-modal-title">
+                                   <h3>Đánh giá sản phẩm</h3>
+                                   <p className="text-muted fs-13 mt-1 mb-0">Chia sẻ trải nghiệm thực tế của bạn về sản phẩm này.</p>
+                               </div>
+                               <button className="v-cancel-modal-close" onClick={closeReviewModal}><X size={24} /></button>
+                           </div>
+
+                           <div className="v-cancel-modal-body">
+                               {/* THÔNG TIN SẢN PHẨM MINI */}
+                               <div className="d-flex align-items-center gap-3 mb-4 p-3 rounded-3" style={{ background: '#f8f9fa', border: '1px solid #eee' }}>
+                                   <img 
+                                       src={reviewProductImage ? (reviewProductImage.startsWith('http') ? reviewProductImage : `${ASSET_URL}${reviewProductImage}`) : 'https://via.placeholder.com/80'} 
+                                       alt={reviewProductName} 
+                                       style={{ width: '60px', height: '80px', objectFit: 'cover', borderRadius: '6px' }}
+                                   />
+                                   <div>
+                                       <h6 className="fw-700 text-dark mb-0 v-text-truncate" style={{ maxWidth: '340px' }}>{reviewProductName}</h6>
+                                   </div>
+                               </div>
+
+                               {/* CHỌN SỐ SAO */}
+                               <div className="mb-4 text-center">
+                                   <label className="fw-700 fs-14 mb-2 d-block text-dark text-start">Điểm chất lượng:</label>
+                                   <div className="d-flex justify-content-center gap-2 my-3">
+                                       {[1, 2, 3, 4, 5].map(num => (
+                                           <Star 
+                                               key={num} 
+                                               size={32} 
+                                               fill={num <= reviewRating ? "#EE4D2D" : "none"} 
+                                               color="#EE4D2D" 
+                                               style={{ cursor: 'pointer', transition: 'transform 0.15s ease' }} 
+                                               onClick={() => setReviewRating(num)}
+                                               onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+                                               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                           />
+                                       ))}
+                                   </div>
+                                   <span className="fw-800 fs-14" style={{ color: '#EE4D2D' }}>
+                                       {reviewRating === 5 ? 'Cực kỳ hài lòng (5/5 ⭐)' :
+                                        reviewRating === 4 ? 'Rất hài lòng (4/5 ⭐)' :
+                                        reviewRating === 3 ? 'Bình thường (3/5 ⭐)' :
+                                        reviewRating === 2 ? 'Không hài lòng (2/5 ⭐)' :
+                                        'Tệ (1/5 ⭐)'}
+                                   </span>
+                               </div>
+
+                               {/* NỘI DUNG NHẬN XÉT */}
+                               <div className="mb-2">
+                                   <label className="fw-700 fs-14 mb-2 d-block text-dark">Viết nhận xét:</label>
+                                   <textarea
+                                       className="v-custom-reason-input"
+                                       placeholder="Chất liệu vải thế nào? Form dáng có đúng mô tả không? Shop giao hàng nhanh không bạn?..."
+                                       value={reviewComment}
+                                       onChange={e => setReviewComment(e.target.value)}
+                                       rows={4}
+                                       style={{ background: '#fff', borderColor: '#eee', color: '#111', padding: '12px' }}
+                                   />
+                               </div>
+                           </div>
+
+                           <div className="v-cancel-modal-footer">
+                               <button className="v-cancel-modal-btn-back" onClick={closeReviewModal}>
+                                   Đóng
+                               </button>
+                               <button
+                                   className="v-cancel-modal-btn-confirm"
+                                   onClick={handleSubmitReview}
+                                   disabled={submittingReview || !reviewComment.trim()}
+                                   style={{ background: '#EE4D2D', color: '#fff', borderColor: '#EE4D2D' }}
+                               >
+                                   {submittingReview ? 'Đang gửi...' : 'Gửi đánh giá'}
+                               </button>
+                           </div>
+                       </div>
+                   </div>
+               )}
+           </div>
     );
 };
 
