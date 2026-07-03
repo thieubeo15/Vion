@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 
-// 1. Nhúng các trang khách hàng
+
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -9,14 +9,14 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ProfilePage from './pages/ProfilePage';
 import CartPage from './pages/CartPage';
 import ProductsPage from './pages/ProductsPage';
-import SearchResults from './pages/SearchResults'; // Sửa lại đường dẫn cho đúng thư mục của bro
+import SearchResults from './pages/SearchResults'; 
 import AboutUsPage from './pages/AboutUsPage';
 import SupportPage from './pages/SupportPage';
 
-// 2. Nhúng các trang ADMIN
+
 import AdminLayout from './admin/AdminLayout';
 import AdminDashboard from './admin/AdminDashboard';
-import CategoryManager from './admin/CategoryManager'; // Nhớ kiểm tra đúng file này nhé
+import CategoryManager from './admin/CategoryManager'; 
 import ProductManager from './admin/ProductManager';
 import ProductDetail from './pages/ProductDetail';
 import CheckoutPage from './pages/CheckoutPage';
@@ -28,16 +28,16 @@ import UserManager from './admin/UserManager';
 
 
 
-// Nhúng các linh kiện (Components)
+
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ChatWidget from './components/ChatWidget';
 
-// 3. Trạm kiểm soát Menu (Ẩn Navbar ở Login, Register và toàn bộ trang ADMIN)
+
 const MenuBar = () => {
   const location = useLocation();
   const hideOn = ['/login', '/register', '/forgot'];
-  // Nếu đường dẫn là login/register HOẶC bắt đầu bằng /admin -> Không hiện Navbar
+  
   if (hideOn.includes(location.pathname) || location.pathname.startsWith('/admin')) {
     return null;
   }
@@ -54,7 +54,7 @@ const FooterControl = () => {
   return <Footer />;
 };
 
-// 5. Trạm kiểm soát Chatbot (Ẩn Chatbot ở Login, Register và ADMIN)
+
 const ChatWidgetControl = () => {
   const location = useLocation();
   const hideOn = ['/login', '/register', '/forgot'];
@@ -82,16 +82,16 @@ const ScrollToTop = () => {
 function App() {
   return (
     <BrowserRouter>
-      {/* Tự động cuộn lên đầu trang khi chuyển Route */}
+      
       <ScrollToTop />
 
-      {/* Thanh điều hướng khách hàng */}
+      
       <MenuBar />
 
-      {/* Nội dung chính của Web */}
+      
       <main>
         <Routes>
-          {/* --- ROUTE KHÁCH HÀNG --- */}
+          
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -107,9 +107,9 @@ function App() {
           <Route path="/about" element={<AboutUsPage />} />
           <Route path="/support" element={<SupportPage />} />
 
-          {/* --- ROUTE ADMIN (Bố cục lồng nhau) --- */}
+          
           <Route path="/admin" element={<AdminLayout />}>
-            {/* Trang mặc định khi vào /admin là Thống kê */}
+            
             <Route index element={<AdminDashboard />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="categories" element={<CategoryManager />} />
@@ -118,16 +118,16 @@ function App() {
             <Route path="banners" element={<BannerManager />} />
             <Route path="vouchers" element={<VoucherManager />} />
             <Route path="users" element={<UserManager />} />
-            {/* Sau này thêm Quản lý sản phẩm, đơn hàng vào đây... */}
+            
           </Route>
 
         </Routes>
       </main>
 
-      {/* Chân trang khách hàng */}
+      
       <FooterControl />
 
-      {/* Chatbot AI trợ lý bán hàng */}
+      
       <ChatWidgetControl />
     </BrowserRouter>
   );

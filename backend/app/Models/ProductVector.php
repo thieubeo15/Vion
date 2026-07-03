@@ -16,9 +16,7 @@ class ProductVector extends Model
         'VectorData'
     ];
 
-    /**
-     * Vector thuộc về một hình ảnh
-     */
+    
     public function image()
     {
         return $this->belongsTo(ProductImage::class, 'ImageID', 'ImageID');

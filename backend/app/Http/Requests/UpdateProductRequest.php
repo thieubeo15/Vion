@@ -20,8 +20,8 @@ class UpdateProductRequest extends FormRequest
             'Description' => 'nullable|string',
             'Material' => 'nullable|string|max:255',
             'UsageInstruction' => 'nullable|string',
-            'variants' => 'nullable|string', // Chuỗi JSON từ React
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120', // Gallery images
+            'variants' => 'nullable|string', 
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120', 
         ];
     }
 }

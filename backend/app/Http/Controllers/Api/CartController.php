@@ -14,7 +14,7 @@ class CartController extends Controller
     public function myCart()
     {
         $user = Auth::user();
-        // Lấy giỏ hàng kèm Item -> Variant -> Product
+        
         $cart = Cart::with(['items.variant.product'])
                     ->firstOrCreate(['UserID' => $user->UserID]);
 
@@ -30,25 +30,25 @@ class CartController extends Controller
         $variantId = $request->input('VariantID') ?? $request->input('variant_id'); 
         $quantityToAdd = $request->input('Quantity') ?? $request->input('quantity');
 
-        // 1. Kiểm tra tồn kho của phân loại hàng
+        
         $variant = ProductVariant::where('VariantID', $variantId)->first();
         if (!$variant) {
             return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại'], 404);
         }
 
-        // 2. TÌM HOẶC TẠO GIỎ HÀNG CHO USER 
+        
         $cart = Cart::firstOrCreate(['UserID' => $user->UserID]);
 
-        // 3. TÌM SẢN PHẨM TRONG BẢNG CHI TIẾT GIỎ HÀNG 
+        
         $cartItem = CartItem::where('CartID', $cart->CartID)
                             ->where('VariantID', $variantId)
                             ->first();
 
-        // 4. Tính toán tổng số lượng
+        
         $currentQuantityInCart = $cartItem ? $cartItem->Quantity : 0;
         $totalRequestedQuantity = $currentQuantityInCart + $quantityToAdd;
 
-        // 5. CHỐT CHẶN VƯỢT KHO
+        
         if ($totalRequestedQuantity > $variant->Stock) {
             return response()->json([
                 'success' => false,
@@ -56,7 +56,7 @@ class CartController extends Controller
             ], 400); 
         }
 
-        // 6. Lưu vào bảng chi tiết giỏ hàng (CartItem)
+        
         if ($cartItem) {
             $cartItem->Quantity = $totalRequestedQuantity;
             $cartItem->save();

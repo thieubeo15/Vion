@@ -11,13 +11,11 @@ use App\Http\Requests\UpdateCategoryRequest;
 
 class CategoryController extends Controller
 {
-    /**
-     * Lấy danh sách tất cả danh mục.
-     */
+    
 public function index()
 {
-    // 1. Phải có with('children') để lấy quan hệ con
-    // 2. Phải có whereNull('ParentID') để chỉ lấy các thằng CHA to nhất ở ngoài
+    
+    
     $categories = Category::with('children')->whereNull('ParentID')->get();
     
     return response()->json([
@@ -25,9 +23,7 @@ public function index()
         'data' => CategoryResource::collection($categories)
     ], 200);
 }
-    /**
-     * Tạo mới một danh mục.
-     */
+    
     public function store(StoreCategoryRequest $request)
     {
         $category = Category::create($request->validated());
@@ -39,9 +35,7 @@ public function index()
         ], 201);
     }
 
-    /**
-     * Hiển thị thông tin chi tiết một danh mục theo ID.
-     */
+    
     public function show($id)
     {
         $category = Category::with(['children', 'parent'])->find($id);
@@ -59,9 +53,7 @@ public function index()
         ], 200);
     }
 
-    /**
-     * Cập nhật thông tin danh mục.
-     */
+    
     public function update(UpdateCategoryRequest $request, $id)
     {
         $category = Category::find($id);
@@ -82,9 +74,7 @@ public function index()
         ], 200);
     }
 
-    /**
-     * Xóa danh mục.
-     */
+    
     public function destroy($id)
     {
         $category = Category::find($id);
@@ -96,7 +86,7 @@ public function index()
             ], 404);
         }
 
-        // Kiểm tra xem danh mục có con hay không trước khi xóa (Tuỳ chọn)
+        
         if ($category->children()->count() > 0) {
             return response()->json([
                 'success' => false,
@@ -104,7 +94,7 @@ public function index()
             ], 400);
         }
 
-        // Tương tự, có thể kiểm tra danh mục có sản phẩm không
+        
         if ($category->products()->count() > 0) {
             return response()->json([
                 'success' => false,

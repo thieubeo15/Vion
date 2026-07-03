@@ -9,13 +9,13 @@ use App\Services\CloudinaryService;
 
 class BannerController extends Controller
 {
-    // Lấy danh sách Banner hiện ra trang chủ
+    
     public function index()
     {
         return response()->json(Banner::where('is_active', true)->get());
     }
 
-    // Admin thêm Banner mới (Có upload ảnh)
+    
     public function store(Request $request)
     {
         $request->validate([
@@ -45,12 +45,12 @@ class BannerController extends Controller
         return response()->json(['message' => 'Không có file ảnh'], 400);
     }
 
-    // Xóa Banner
+    
     public function destroy($id)
     {
         $banner = Banner::findOrFail($id);
 
-        // Xóa ảnh trên Cloudinary nếu là URL Cloudinary
+        
         if ($banner->image_path && str_contains($banner->image_path, 'cloudinary.com')) {
             $cloudinary = new CloudinaryService();
             $cloudinary->deleteByUrl($banner->image_path);

@@ -29,7 +29,7 @@ const OrderManager = () => {
             const res = await axios.get(`${API_URL}/orders`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            // 🚀 SẮP XẾP: Đơn mới nhất (ID lớn nhất) lên đầu
+            
             const sortedData = res.data.sort((a, b) => (b.OrderID || b.id) - (a.OrderID || a.id));
             setOrders(sortedData);
         } catch (err) { 
@@ -336,7 +336,7 @@ const OrderManager = () => {
                 </table>
             </div>
 
-            {/* --- MODAL XEM CHI TIẾT ĐƠN HÀNG --- */}
+            
             {selectedOrder && (
                 <div className="v-modal-overlay">
                     <div className="v-modal-content">
@@ -390,7 +390,7 @@ const OrderManager = () => {
                                             </div>
                                         )}
                                         
-                                        {/* Nếu chưa hoàn tất, cho phép Admin chỉnh sửa hoặc nhập AdminNote */}
+                                        
                                         {selectedOrder.Status !== 'Returned' && (
                                             <div className="mt-3">
                                                 <label className="fw-700 fs-13 mb-1 d-block text-dark">Ghi chú của Shop:</label>
@@ -405,7 +405,7 @@ const OrderManager = () => {
                                             </div>
                                         )}
 
-                                        {/* Nút hành động theo từng bước */}
+                                        
                                         <div className="v-return-actions mt-3 d-flex gap-2 flex-wrap">
                                             {selectedOrder.Status === 'ReturnRequested' && (
                                                 <button 
@@ -440,7 +440,7 @@ const OrderManager = () => {
                                                 </button>
                                             )}
                                             
-                                            {/* Từ chối hoàn hàng */}
+                                            
                                             {selectedOrder.Status !== 'Returned' && (
                                                 <button 
                                                     className="btn btn-outline-danger btn-sm fw-700 px-3 py-2 ms-auto"
@@ -460,7 +460,7 @@ const OrderManager = () => {
                                     <div key={idx} className="v-item-detail">
                                         <Package size={20} className="text-muted" />
                                         <div className="flex-grow-1 ms-3">
-                                            {/* 🚀 FIX HIỂN THỊ TÊN SẢN PHẨM TẠI ĐÂY */}
+                                            
                                             <div className="fw-700">
                                                 {detail.variant?.product?.name || detail.variant?.product?.Name || "Sản phẩm của Vion"}
                                             </div>
@@ -477,7 +477,7 @@ const OrderManager = () => {
                                 ))}
                             </div>
 
-                            {/* BẢNG CHI TIẾT THANH TOÁN */}
+                            
                             <div className="v-billing-summary mt-4 p-3 bg-light rounded" style={{ fontSize: '14px', border: '1px solid #e2e8f0' }}>
                                 <div className="d-flex justify-content-between mb-2">
                                     <span className="text-muted">Tổng tiền hàng:</span>

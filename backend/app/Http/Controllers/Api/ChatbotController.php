@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class ChatbotController extends Controller
 {
-    /**
-     * Gửi tin nhắn tới chatbot AI
-     */
+    
     public function sendMessage(Request $request)
     {
         $request->validate([
@@ -32,7 +30,7 @@ class ChatbotController extends Controller
         }
 
         try {
-            // 1. Lưu tin nhắn của User vào database
+            
             $userMessage = ChatbotMessage::create([
                 'session_id' => $sessionId,
                 'UserID'     => $userId,
@@ -40,7 +38,7 @@ class ChatbotController extends Controller
                 'Content'    => $request->message
             ]);
 
-            // 2. Lấy 15 tin nhắn gần nhất làm lịch sử ngữ cảnh
+            
             $query = ChatbotMessage::query();
             if ($userId) {
                 $query->where('UserID', $userId);
@@ -53,19 +51,19 @@ class ChatbotController extends Controller
                 ->get()
                 ->map(function ($msg) {
                     return [
-                        'role' => $msg->Role, // 'user' hoặc 'assistant'
+                        'role' => $msg->Role, 
                         'content' => $msg->Content
                     ];
                 })
                 ->toArray();
 
-            // 3. Gửi sang Python AI Server ở cổng 8002
+            
             $pythonUrl = 'http://127.0.0.1:8002/chat';
             
-            // Lấy API key từ env, nếu không có thì lấy giá trị mặc định trống
+            
             $geminiKey = env('GEMINI_API_KEY', '');
 
-            // Hỗ trợ xoay vòng nhiều key ngăn cách bởi dấu phẩy
+            
             if (str_contains($geminiKey, ',')) {
                 $keys = array_filter(array_map('trim', explode(',', $geminiKey)));
                 if (!empty($keys)) {
@@ -87,7 +85,7 @@ class ChatbotController extends Controller
 
             $reply = $response->json('reply') ?? 'Rất tiếc, AI không phản hồi vào lúc này.';
 
-            // 4. Lưu câu trả lời của AI vào database
+            
             $aiMessage = ChatbotMessage::create([
                 'session_id' => $sessionId,
                 'UserID'     => $userId,
@@ -110,9 +108,7 @@ class ChatbotController extends Controller
         }
     }
 
-    /**
-     * Lấy lịch sử hội thoại
-     */
+    
     public function getHistory(Request $request)
     {
         $user = $request->user('sanctum');
@@ -141,9 +137,7 @@ class ChatbotController extends Controller
         ]);
     }
 
-    /**
-     * Xóa lịch sử hội thoại
-     */
+    
     public function clearHistory(Request $request)
     {
         $user = $request->user('sanctum');

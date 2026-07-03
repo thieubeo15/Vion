@@ -4,7 +4,7 @@
     background: #fdfdfd; 
 }
 
-/* Header */
+
 .v-cart-header { 
     display: flex; justify-content: space-between; align-items: flex-end; 
     padding-bottom: 24px; border-bottom: 2px solid #f0f0f0; 
@@ -24,7 +24,7 @@
 }
 .v-back-link:hover { color: #EE4D2D; transform: translateX(-4px); }
 
-/* Item Card */
+
 .v-cart-card {
     display: flex; align-items: center; padding: 24px; 
     background: #ffffff;
@@ -51,7 +51,7 @@
 .v-product-meta { font-size: 12px; color: #777; font-weight: 600; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;}
 .v-price-unit { font-size: 15px; color: #555; font-weight: 700; }
 
-/* Qty */
+
 .v-qty-selector { 
     display: flex; align-items: center; background: #f8f9fa; 
     border-radius: 50px; padding: 6px 14px; gap: 14px;
@@ -74,7 +74,7 @@
 }
 .v-btn-del:hover { background: #fff1f0; color: #ff4d4f; }
 
-/* Sidebar */
+
 .v-checkout-sidebar { 
     background: #ffffff; padding: 32px; border-radius: 24px; 
     position: sticky; top: 100px; 
@@ -109,7 +109,7 @@
     margin-top: 16px; font-size: 12px; color: #888; font-weight: 600;
 }
 
-/* Empty State */
+
 .v-empty-box { 
     text-align: center; padding: 80px 0; 
     background: #fff; border-radius: 24px; border: 1px dashed #e0e0e0;
@@ -121,7 +121,7 @@
 .v-spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Out of Stock Styling */
+
 .v-cart-card.v-cart-card-out-of-stock {
     opacity: 0.65;
     background-color: #fafafa;

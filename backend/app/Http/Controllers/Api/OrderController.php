@@ -19,9 +19,7 @@ class OrderController extends Controller
         return response()->json(Order::with(['details.variant.product'])->orderBy('OrderID', 'desc')->get());
         }
 
-    /**
-     * Hàm đặt hàng CHÍNH cho CheckoutPage
-     */
+    
     public function placeOrder(Request $request) {
         $request->validate([
             'FullName' => 'required|string|max:255',
@@ -38,7 +36,7 @@ class OrderController extends Controller
         $user = Auth::guard('sanctum')->user();
         
         try {
-            // Nối địa chỉ đầy đủ cho tương thích ngược, loại bỏ phần tử rỗng
+            
             $addressParts = array_filter([
                 $request->SpecificAddress,
                 $request->Ward,
@@ -48,7 +46,7 @@ class OrderController extends Controller
             $fullAddress = implode(', ', $addressParts);
 
             if ($user) {
-                // Lấy giỏ hàng kèm theo các item và thông tin sản phẩm từ DB
+                
                 $cart = Cart::where('UserID', $user->UserID)->with('items.variant.product')->first();
 
                 if (!$cart || $cart->items->isEmpty()) {
@@ -58,14 +56,14 @@ class OrderController extends Controller
                     ], 400);
                 }
 
-                // Lọc ra các sản phẩm được chọn
+                
                 $selectedItems = $cart->items->whereIn('CartItemID', $request->SelectedItems);
 
                 if ($selectedItems->isEmpty()) {
                     throw new \Exception("Không có sản phẩm nào được chọn để thanh toán!");
                 }
             } else {
-                // Khách vãng lai: SelectedItems là mảng các item [{ VariantID, Quantity }]
+                
                 $selectedItems = collect();
                 foreach ($request->SelectedItems as $rawItem) {
                     $variantId = $rawItem['VariantID'] ?? $rawItem['variant_id'] ?? null;
@@ -93,7 +91,7 @@ class OrderController extends Controller
             }
 
             return DB::transaction(function () use ($request, $user, $selectedItems, $fullAddress) {
-                // Tính TotalAmount phía server (không tin client)
+                
                 $totalAmount = 0;
                 foreach ($selectedItems as $item) {
                     $variant = $item->variant ?? null;
@@ -109,7 +107,7 @@ class OrderController extends Controller
                     $totalAmount += $price * $item->Quantity;
                 }
 
-                // Xử lý voucher nếu có
+                
                 $voucherCode = $request->VoucherCode;
                 $discountAmount = 0;
                 $voucher = null;
@@ -148,7 +146,7 @@ class OrderController extends Controller
                         throw new \Exception('Đơn hàng chưa đạt giá trị tối thiểu để sử dụng mã này!');
                     }
 
-                    // Tính số tiền giảm
+                    
                     if ($voucher->Type === 'fixed') {
                         $discountAmount = $voucher->Value;
                     } elseif ($voucher->Type === 'percent') {
@@ -175,28 +173,28 @@ class OrderController extends Controller
                     $discountAmount = round($discountAmount, 2);
                 }
 
-                // Trừ discount vào tổng tiền
+                
                 if ($voucher && $voucher->Type === 'freeship') {
                     $finalTotal = $totalAmount;
                 } else {
                     $finalTotal = $totalAmount - $discountAmount;
                 }
 
-                // Tính phí vận chuyển (Shipping Fee)
-                // Nội thành Hà Nội = 20k, các nơi khác = 35k. Freeship từ 500k trở lên (sau giảm giá).
+                
+                
                 $shippingFee = 0;
                 if ($finalTotal < 500000) {
                     $shippingFee = ($request->Province === 'Thành phố Hà Nội') ? 20000 : 35000;
                 }
 
-                // Tổng tiền cuối cùng bao gồm phí ship
+                
                 if ($voucher && $voucher->Type === 'freeship') {
                     $grandTotal = $finalTotal + $shippingFee - $discountAmount;
                 } else {
                     $grandTotal = $finalTotal + $shippingFee;
                 }
 
-                // 1. Tạo bản ghi Đơn hàng
+                
                 $order = Order::create([
                     'UserID'          => $user ? $user->UserID : null,
                     'FullName'        => $request->FullName,
@@ -215,11 +213,11 @@ class OrderController extends Controller
                     'ShippingFee'     => $shippingFee,
                 ]);
 
-                // 2. Chuyển từng món sang Chi tiết đơn hàng
+                
                 foreach ($selectedItems as $item) {
                     $variant = $item->variant;
 
-                    // Kiểm tra tồn kho
+                    
                     if ($variant->Stock < $item->Quantity) {
                         throw new \Exception("Sản phẩm {$variant->product->Name} không đủ tồn kho!");
                     }
@@ -232,7 +230,7 @@ class OrderController extends Controller
                             : $variant->Price;
                     }
 
-                    // Tạo chi tiết đơn hàng
+                    
                     OrderDetail::create([
                         'OrderID'     => $order->OrderID,
                         'VariantID'   => $item->VariantID,
@@ -241,16 +239,16 @@ class OrderController extends Controller
                         'ImportPrice' => $variant->ImportPrice ?? 0
                     ]);
 
-                    // Trừ tồn kho
+                    
                     $variant->decrement('Stock', $item->Quantity);
 
-                    // Tăng số lượng đã bán
+                    
                     if ($variant->product) {
                         $variant->product()->increment('sold_count', $item->Quantity);
                     }
                 }
 
-                // 3. Ghi nhận lượt sử dụng voucher
+                
                 if ($voucher && $user) {
                     VoucherUsage::create([
                         'VoucherID'      => $voucher->VoucherID,
@@ -261,7 +259,7 @@ class OrderController extends Controller
                     $voucher->increment('UsedCount');
                 }
 
-                // 4. XÓA GIỎ HÀNG (Nếu có user đăng nhập)
+                
                 if ($user) {
                     $cart = Cart::where('UserID', $user->UserID)->first();
                     if ($cart) {
@@ -269,7 +267,7 @@ class OrderController extends Controller
                     }
                 }
 
-                // 5. Tạo thông báo cho Khách hàng (Chỉ dành cho user đăng nhập)
+                
                 if ($user) {
                     \App\Models\Notification::create([
                         'UserID' => $user->UserID,
@@ -282,7 +280,7 @@ class OrderController extends Controller
                     ]);
                 }
 
-                // 6. Tạo thông báo cho Admin
+                
                 $customerName = $user ? $user->FullName : $request->FullName . ' (Khách vãng lai)';
                 \App\Models\Notification::create([
                     'UserID' => null,
@@ -312,7 +310,7 @@ class OrderController extends Controller
     public function myOrders() {
     $user = Auth::user();
     
-    // Lấy đơn hàng của chính User đó, kèm theo chi tiết món hàng và sản phẩm
+    
     $orders = Order::where('UserID', $user->UserID)
         ->with(['details.variant.product'])
         ->orderBy('OrderDate', 'desc')
@@ -334,7 +332,7 @@ class OrderController extends Controller
         $request->validate(['Status' => 'required|string|max:50']);
         $newStatus = $request->Status;
 
-        // Kiểm tra điều kiện hoàn thành đơn hàng: Phải ở trạng thái Shipping mới được hoàn thành
+        
         if ($newStatus === 'Completed' && $order->Status !== 'Shipping') {
             return response()->json([
                 'success' => false,
@@ -342,7 +340,7 @@ class OrderController extends Controller
             ], 400);
         }
 
-        // Nếu chuyển sang Cancelled và trạng thái cũ không phải Cancelled
+        
         if ($newStatus === 'Cancelled' && $order->Status !== 'Cancelled') {
             DB::transaction(function () use ($order) {
                 foreach ($order->details as $detail) {
@@ -356,7 +354,7 @@ class OrderController extends Controller
             });
         }
 
-        // Nếu chuyển sang Returned (Hoàn tất hoàn tiền + hàng) và trạng thái cũ không phải Returned
+        
         if ($newStatus === 'Returned' && $order->Status !== 'Returned') {
             DB::transaction(function () use ($order) {
                 foreach ($order->details as $detail) {
@@ -386,7 +384,7 @@ class OrderController extends Controller
 
         $order->update($updateData);
 
-        // Gửi thông báo cho khách hàng khi thay đổi trạng thái đơn hàng (nếu đơn hàng của thành viên)
+        
         if ($order->UserID) {
             $notificationTitle = '';
             $notificationContent = '';
@@ -440,9 +438,7 @@ class OrderController extends Controller
         return response()->json($order);
     }
 
-    /**
-     * Khách hàng tự gửi yêu cầu hủy đơn (chỉ khi Pending)
-     */
+    
     public function cancelOrder(Request $request, $id) {
         $user = Auth::user();
         $order = Order::find($id);
@@ -453,13 +449,13 @@ class OrderController extends Controller
 
         $request->validate(['reason' => 'required|string|max:500']);
 
-        // Cập nhật trạng thái thành Yêu cầu hủy (CancelRequested) và lưu lý do (Chưa trả lại kho ở bước này)
+        
         $order->update([
             'Status' => 'CancelRequested',
             'CancelReason' => $request->reason
         ]);
 
-        // Tạo thông báo cho Admin biết có yêu cầu hủy đơn mới
+        
         $customerName = $user ? $user->FullName : 'Khách hàng';
         \App\Models\Notification::create([
             'UserID' => null,
@@ -474,9 +470,7 @@ class OrderController extends Controller
         return response()->json(['success' => true, 'message' => 'Yêu cầu hủy đơn hàng đã được gửi! Vui lòng chờ Admin xác nhận.']);
     }
 
-    /**
-     * Khách hàng gửi yêu cầu hoàn hàng (chỉ khi Completed)
-     */
+    
     public function requestReturn(Request $request, $id) {
         $user = Auth::user();
         $order = Order::find($id);
@@ -491,9 +485,9 @@ class OrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Chỉ có thể yêu cầu hoàn hàng với đơn hàng đã hoàn thành!'], 400);
         }
 
-        // Kiểm tra thời hạn hoàn hàng (Tối đa 7 ngày từ lúc hoàn thành đơn hàng)
-        $completedTime = $order->updated_at;
-        if ($completedTime && now()->diffInDays($completedTime) > 7) {
+        
+        $completedTime = $order->updated_at ?? $order->OrderDate;
+        if ($completedTime && now()->diffInDays(\Carbon\Carbon::parse($completedTime)) > 7) {
             return response()->json([
                 'success' => false,
                 'message' => 'Đơn hàng đã hoàn thành quá 7 ngày. Bạn không thể yêu cầu hoàn hàng theo chính sách của Vion!'
@@ -513,7 +507,7 @@ class OrderController extends Controller
             'RefundDetails' => $request->refund_details,
         ]);
 
-        // Tạo thông báo cho Admin biết có yêu cầu hoàn hàng mới
+        
         $customerName = $user ? $user->FullName : 'Khách hàng';
         \App\Models\Notification::create([
             'UserID' => null,
@@ -525,7 +519,7 @@ class OrderController extends Controller
             'IsAdminNotification' => true
         ]);
 
-        // Tạo thông báo cho Khách hàng biết yêu cầu đang chờ xác nhận
+        
         \App\Models\Notification::create([
             'UserID' => $order->UserID,
             'Title' => 'Yêu cầu hoàn hàng đang chờ xác nhận',

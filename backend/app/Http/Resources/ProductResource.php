@@ -23,7 +23,7 @@ class ProductResource extends JsonResource
             
             'category' => new CategoryResource($this->whenLoaded('category')),
             
-            // 🚀 SỬA LẠI ĐOẠN VARIANTS Ở ĐÂY
+            
             'variants' => $this->whenLoaded('variants', function () {
                 return $this->variants->map(function ($v) {
                     $variantData = [
@@ -38,10 +38,10 @@ class ProductResource extends JsonResource
                         'stock' => $v->Stock,
                     ];
 
-                    // 🛑 CHỈ HIỆN GIÁ NHẬP NẾU LÀ ADMIN
+                    
                     $user = request()->user('sanctum');
                     
-                    // Luôn luôn trả về import_price để test xem DB có lưu không
+                    
                     $variantData['import_price'] = $v->ImportPrice;
 
                     return $variantData;

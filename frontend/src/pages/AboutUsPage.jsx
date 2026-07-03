@@ -5,7 +5,7 @@ import { Award, Sparkles, Heart, Target, ShieldCheck } from 'lucide-react';
 const AboutUsPage = () => {
     return (
         <div className="about-us-page">
-            {/* HERO SECTION */}
+            
             <section className="about-hero">
                 <img 
                     src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600" 
@@ -19,7 +19,7 @@ const AboutUsPage = () => {
                 </div>
             </section>
 
-            {/* CÂU CHUYỆN THƯƠNG HIỆU */}
+            
             <section className="about-story container py-5">
                 <div className="row align-items-center">
                     <div className="col-lg-6 mb-4 mb-lg-0">
@@ -44,7 +44,7 @@ const AboutUsPage = () => {
                 </div>
             </section>
 
-            {/* GIÁ TRỊ CỐT LÕI */}
+            
             <section className="about-values py-5">
                 <div className="container">
                     <div className="text-center mb-5">
@@ -84,7 +84,7 @@ const AboutUsPage = () => {
                 </div>
             </section>
 
-            {/* TẦM NHÌN & SỨ MỆNH */}
+            
             <section className="about-vision py-5 container">
                 <div className="row g-5 align-items-center">
                     <div className="col-lg-6 order-lg-2">

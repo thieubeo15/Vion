@@ -8,7 +8,7 @@ class Cart extends Model
 {
     protected $table = 'carts';
     protected $primaryKey = 'CartID';
-    public $timestamps = false; // as per migration
+    public $timestamps = false; 
 
     protected $fillable = [
         'UserID'

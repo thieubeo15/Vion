@@ -12,7 +12,7 @@ const UserManager = () => {
     const token = localStorage.getItem('vion_token');
     const currentUser = JSON.parse(localStorage.getItem('vion_user') || '{}');
 
-    // States cho dữ liệu và bộ lọc
+    
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -21,12 +21,12 @@ const UserManager = () => {
     const [lastPage, setLastPage] = useState(1);
     const [totalUsers, setTotalUsers] = useState(0);
 
-    // States cho Modal
+    
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
 
-    // Form states
+    
     const [formData, setFormData] = useState({
         Email: '',
         Password: '',
@@ -37,7 +37,7 @@ const UserManager = () => {
         Role: 'Customer'
     });
 
-    // Lấy danh sách users
+    
     const fetchUsers = async (page = 1) => {
         try {
             if (users.length === 0) setLoading(true);
@@ -63,12 +63,12 @@ const UserManager = () => {
         }
     };
 
-    // Gọi fetchUsers khi thay đổi bộ lọc hoặc trang
+    
     useEffect(() => {
         fetchUsers(1);
     }, [roleFilter, search]);
 
-    // Handle thay đổi form input
+    
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -77,7 +77,7 @@ const UserManager = () => {
         }));
     };
 
-    // Mở modal thêm
+    
     const openAddModal = () => {
         setFormData({
             Email: '',
@@ -91,12 +91,12 @@ const UserManager = () => {
         setShowAddModal(true);
     };
 
-    // Mở modal sửa
+    
     const openEditModal = (user) => {
         setSelectedUser(user);
         setFormData({
             Email: user.Email || '',
-            Password: '', // Để trống, chỉ điền nếu muốn đổi mật khẩu
+            Password: '', 
             FullName: user.FullName || '',
             Phone: user.Phone || '',
             Address: user.Address || '',
@@ -106,7 +106,7 @@ const UserManager = () => {
         setShowEditModal(true);
     };
 
-    // Submit thêm user
+    
     const handleAddUser = async (e) => {
         e.preventDefault();
         try {
@@ -131,7 +131,7 @@ const UserManager = () => {
         }
     };
 
-    // Submit sửa user
+    
     const handleEditUser = async (e) => {
         e.preventDefault();
         try {
@@ -147,7 +147,7 @@ const UserManager = () => {
                     showConfirmButton: false
                 });
                 setShowEditModal(false);
-                // Nếu sửa thông tin của chính mình, cập nhật lại localStorage
+                
                 if (selectedUser.UserID === currentUser.UserID) {
                     localStorage.setItem('vion_user', JSON.stringify(response.data.user));
                 }
@@ -160,7 +160,7 @@ const UserManager = () => {
         }
     };
 
-    // Xóa user
+    
     const handleDeleteUser = async (user) => {
         Swal.fire({
             title: 'Bạn có chắc chắn?',
@@ -190,7 +190,7 @@ const UserManager = () => {
         });
     };
 
-    // Format ngày sinh
+    
     const formatDate = (dateStr) => {
         if (!dateStr) return '---';
         const date = new Date(dateStr);
@@ -199,7 +199,7 @@ const UserManager = () => {
 
     return (
         <div className="v-user-manager">
-            {/* Header */}
+            
             <div className="v-manager-header d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 className="v-title mb-1">
@@ -214,7 +214,7 @@ const UserManager = () => {
                 </button>
             </div>
 
-            {/* Filter and Search Bar */}
+            
             <div className="v-filter-card card border-0 shadow-sm mb-4">
                 <div className="card-body">
                     <div className="row g-3">
@@ -245,7 +245,7 @@ const UserManager = () => {
                 </div>
             </div>
 
-            {/* Main Users Table */}
+            
             <div className="card border-0 shadow-sm">
                 <div className="card-body p-0">
                     <div className="table-responsive">
@@ -353,7 +353,7 @@ const UserManager = () => {
                 </div>
             </div>
 
-            {/* Pagination Controls */}
+            
             {!loading && lastPage > 1 && (
                 <div className="v-pagination-wrap d-flex justify-content-between align-items-center mt-4">
                     <span className="small text-muted">Trang {currentPage} / {lastPage}</span>
@@ -376,7 +376,7 @@ const UserManager = () => {
                 </div>
             )}
 
-            {/* MODAL THÊM THÀNH VIÊN */}
+            
             {showAddModal && (
                 <div className="v-modal-overlay">
                     <div className="v-modal card border-0 shadow-lg">
@@ -478,7 +478,7 @@ const UserManager = () => {
                 </div>
             )}
 
-            {/* MODAL SỬA THÀNH VIÊN */}
+            
             {showEditModal && (
                 <div className="v-modal-overlay">
                     <div className="v-modal card border-0 shadow-lg">

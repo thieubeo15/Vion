@@ -27,7 +27,7 @@ const ProductManager = () => {
         toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true,
     });
 
-    // States for cropping modal
+    
     const [cropModal, setCropModal] = useState({
         isOpen: false,
         imgSrc: '',
@@ -381,11 +381,11 @@ const ProductManager = () => {
                 </div>
             </div>
 
-            {/* FORM ĐĂNG BÁN SẢN PHẨM MỚI (INLINE) */}
+            
             {!isEditing && (
                 <form className="v-inline-form" onSubmit={handleSubmit}>
                     <div className="v-form-grid">
-                        {/* Cột trái: Các trường nhập thông tin ngắn */}
+                        
                         <div className="v-col">
                             <div className="v-input-group">
                                 <label>Tên sản phẩm</label>
@@ -404,7 +404,7 @@ const ProductManager = () => {
                             </div>
                         </div>
                         
-                        {/* Cột phải: Phần upload ảnh đại diện & ảnh phụ side-by-side */}
+                        
                         <div className="v-col">
                             <div className="v-input-group">
                                 <label>Hình ảnh sản phẩm</label>
@@ -422,7 +422,7 @@ const ProductManager = () => {
                                 </div>
                             </div>
 
-                            {/* Lưới hiển thị ảnh xem trước đã chọn (đã cắt) */}
+                            
                             {(formData.MainImage || (formData.additionalImages && formData.additionalImages.length > 0)) && (
                                 <div className="v-image-previews-container" style={{ marginTop: '12px' }}>
                                     {formData.MainImage && (
@@ -461,7 +461,7 @@ const ProductManager = () => {
                         </div>
                     </div>
 
-                    {/* Các trường mô tả rộng chiếm full-width ở bên dưới */}
+                    
                     <div className="v-form-fullwidth" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '15px' }}>
                         <div className="v-input-group" style={{ margin: 0 }}>
                             <label>Mô tả sản phẩm</label>
@@ -500,7 +500,7 @@ const ProductManager = () => {
                 </form>
             )}
 
-            {/* MODAL CHỈNH SỬA SẢN PHẨM */}
+            
             {isEditing && (
                 <div className="v-modal-overlay" onClick={resetForm}>
                     <div className="v-modal-content v-product-modal" onClick={e => e.stopPropagation()}>
@@ -510,7 +510,7 @@ const ProductManager = () => {
                         </div>
                         <form className="v-modal-form" onSubmit={handleSubmit}>
                             <div className="v-form-grid">
-                                {/* Cột trái: Các trường nhập thông tin ngắn */}
+                                
                                 <div className="v-col">
                                     <div className="v-form-group">
                                         <label>Tên sản phẩm</label>
@@ -529,7 +529,7 @@ const ProductManager = () => {
                                     </div>
                                 </div>
                                 
-                                {/* Cột phải: Phần upload ảnh đại diện & ảnh phụ side-by-side */}
+                                
                                 <div className="v-col">
                                     <div className="v-form-group">
                                         <label>Hình ảnh sản phẩm</label>
@@ -547,7 +547,7 @@ const ProductManager = () => {
                                         </div>
                                     </div>
 
-                                    {/* Lưới hiển thị ảnh xem trước đã chọn (đã cắt) */}
+                                    
                                     {(formData.MainImage || (formData.additionalImages && formData.additionalImages.length > 0)) && (
                                         <div className="v-image-previews-container" style={{ marginTop: '12px' }}>
                                             {formData.MainImage && (
@@ -586,7 +586,7 @@ const ProductManager = () => {
                                 </div>
                             </div>
 
-                            {/* Các trường mô tả rộng chiếm full-width ở bên dưới */}
+                            
                             <div className="v-form-fullwidth" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '15px' }}>
                                 <div className="v-form-group" style={{ margin: 0 }}>
                                     <label>Mô tả sản phẩm</label>
@@ -704,7 +704,7 @@ const ProductManager = () => {
                 </tbody>
             </table>
 
-            {/* PHÂN TRANG */}
+            
             {!loading && (() => {
                 const processed = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
                 const totalPages = Math.ceil(processed.length / productsPerPage);
@@ -740,7 +740,7 @@ const ProductManager = () => {
                 );
             })()}
 
-            {/* Crop Modal Overlay */}
+            
             {cropModal.isOpen && (
                 <div className="v-crop-modal-overlay">
                     <div className="v-crop-modal">

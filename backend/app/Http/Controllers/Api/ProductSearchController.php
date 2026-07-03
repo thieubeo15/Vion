@@ -11,7 +11,7 @@ use App\Http\Resources\ProductResource;
 
 class ProductSearchController extends Controller
 {
-    // 🎯 HÀM 1: TÌM KIẾM SẢN PHẨM BẰNG ẢNH AI
+    
     public function searchByImage(Request $request)
     {
         if (!$request->hasFile('image')) {
@@ -21,7 +21,7 @@ class ProductSearchController extends Controller
         try {
             $image = $request->file('image');
 
-            // 1. Gửi sang Python lấy Vector đặc trưng
+            
             $response = Http::attach(
                 'image', file_get_contents($image->getRealPath()), $image->getClientOriginalName()
             )->post('http://127.0.0.1:8001/vectorize');
@@ -34,8 +34,9 @@ class ProductSearchController extends Controller
             }
 
             $targetVector = $response->json('vector');
+            $predictedCategory = $response->json('category') ?? 'khac';
 
-            // 2. Lấy danh sách map giữa ImageID và ProductID từ bảng ảnh sản phẩm
+            
             $productImages = DB::table('product_images')->get();
             $imageToProductMap = [];
             foreach ($productImages as $img) {
@@ -46,7 +47,15 @@ class ProductSearchController extends Controller
                 }
             }
 
-            // 3. Quét bảng vector quét điểm tương đồng Cosine
+            
+            $dbProducts = Product::with('category')->get();
+            $productGroups = [];
+            foreach ($dbProducts as $product) {
+                $pid = $product->ProductID ?? $product->id;
+                $productGroups[$pid] = $this->getProductCategoryGroup($product);
+            }
+
+            
             $productVectors = DB::table('product_vectors')->get();
             $similarities = [];
 
@@ -58,26 +67,35 @@ class ProductSearchController extends Controller
                     continue;
                 }
 
+                $productId = $imageToProductMap[$imageId];
+
+                
+                if (isset($productGroups[$productId])) {
+                    $prodGroup = $productGroups[$productId];
+                    if ($predictedCategory !== 'khac' && $prodGroup !== 'khac' && $prodGroup !== $predictedCategory) {
+                        continue;
+                    }
+                }
+
                 $currentVector = json_decode($vectorData, true);
                 if (!is_array($currentVector)) continue;
 
-                // Tính tích vô hướng Dot Product
+                
                 $similarity = 0;
                 foreach ($targetVector as $index => $value) {
                     $similarity += $value * ($currentVector[$index] ?? 0);
                 }
 
-                // Nhóm điểm số theo ProductID tương ứng của ảnh đó
-                $productId = $imageToProductMap[$imageId];
+                
                 if (!isset($similarities[$productId]) || $similarity > $similarities[$productId]) {
                     $similarities[$productId] = $similarity;
                 }
             }
 
-            // Sắp xếp và lọc bỏ sản phẩm không liên quan
+            
             arsort($similarities);
             
-            // Ngưỡng tối thiểu: cosine < 0.73 = không liên quan → loại bỏ
+            
             $minThreshold = 0.73;
             $similarities = array_filter($similarities, fn($score) => $score >= $minThreshold);
             
@@ -87,13 +105,13 @@ class ProductSearchController extends Controller
                 return response()->json(['success' => true, 'data' => [], 'similarities' => []]);
             }
 
-            // 4. Tạo map similarity score (%) cho từng sản phẩm
+            
             $similarityScores = [];
             foreach ($topProductIds as $pid) {
                 $similarityScores[$pid] = round(max(0, $similarities[$pid]) * 100, 1);
             }
 
-            // 5. Truy vấn thông tin sản phẩm trả về React
+            
             $idsOrder = implode(',', $topProductIds);
             $firstProduct = Product::first();
             $primaryKey = ($firstProduct && isset($firstProduct->ProductID)) ? 'ProductID' : 'id';
@@ -114,11 +132,11 @@ class ProductSearchController extends Controller
         }
     }
 
-    // 🎯 HÀM 2: ĐỒNG BỘ TOÀN BỘ KHO ẢNH (Có hỗ trợ quét đè xóa cũ tạo mới hoàn toàn)
+    
     public function syncVectors(Request $request)
     {
         try {
-            // Kiểm tra xem người dùng có muốn ép buộc quét lại toàn bộ không (?force=true)
+            
             $isForce = $request->query('force') === 'true';
 
             $images = DB::table('product_images')->get();
@@ -140,7 +158,7 @@ class ProductSearchController extends Controller
                     continue;
                 }
 
-                // Nếu KHÔNG phải chế độ force và đã có vector rồi thì bỏ qua
+                
                 $exists = DB::table('product_vectors')->where('ImageID', $imgId)->exists();
                 if ($exists && !$isForce) {
                     continue;
@@ -149,7 +167,7 @@ class ProductSearchController extends Controller
                 if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
                     $fullPath = $path;
                 } else {
-                    // Tìm đường dẫn file vật lý trên ổ cứng
+                    
                     $fullPath = storage_path('app/public/' . $path);
                     if (!file_exists($fullPath)) {
                         $cleanedPath = str_replace(['storage/', 'public/'], '', $path);
@@ -165,7 +183,7 @@ class ProductSearchController extends Controller
                     }
                 }
 
-                // Gọi hàm nội bộ để xử lý dịch và lưu
+                
                 $success = self::executeVectorization($imgId, $fullPath, $isForce);
                 if ($success) {
                     $count++;
@@ -187,7 +205,7 @@ class ProductSearchController extends Controller
         }
     }
 
-    // 🎯 HÀM 3: TRỢ LÝ REAL-TIME (Dùng để gọi từ file ProductController.php khi thêm sản phẩm)
+    
     public static function vectorizeSingleImage($imgId, $relativePath)
     {
         if (str_starts_with($relativePath, 'http://') || str_starts_with($relativePath, 'https://')) {
@@ -207,7 +225,7 @@ class ProductSearchController extends Controller
         return self::executeVectorization($imgId, $fullPath, true);
     }
 
-    // 🛠 HÀM LÕI CỦA HỆ THỐNG: Thực hiện bắn dữ liệu sang Python và lưu vào Database
+    
     private static function executeVectorization($imgId, $absolutePath, $shouldDeleteOld = false)
     {
         try {
@@ -233,5 +251,55 @@ class ProductSearchController extends Controller
             \Log::error("Lỗi executeVectorization cho ảnh ID {$imgId}: " . $e->getMessage());
             return false;
         }
+    }
+
+    
+    private function getProductCategoryGroup($product)
+    {
+        $name = mb_strtolower($product->Name ?? '');
+        
+        $categoryName = '';
+        if ($product->category) {
+            $categoryName = mb_strtolower($product->category->Name ?? '');
+        }
+
+        
+        if (
+            str_contains($name, 'quần') || 
+            str_contains($name, 'jean') || 
+            str_contains($name, 'short') || 
+            str_contains($name, 'jogger') ||
+            str_contains($categoryName, 'quần')
+        ) {
+            return 'quan';
+        }
+
+        
+        if (
+            str_contains($name, 'váy') || 
+            str_contains($name, 'đầm') || 
+            str_contains($categoryName, 'váy') || 
+            str_contains($categoryName, 'đầm')
+        ) {
+            return 'vay';
+        }
+
+        
+        if (
+            str_contains($name, 'áo') || 
+            str_contains($name, 'polo') || 
+            str_contains($name, 'sơ mi') || 
+            str_contains($name, 'hoodie') || 
+            str_contains($name, 'bomber') || 
+            str_contains($name, 'thun') ||
+            str_contains($categoryName, 'áo') || 
+            str_contains($categoryName, 'polo') || 
+            str_contains($categoryName, 'sơ mi')
+        ) {
+            return 'ao';
+        }
+
+        
+        return 'khac';
     }
 }

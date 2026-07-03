@@ -13,10 +13,7 @@ use App\Services\CloudinaryService;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     * Sắp xếp sản phẩm mới nhất lên đầu bằng latest()
-     */
+    
     public function index(Request $request)
     {
         $query = Product::with(['category', 'variants', 'images'])->latest();
@@ -29,15 +26,13 @@ class ProductController extends Controller
         return ProductResource::collection($products);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(StoreProductRequest $request)
     {
         return DB::transaction(function () use ($request) {
             $productData = $request->only(['Name', 'CategoryID', 'Description', 'Material', 'UsageInstruction']);
 
-            // 1. Upload Ảnh chính lên Cloudinary
+            
             if ($request->hasFile('MainImage')) {
                 $cloudinary = new CloudinaryService();
                 $productData['MainImage'] = $cloudinary->upload(
@@ -46,10 +41,10 @@ class ProductController extends Controller
                 );
             }
 
-            // 2. Tạo sản phẩm
+            
             $product = Product::create($productData);
 
-            // Tự động thêm MainImage vào product_images để vectorize
+            
             if (!empty($product->MainImage)) {
                 $mainImageRecord = $product->images()->create(['Url' => $product->MainImage]);
                 
@@ -59,7 +54,7 @@ class ProductController extends Controller
                 );
             }
 
-            // 3. Lưu Biến thể (Variants)
+            
             if ($request->filled('variants')) {
                 $variants = json_decode($request->variants, true);
                 foreach ($variants as $v) {
@@ -74,7 +69,7 @@ class ProductController extends Controller
                 }
             }
 
-            // 4. Upload Nhiều ảnh phụ (Gallery) lên Cloudinary
+            
             if ($request->hasFile('images')) {
                 $cloudinary = new CloudinaryService();
                 foreach ($request->file('images') as $img) {
@@ -99,9 +94,7 @@ class ProductController extends Controller
         });
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show($id)
     {
       $product = Product::with(['category', 'variants', 'images', 'reviews.user'])->find($id);
@@ -119,9 +112,7 @@ class ProductController extends Controller
         ], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(UpdateProductRequest $request, $id)
     {
         $product = Product::find($id);
@@ -136,11 +127,11 @@ class ProductController extends Controller
         return DB::transaction(function () use ($request, $product) {
             $data = $request->validated();
 
-            // 1. Upload Ảnh chính mới lên Cloudinary (nếu có)
+            
             if ($request->hasFile('MainImage')) {
                 $cloudinary = new CloudinaryService();
                 $oldMainImage = $product->MainImage;
-                // Xóa ảnh cũ trên Cloudinary nếu là URL Cloudinary
+                
                 if ($oldMainImage && str_contains($oldMainImage, 'cloudinary.com')) {
                     $cloudinary->deleteByUrl($oldMainImage);
                 }
@@ -150,7 +141,7 @@ class ProductController extends Controller
                 );
                 $data['MainImage'] = $newMainImage;
 
-                // Cập nhật hoặc tạo mới trong product_images
+                
                 $imgRecord = $product->images()->where('Url', $oldMainImage)->first();
                 if ($imgRecord) {
                     $imgRecord->update(['Url' => $newMainImage]);
@@ -166,7 +157,7 @@ class ProductController extends Controller
 
             $product->update($data);
 
-            // 2. Cập nhật Biến thể (Variants)
+            
             if ($request->has('variants')) {
                 $variants = json_decode($request->variants, true);
                 if (is_array($variants)) {
@@ -202,7 +193,7 @@ class ProductController extends Controller
                 }
             }
 
-            // 3. Upload Thêm ảnh phụ (Gallery) lên Cloudinary
+            
             if ($request->hasFile('images')) {
                 $cloudinary = new CloudinaryService();
                 foreach ($request->file('images') as $img) {
@@ -227,9 +218,7 @@ class ProductController extends Controller
         });
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy($id)
     {
         $product = Product::find($id);

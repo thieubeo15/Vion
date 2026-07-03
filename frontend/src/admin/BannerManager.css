@@ -7,7 +7,7 @@
     min-height: 100vh;
 }
 
-/* ================= HEADER STYLE ================= */
+
 .banner-dashboard-header {
     background: linear-gradient(135deg, #111 0%, #2a2a2a 100%);
     color: #fff;
@@ -74,7 +74,7 @@
     letter-spacing: 0.5px;
 }
 
-/* ================= UPLOAD SIDEBAR ================= */
+
 .upload-sidebar-card {
     background: #fff;
     border-radius: 16px;
@@ -97,7 +97,7 @@
     letter-spacing: 0.5px;
 }
 
-/* Dropzone styling */
+
 .upload-zone-wrapper {
     position: relative;
 }
@@ -144,7 +144,7 @@
     margin: 5px 0 0 0;
 }
 
-/* Preview Image container */
+
 .preview-container {
     width: 100%;
     height: 180px;
@@ -180,7 +180,7 @@
     opacity: 1;
 }
 
-/* Custom inputs styling */
+
 .form-group-custom {
     display: flex;
     flex-direction: column;
@@ -242,7 +242,7 @@
     cursor: not-allowed;
 }
 
-/* ================= BANNERS LIST GALLERY ================= */
+
 .banners-list-container {
     background: #fff;
     border-radius: 16px;
@@ -278,7 +278,7 @@
     color: #2d3748;
 }
 
-/* Premium Banner Cards */
+
 .premium-banner-card {
     background: #fff;
     border-radius: 12px;
@@ -327,7 +327,7 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
-/* Pulse animation for active dot */
+
 .pulse-dot {
     width: 6px;
     height: 6px;
@@ -426,7 +426,7 @@
     text-overflow: ellipsis;
 }
 
-/* Animations */
+
 .animate-fade-in {
     animation: fadeIn 0.3s ease-in-out forwards;
 }

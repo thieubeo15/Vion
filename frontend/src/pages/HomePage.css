@@ -1,14 +1,14 @@
-/* src/pages/HomePage.css */
+/* pages/HomePage.css */
 
-/* 1. Import font chữ mới */
+
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-/* FIX LỖI MẤT NAVBAR KHI LƯỚT XUỐNG */
+
 html, body {
     max-width: 100%;
     margin: 0;
     padding: 0;
-    /* Không để overflow-x: hidden ở đây vì sẽ làm hỏng position: sticky của Header */
+    
 }
 
 .home-page {
@@ -16,7 +16,7 @@ html, body {
     background-color: #f8f8f8;
     color: #111;
     width: 100%;
-    overflow-x: hidden; /* Chỉ để ở lớp này để tránh tràn trang */
+    overflow-x: hidden; 
 }
 
 .hero-section {
@@ -29,7 +29,7 @@ html, body {
         border-radius: 8px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
-/* Mỗi slide chồng lên nhau, chỉ slide active mới hiện */
+
 .hero-slide {
     position: absolute;
     inset: 0;
@@ -68,7 +68,7 @@ html, body {
     z-index: 1;
 }
 
-/* Nút mũi tên - chỉ icon, không ô tròn */
+
 .hero-arrow {
     position: absolute;
     top: 50%;
@@ -103,7 +103,7 @@ html, body {
 .hero-arrow-prev { left: 20px; }
 .hero-arrow-next { right: 20px; }
 
-/* Badge số thứ tự */
+
 .hero-counter {
     position: absolute;
     bottom: 30px;
@@ -122,7 +122,7 @@ html, body {
     font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-/* Chấm chỉ báo */
+
 .hero-dots {
     position: absolute;
     bottom: 34px;
@@ -208,7 +208,7 @@ html, body {
     color: #fff;
 }
 
-/* ================= CÁC PHẦN DƯỚI GIỮ NGUYÊN FORM 6 CỘT ================= */
+
 .home-categories {
     max-width: 1200px;
     margin: 50px auto;
@@ -267,10 +267,10 @@ html, body {
     padding-left: 5px;
 }
 
-/* ================= GRID SẢN PHẨM (CHUẨN 6 CỘT) ================= */
+
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr); /* GIỮ ĐÚNG 6 CỘT */
+    grid-template-columns: repeat(6, 1fr); 
     gap: 10px;
 }
 
@@ -300,7 +300,7 @@ html, body {
     font-weight: 600;
 }
 
-/* NÚT XEM THÊM */
+
 .btn-see-more {
     background: transparent;
     cursor: pointer;
@@ -332,7 +332,7 @@ html, body {
     margin-bottom: 50px;
 }
 
-/* --- CSS DROPDOWN TÌM KIẾM TRONG NAV (TỰ ĐỘNG HIỆN ẢNH) --- */
+
 .nav-search-dropdown {
     position: absolute;
     top: 100%;

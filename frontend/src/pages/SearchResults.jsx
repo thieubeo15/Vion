@@ -11,14 +11,14 @@ const SearchResults = () => {
     const retryInputRef = useRef(null);
     const API_BASE_URL = 'http://127.0.0.1:8000';
 
-    // Lấy dữ liệu từ navigation state
+    
     const { products, similarities, searchImage } = location.state || { 
         products: [], 
         similarities: {},
         searchImage: null 
     };
 
-    // Hàm lấy similarity score cho 1 sản phẩm
+    
     const getSimilarity = (prod) => {
         const id = prod.id || prod.ProductID;
         if (similarities && similarities[id] !== undefined) {
@@ -27,7 +27,7 @@ const SearchResults = () => {
         return null;
     };
 
-    // Hàm xác định class CSS dựa trên mức similarity
+    
     const getSimilarityClass = (score) => {
         if (score >= 82) return 'high';
         if (score >= 74) return 'medium';
@@ -40,7 +40,7 @@ const SearchResults = () => {
         return 'low-bar';
     };
 
-    // Hàm xác định rank class
+    
     const getRankClass = (index) => {
         if (index === 0) return 'rank-1';
         if (index === 1) return 'rank-2';
@@ -48,12 +48,12 @@ const SearchResults = () => {
         return 'rank-other';
     };
 
-    // Hàm tìm lại bằng ảnh khác
+    
     const handleRetrySearch = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Reset input
+        
         if (retryInputRef.current) {
             retryInputRef.current.value = '';
         }
@@ -101,7 +101,7 @@ const SearchResults = () => {
         }
     };
 
-    // === TRẠNG THÁI: Mất data khi refresh ===
+    
     if (!location.state) {
         return (
             <div className="search-results-page">
@@ -120,36 +120,42 @@ const SearchResults = () => {
 
     return (
         <div className="search-results-page">
-            <button className="sr-back-action-btn" onClick={() => navigate(-1)}>
-                <ArrowLeft size={16} /> Quay lại
-            </button>
+            <div className="sr-top-nav">
+                <button className="sr-back-action-btn" onClick={() => navigate(-1)}>
+                    <ArrowLeft size={16} /> Quay lại
+                </button>
+                <div className="sr-top-nav-divider"></div>
+                <nav className="sr-breadcrumb">
+                    <Link to="/">Trang chủ</Link>
+                    <ChevronRight size={14} className="sr-breadcrumb-sep" />
+                    <span className="sr-breadcrumb-current">Tìm kiếm bằng hình ảnh</span>
+                </nav>
+            </div>
 
-            {/* BREADCRUMB */}
-            <nav className="sr-breadcrumb">
-                <Link to="/">Trang chủ</Link>
-                <ChevronRight size={14} className="sr-breadcrumb-sep" />
-                <span className="sr-breadcrumb-current">Tìm kiếm bằng hình ảnh</span>
-            </nav>
-
-            {/* HEADER */}
+            
             <div className="sr-header">
                 <div className="sr-header-left">
                     {searchImage && (
-                        <img 
-                            src={searchImage} 
-                            alt="Ảnh tìm kiếm" 
-                            className="sr-uploaded-image" 
-                        />
+                        <div className="sr-uploaded-image-wrapper">
+                            <img 
+                                src={searchImage} 
+                                alt="Ảnh tìm kiếm" 
+                                className="sr-uploaded-image" 
+                            />
+                            <div className="sr-image-glow"></div>
+                        </div>
                     )}
                     <div className="sr-header-info">
-                        <h1>Kết quả tìm kiếm </h1>
+                        <h1>
+                            Kết quả tìm kiếm
+                        </h1>
                         <p className="sr-subtitle">
-                            Tìm thấy {products.length} sản phẩm tương đồng
+                            Tìm thấy <strong>{products.length}</strong> sản phẩm tương đồng 
                         </p>
                     </div>
                 </div>
 
-                {/* NÚT TÌM LẠI */}
+                
                 <label className="sr-retry-btn">
                     <Camera size={16} />
                     Tìm bằng ảnh khác
@@ -163,7 +169,7 @@ const SearchResults = () => {
                 </label>
             </div>
 
-            {/* GRID SẢN PHẨM */}
+            
             {products.length > 0 ? (
                 <div className="sr-products-grid">
                     {products.map((prod, index) => {
@@ -176,19 +182,19 @@ const SearchResults = () => {
                                 key={prod.id || prod.ProductID} 
                                 className="sr-product-card"
                             >
-                                {/* RANK BADGE */}
+                                
                                 <div className={`sr-rank-badge ${getRankClass(index)}`}>
                                     {index + 1}
                                 </div>
 
-                                {/* SIMILARITY BADGE */}
+                                
                                 {score !== null && (
                                     <div className={`sr-similarity-badge ${simClass}`}>
                                         {score}% khớp
                                     </div>
                                 )}
 
-                                {/* ẢNH */}
+                                
                                 <div className="sr-product-image-wrap" style={{ position: 'relative' }}>
                                     <img 
                                         src={(prod.main_image || prod.MainImage)?.startsWith('http') ? (prod.main_image || prod.MainImage) : `${API_BASE_URL}/storage/${prod.main_image || prod.MainImage}`}
@@ -204,7 +210,7 @@ const SearchResults = () => {
                                         const hasDiscount = discountPrice !== null && discountPrice !== undefined && Number(discountPrice) < Number(price);
                                         if (hasDiscount) {
                                             return (
-                                                <div className="discount-badge-overlay" style={{ top: '8px', left: '8px' }}>
+                                                <div className="discount-badge-overlay" style={{ top: '48px', left: '12px', borderRadius: '6px' }}>
                                                     -{discountPercent}%
                                                 </div>
                                             );
@@ -213,7 +219,7 @@ const SearchResults = () => {
                                     })()}
                                 </div>
 
-                                {/* THÔNG TIN */}
+                                
                                 <div className="sr-product-info">
                                     <h3 className="sr-product-name">
                                         {prod.name || prod.Name}
@@ -245,7 +251,7 @@ const SearchResults = () => {
                                         );
                                     })()}
 
-                                    {/* THANH SIMILARITY */}
+                                    
                                     {score !== null && (
                                         <div className="sr-similarity-bar-wrap">
                                             <div className="sr-similarity-bar">
@@ -272,9 +278,9 @@ const SearchResults = () => {
                         Thử ảnh khác
                         <input 
                             type="file" 
-                            accept="image/*" 
-                            onChange={handleRetrySearch} 
-                            style={{ display: 'none' }} 
+                            accept="image/*"
+                            onChange={handleRetrySearch}
+                            style={{ display: 'none' }}
                         />
                     </label>
                 </div>

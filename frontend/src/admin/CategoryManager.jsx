@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Plus, Trash2, RefreshCw, Layers, ChevronRight, Edit2, X, Save, Search, Loader2 } from 'lucide-react';
-import Swal from 'sweetalert2'; // Import SweetAlert2
+import Swal from 'sweetalert2'; 
 import './CategoryManager.css';
 
 const CategoryManager = () => {
@@ -17,7 +17,7 @@ const CategoryManager = () => {
     const token = localStorage.getItem('vion_token');
     const API_URL = 'http://127.0.0.1:8000/api/categories';
 
-    // Cấu hình Toast thông báo nhanh cho đẹp
+    
     const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -112,7 +112,7 @@ const CategoryManager = () => {
     };
 
     const handleDelete = async (id) => {
-        // Thay window.confirm bằng Swal.fire
+        
         Swal.fire({
             title: 'Bạn chắc chắn muốn xóa',
             text: "Xóa danh mục này sẽ không thể hoàn tác!",
@@ -158,7 +158,7 @@ const CategoryManager = () => {
                 </div>
             </div>
 
-            {/* FORM THÊM MỚI (INLINE) */}
+            
             {!isEditing && (
                 <form className="v-inline-form" onSubmit={handleSubmit}>
                     <div className="v-input-wrapper">
@@ -184,7 +184,7 @@ const CategoryManager = () => {
                 </form>
             )}
 
-            {/* MODAL SỬA DANH MỤC */}
+            
             {isEditing && (
                 <div className="v-modal-overlay" onClick={cancelEdit}>
                     <div className="v-modal-content v-category-modal" onClick={e => e.stopPropagation()}>

@@ -44,7 +44,7 @@ const CheckoutPage = () => {
     const token = localStorage.getItem('vion_token');
     const API_URL = 'http://127.0.0.1:8000/api';
 
-    // Các state phục vụ cho việc chọn địa chỉ động sáp nhập mới (2 cấp: Tỉnh -> Phường/Xã)
+    
     const [provinces, setProvinces] = useState([]);
     const [wards, setWards] = useState([]);
 
@@ -53,7 +53,7 @@ const CheckoutPage = () => {
     const [loadingProvinces, setLoadingProvinces] = useState(false);
     const [loadingWards, setLoadingWards] = useState(false);
 
-    // Tải danh sách tỉnh/thành phố khi component mount
+    
     useEffect(() => {
         const fetchProvinces = async () => {
             setLoadingProvinces(true);
@@ -62,7 +62,7 @@ const CheckoutPage = () => {
                 setProvinces(res.data || []);
             } catch (err) {
                 console.error("Lỗi khi tải danh sách tỉnh/thành phố:", err);
-                // Fallback mặc định
+                
                 setProvinces([
                     { code: 'hn', name: 'Thành phố Hà Nội' },
                     { code: 'hcm', name: 'Thành phố Hồ Chí Minh' },
@@ -77,7 +77,7 @@ const CheckoutPage = () => {
         fetchProvinces();
     }, []);
 
-    // Xử lý khi đổi Tỉnh/Thành phố
+    
     const handleProvinceChange = async (e) => {
         const provinceCode = e.target.value;
         const selectedProv = provinces.find(p => String(p.code) === String(provinceCode));
@@ -89,7 +89,7 @@ const CheckoutPage = () => {
 
         if (!provinceCode) return;
 
-        // Xử lý fallback tĩnh
+        
         const staticCodes = ['hn', 'hcm', 'dn', 'hp', 'ct'];
         if (staticCodes.includes(String(provinceCode))) {
             if (provinceCode === 'hn') {
@@ -129,7 +129,7 @@ const CheckoutPage = () => {
         }
     };
 
-    // Xử lý khi đổi Phường/Xã
+    
     const handleWardChange = (e) => {
         const wardName = e.target.value;
         setOrderInfo(prev => ({ ...prev, Ward: wardName }));
@@ -181,7 +181,7 @@ const CheckoutPage = () => {
         return originalPrice;
     };
 
-    // FIX LỖI NaN: Hàm tính tổng cực mạnh, chấp cả chữ hoa lẫn chữ thường
+    
     const calculateTotal = () => {
         return cartItems.reduce((sum, item) => {
             const price = getCartItemPrice(item);
@@ -278,7 +278,7 @@ const CheckoutPage = () => {
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
 
-        // Kiểm tra nhanh thông tin
+        
         if (!orderInfo.FullName || !orderInfo.Phone || !orderInfo.SpecificAddress || !orderInfo.Province || !orderInfo.Ward) {
             Swal.fire('Chú ý', 'Vui lòng nhập đầy đủ thông tin giao hàng!', 'warning');
             return;
@@ -347,7 +347,7 @@ const CheckoutPage = () => {
             </div>
 
             <form onSubmit={handlePlaceOrder} className="row g-5">
-                {/* BÊN TRÁI: THÔNG TIN GIAO HÀNG */}
+                
                 <div className="col-lg-7">
                     <h4 className="v-section-title mb-4">THÔNG TIN GIAO HÀNG</h4>
                     <div className="v-checkout-form-box">
@@ -433,7 +433,7 @@ const CheckoutPage = () => {
                     </div>
                 </div>
 
-                {/* BÊN PHẢI: TỔNG KẾT ĐƠN HÀNG */}
+                
                 <div className="col-lg-5">
                     <div className="v-order-bill-card sticky-top" style={{ top: '100px' }}>
                         <h5 className="v-bill-title">CHI TIẾT ĐƠN HÀNG</h5>
@@ -466,7 +466,7 @@ const CheckoutPage = () => {
                                 )}
                             </div>
 
-                            {/* VOUCHER SECTION */}
+                            
                             {token ? (
                                 <div className="v-voucher-section">
                                     <div className="v-voucher-label">

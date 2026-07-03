@@ -1,4 +1,4 @@
-/* src/pages/RegisterPage.css */
+/* pages/RegisterPage.css */
 
 .register-page {
     font-family: 'Lexend Deca', sans-serif;
@@ -37,7 +37,7 @@
     overflow: hidden;
 }
 
-/* KHÓA CỨNG TỶ LỆ 55/45 */
+/* 45 */
 .auth-image-col {
     flex: 0 0 55%;
     background-image: url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80');
@@ -84,7 +84,7 @@
     text-align: center;
 }
 
-/* HỘP GIỮ CHỖ LỖI CỐ ĐỊNH */
+
 .auth-error-box {
     min-height: 45px;
     margin-bottom: 15px;

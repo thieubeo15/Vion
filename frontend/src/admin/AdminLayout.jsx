@@ -101,7 +101,7 @@ const AdminLayout = () => {
                     </div>
                 </header>
                 <div className="vion-admin-content p-4">
-                    {/* Nơi nội dung của Dashboard hoặc Category sẽ hiện ra */}
+                    
                     <Outlet /> 
                 </div>
             </main>

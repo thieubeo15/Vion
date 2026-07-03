@@ -1,4 +1,4 @@
-/* src/components/Navbar.css */
+/* components/Navbar.css */
 
 .vion-header {
     position: sticky;
@@ -9,7 +9,7 @@
     font-family: 'Lexend Deca', sans-serif;
 }
 
-/* ================= TẦNG 1: MAIN HEADER ================= */
+
 .header-main {
     max-width: 1400px;
     margin: 0 auto;
@@ -34,7 +34,7 @@
     color: #EE4D2D;
 }
 
-/* THANH TÌM KIẾM THÔNG MINH */
+
 .search-container {
     flex: 1;
     max-width: 700px;
@@ -100,7 +100,7 @@
     transform: scale(0.95);
 }
 
-/* ACTIONS */
+
 .header-actions {
     display: flex;
     align-items: center;
@@ -144,7 +144,7 @@
     border-radius: 50%;
 }
 
-/* ================= TẦNG 2: SUB NAV (DANH MỤC) ================= */
+
 .header-sub {
     border-top: 1px solid #ede4d7;
     padding: 12px 0;
@@ -169,11 +169,11 @@
     color: #EE4D2D;
 }
 .action-icon:hover {
-    color: #EE4D2D; /* Rê chuột vào icon User hoặc Đăng xuất sẽ đổi màu cam */
+    color: #EE4D2D; 
 }
-/* --- LIVE SEARCH DROPDOWN --- */
+
 .search-input-wrap {
-    position: relative; /* Cần thiết để dropdown định vị theo ô input */
+    position: relative; 
 }
 
 .nav-search-dropdown {
@@ -243,7 +243,7 @@
     font-size: 13px;
 }
 
-/* Thêm hiệu ứng hiện ra mượt mà */
+
 .nav-search-dropdown {
     animation: fadeInSlide 0.2s ease-out;
 }
@@ -253,20 +253,20 @@
     to { opacity: 1; transform: translateY(0); }
 }
 .vion-header {
-    position: sticky; /* Hoặc position: fixed; */
+    position: sticky; 
     top: 0;
     left: 0;
     width: 100%;
-    background-color: #faf6f0; /* Đảm bảo có nền kem để không bị xuyên thấu khi lướt */
-    z-index: 9999; /* Luôn nằm trên cùng các thành phần khác */
-    box-shadow: 0 2px 12px rgba(44, 39, 34, 0.06); /* Đổ bóng nhẹ cho sang */
+    background-color: #faf6f0; 
+    z-index: 9999; 
+    box-shadow: 0 2px 12px rgba(44, 39, 34, 0.06); 
     transition: all 0.3s ease;
 }
 
-/* Category item dropdown wrapper and layout */
+
 .category-item-nav {
     position: relative;
-    padding-bottom: 5px; /* Cushion space for smooth hover transition */
+    padding-bottom: 5px; 
 }
 
 .category-dropdown-menu {
@@ -319,7 +319,7 @@
     }
 }
 
-/* ================= USER DROPDOWN ================= */
+
 .user-dropdown-container {
     position: relative;
     display: inline-block;

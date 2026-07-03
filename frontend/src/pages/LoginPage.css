@@ -14,7 +14,7 @@ body {
   flex-direction: column;
 }
 
-/* HEADER */
+
 .login-header {
   height: 70px;
   padding: 0 8%;
@@ -41,13 +41,13 @@ body {
   color: #111;
 }
 
-/* MAIN */
+
 .login-main {
   flex: 1;
   display: flex;
 }
 
-/* LEFT */
+
 .login-left {
   flex: 55%;
   background-image: url('https://images.unsplash.com/photo-1483985988355-763728e1935b');
@@ -80,7 +80,7 @@ body {
   margin-top: 10px;
 }
 
-/* RIGHT */
+
 .login-right {
   flex: 45%;
   display: flex;
@@ -104,7 +104,7 @@ body {
   margin-bottom: 30px;
 }
 
-/* ERROR */
+
 .error-box {
   height: 40px;
 }
@@ -118,7 +118,7 @@ body {
   font-size: 13px;
 }
 
-/* INPUT */
+
 .input-group {
   position: relative;
   margin-bottom: 20px;
@@ -171,7 +171,7 @@ body {
   cursor: pointer;
 }
 
-/* EXTRA */
+
 .extra {
   text-align: right;
   margin-bottom: 20px;
@@ -183,7 +183,7 @@ body {
   text-decoration: none;
 }
 
-/* BUTTON */
+
 .login-btn {
   width: 100%;
   padding: 14px;
@@ -199,7 +199,7 @@ body {
   background: #EE4D2D;
 }
 
-/* DIVIDER */
+
 .divider {
   text-align: center;
   margin: 25px 0;
@@ -207,7 +207,7 @@ body {
   font-size: 12px;
 }
 
-/* SOCIAL */
+
 .social {
   display: flex;
   gap: 10px;
@@ -227,7 +227,7 @@ body {
   color: #fff;
 }
 
-/* REGISTER */
+
 .register {
   text-align: center;
   margin-top: 20px;
@@ -240,7 +240,7 @@ body {
   text-decoration: none;
 }
 
-/* ANIMATION */
+
 @keyframes fadeUp {
   from {
     opacity: 0;

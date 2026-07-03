@@ -3,7 +3,7 @@ import './RegisterPage.css';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import Swal from 'sweetalert2'; // 🚀 Thêm import SweetAlert2
+import Swal from 'sweetalert2'; 
 
 const RegisterPage = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -15,7 +15,7 @@ const RegisterPage = () => {
         e.preventDefault();
         setError('');
 
-        // 1. Validate dữ liệu đầu vào
+        
         if (!formData.fullName.trim()) {
             setError('Vui lòng nhập Họ và tên!');
             return;
@@ -45,7 +45,7 @@ const RegisterPage = () => {
                 Password: formData.password
             });
 
-            // 🚀 THÔNG BÁO THÀNH CÔNG XỊN XÒ (Thay cho alert cũ)
+            
             Swal.fire({
                 icon: 'success',
                 title: 'Đăng kí thành công!',

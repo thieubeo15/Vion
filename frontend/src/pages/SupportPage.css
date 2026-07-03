@@ -1,7 +1,7 @@
-/* src/pages/SupportPage.css */
+/* pages/SupportPage.css */
 
 .support-page {
-    background-color: #faf6f0; /* Tone màu kem của Navbar */
+    background-color: #faf6f0; 
     color: #2c2722;
     font-family: 'Plus Jakarta Sans', sans-serif;
     min-height: 100vh;
@@ -30,7 +30,7 @@
     margin: 0 auto;
 }
 
-/* SIDEBAR TABS */
+
 .support-sidebar {
     background-color: #ffffff;
     border-radius: 12px;
@@ -68,7 +68,7 @@
     border-color: #EE4D2D;
 }
 
-/* SIDEBAR CONTACT BOX */
+
 .support-contact-box {
     background-color: #ffffff;
     border-radius: 12px;
@@ -118,7 +118,7 @@
     color: #6a5e51;
 }
 
-/* CONTENT CONTAINER */
+
 .support-content {
     background-color: #ffffff;
     border-radius: 12px;
@@ -136,7 +136,7 @@
     padding-bottom: 15px;
 }
 
-/* FAQ ACCORDION */
+
 .faq-list {
     display: flex;
     flex-direction: column;
@@ -192,7 +192,7 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* POLICY TEXT */
+
 .policy-text h5 {
     font-size: 16px;
     font-weight: 800;

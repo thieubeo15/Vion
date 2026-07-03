@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; 
 import { Search, Camera, ShoppingBag, User, LogOut, Settings, Package, LayoutDashboard } from 'lucide-react';
 import axios from 'axios';
-import Swal from 'sweetalert2'; // 🚀 1. Import thư viện Swal
+import Swal from 'sweetalert2'; 
 import NotificationBell from './NotificationBell';
 import './Navbar.css';
 
@@ -99,20 +99,20 @@ const Navbar = () => {
         setSearchResults(filtered);
     };
 
-    // 🚀 HÀM XỬ LÝ TÌM KIẾM BẰNG HÌNH ẢNH QUA MÔ HÌNH CLIP (THÊM MỚI)
+    
     const handleImageSearch = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Reset input file để có thể chọn lại cùng 1 ảnh
+        
         if (imageInputRef.current) {
             imageInputRef.current.value = '';
         }
 
-        // Hiện popup loading của AI
+        
         Swal.fire({
             title: 'VION AI ĐANG QUÉT ẢNH...',
-            html: '<p style="color:#666;font-size:14px">Mô hình CLIP đang phân tích đặc trưng hình ảnh...</p>',
+            html: '<p style="color:#666;font-size:14px">Đang phân tích đặc trưng hình ảnh...</p>',
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();
@@ -130,7 +130,7 @@ const Navbar = () => {
             Swal.close();
 
             if (res.data.success) {
-                // Đẩy sang trang kết quả kèm theo mảng dữ liệu, similarity scores và ảnh preview
+                
                 navigate('/search-results?type=image', { 
                     state: { 
                         products: res.data.data, 
@@ -139,7 +139,7 @@ const Navbar = () => {
                     } 
                 });
             } else {
-                // Trường hợp API trả về success=false
+                
                 Swal.fire({
                     icon: 'warning',
                     title: 'Không tìm thấy kết quả',
@@ -157,20 +157,20 @@ const Navbar = () => {
         }
     };
 
-    // 🚀 2. Sửa lại hàm Đăng xuất dùng SweetAlert2
+    
     const handleLogout = () => {
         Swal.fire({
             title: 'Đăng xuất?',
             text: "Bạn có chắc chắn muốn đăng xuất không?",
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#111', // Màu đen cho ngầu
-            cancelButtonColor: '#d33', // Đỏ cho nút Hủy
+            confirmButtonColor: '#111', 
+            cancelButtonColor: '#d33', 
             confirmButtonText: 'Đăng xuất',
             cancelButtonText: 'Hủy'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Xóa Token và Dữ liệu user
+                
                 localStorage.removeItem('vion_token');
                 localStorage.removeItem('vion_user');
                 
@@ -200,7 +200,7 @@ const Navbar = () => {
                             onChange={handleSearch}
                         />
                         
-                        {/* 🚀 CHỈ SỬA CỤM ICON CAMERA THÀNH NÚT UPLOAD ẨN Ở ĐÂY */}
+                        
                         <div className="search-tools">
                             <label className="camera-search-label" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                                 <Camera size={20} className="camera-icon" title="Tìm kiếm bằng hình ảnh" />
@@ -228,7 +228,7 @@ const Navbar = () => {
                                             <div className="nav-search-info">
                                                 <p className="nav-search-name">{prod.name}</p>
                                                 <p className="nav-search-price">
-                                                    {prod.variants?.[0] ? Number(prod.variants[0].Price).toLocaleString() : '0'}đ
+                                                    {prod.variants?.[0] ? Number(prod.variants[0].price !== undefined ? prod.variants[0].price : (prod.variants[0].Price || 0)).toLocaleString() : '0'}đ
                                                 </p>
                                             </div>
                                         </Link>
@@ -299,7 +299,7 @@ const Navbar = () => {
                 </div>
             </div>
 
-            {/* TẦNG 2: SUB NAV (DANH MỤC) */}
+            
             {categories.length > 0 && (
                 <div className="header-sub">
                     <div className="category-nav">

@@ -16,17 +16,13 @@ class ProductImage extends Model
         'Url'
     ];
 
-    /**
-     * Hình ảnh thuộc về một sản phẩm
-     */
+    
     public function product()
     {
         return $this->belongsTo(Product::class, 'ProductID', 'ProductID');
     }
 
-    /**
-     * Hình ảnh có một vector data
-     */
+    
     public function vector()
     {
         return $this->hasOne(ProductVector::class, 'ImageID', 'ImageID');

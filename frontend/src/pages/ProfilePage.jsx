@@ -8,7 +8,7 @@ const ProfilePage = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('profile');
     
-    // State dữ liệu
+    
     const [userData, setUserData] = useState({ FullName: '', Email: '', Phone: '', Address: '', Role: '' });
     const [displayName, setDisplayName] = useState(''); 
     const [passData, setPassData] = useState({ 
@@ -17,13 +17,13 @@ const ProfilePage = () => {
         new_password_confirmation: '' 
     });
     
-    // State UI
+    
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-    // State Voucher
+    
     const [myVouchers, setMyVouchers] = useState([]);
     const [publicVouchers, setPublicVouchers] = useState([]);
     const [voucherLoading, setVoucherLoading] = useState(false);
@@ -50,7 +50,7 @@ const ProfilePage = () => {
         setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000);
     };
 
-    // Xử lý Cập nhật Hồ sơ
+    
     const handleUpdateProfile = async () => {
         setShowConfirm(false);
         setIsSaving(true);
@@ -67,11 +67,11 @@ const ProfilePage = () => {
         } finally { setIsSaving(false); }
     };
 
-    // Xử lý Đổi mật khẩu (Đủ 3 trường)
+    
     const handleChangePassword = async (e) => {
         e.preventDefault();
         
-        // Kiểm tra khớp mật khẩu ở Frontend
+        
         if (passData.new_password !== passData.new_password_confirmation) {
             triggerToast("Mật khẩu xác nhận không khớp!", "error");
             return;
@@ -89,7 +89,7 @@ const ProfilePage = () => {
         } finally { setIsSaving(false); }
     };
 
-    // Fetch voucher của user + voucher public
+    
     const fetchMyVouchers = async () => {
         setVoucherLoading(true);
         try {
@@ -156,7 +156,7 @@ const ProfilePage = () => {
 
     return (
         <div className="vion-profile-page">
-            {/* THÔNG BÁO TOAST */}
+            
             {toast.show && (
                 <div className={`vion-toast ${toast.type}`}>
                     {toast.type === 'success' ? <CheckCircle size={18} /> : <AlertTriangle size={18} />}
@@ -164,7 +164,7 @@ const ProfilePage = () => {
                 </div>
             )}
 
-            {/* MODAL XÁC NHẬN KHI LƯU HỒ SƠ */}
+            
             {showConfirm && (
                 <div className="vion-modal-overlay">
                     <div className="vion-confirm-card">
@@ -186,7 +186,7 @@ const ProfilePage = () => {
             </div>
 
             <div className="vion-profile-wrapper">
-                {/* SIDEBAR */}
+                
                 <aside className="vion-sidebar">
                     <div className="vion-user-card">
                         <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=111&color=fff`} alt="Avatar" />
@@ -214,7 +214,7 @@ const ProfilePage = () => {
                     </nav>
                 </aside>
 
-                {/* NỘI DUNG CHÍNH */}
+                
                 <main className="vion-profile-main">
                     <div className="v-main-header">
                         <h2>{activeTab === 'profile' ? 'Thiết lập hồ sơ' : activeTab === 'password' ? 'Bảo mật tài khoản' : 'Voucher của tôi'}</h2>
@@ -255,7 +255,7 @@ const ProfilePage = () => {
                                 <div className="v-voucher-empty"><Loader2 className="v-spin" size={24} /> Đang tải...</div>
                             ) : (
                                 <>
-                                    {/* VOUCHER CỦA TÔI */}
+                                    
                                     <div className="v-voucher-section-title">🏷️ Voucher của tôi ({myVouchers.length})</div>
                                     {myVouchers.length === 0 ? (
                                         <div className="v-voucher-empty">Bạn chưa có voucher nào. Hãy lưu voucher bên dưới!</div>
@@ -290,7 +290,7 @@ const ProfilePage = () => {
                                         </div>
                                     )}
 
-                                    {/* VOUCHER CÓ THỂ LƯU */}
+                                    
                                     <div className="v-voucher-divider"></div>
                                     <div className="v-voucher-section-title">🎁 Voucher có thể lưu</div>
                                     {(() => {

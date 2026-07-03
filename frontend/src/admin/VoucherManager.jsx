@@ -326,7 +326,7 @@ const VoucherManager = () => {
                 </table>
             </div>
 
-            {/* MODAL FORM */}
+            
             {showModal && (
                 <div className="v-modal-overlay" onClick={closeModal}>
                     <div className="v-modal-content" onClick={e => e.stopPropagation()}>
@@ -425,7 +425,7 @@ const VoucherManager = () => {
                 </div>
             )}
 
-            {/* MODAL TẶNG VOUCHER */}
+            
             {showGiftModal && (
                 <div className="v-modal-overlay" onClick={() => setShowGiftModal(false)}>
                     <div className="v-modal-content v-gift-modal" onClick={e => e.stopPropagation()}>
@@ -522,7 +522,7 @@ const VoucherManager = () => {
                 </div>
             )}
 
-            {/* MODAL DANH SÁCH NGƯỜI ĐÃ DÙNG */}
+            
             {showUsagesModal && (
                 <div className="v-modal-overlay" onClick={() => setShowUsagesModal(false)}>
                     <div className="v-modal-content v-usages-modal" onClick={e => e.stopPropagation()}>

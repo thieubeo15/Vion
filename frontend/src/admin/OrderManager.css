@@ -1,4 +1,4 @@
-/* Import font chữ đồng bộ hệ thống */
+
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 .v-order-manager { 
@@ -6,30 +6,30 @@
     padding: 10px;
 }
 
-/* --- PHẦN TIÊU ĐỀ (ĐÃ SỬA GIỐNG DANH MỤC) --- */
+
 .v-admin-header { 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    margin-bottom: 25px; /* Tăng khoảng cách cho thoáng */
+    margin-bottom: 25px; 
 }
 
 .v-admin-header h2 { 
-    font-size: 19px; /* Theo chuẩn danh mục */
-    font-weight: 800; /* Theo chuẩn danh mục */
-    color: #111;     /* Theo chuẩn danh mục */
+    font-size: 19px; 
+    font-weight: 800; 
+    color: #111;     
     margin: 0; 
     display: flex; 
     align-items: center; 
     gap: 10px; 
 }
 
-/* Icon đỏ thương hiệu đi kèm tiêu đề */
+
 .v-brand-icon { 
     color: #EE4D2D; 
 }
 
-/* --- FILTER BAR --- */
+
 .v-filter-bar { 
     display: flex; 
     gap: 8px; 
@@ -55,10 +55,10 @@
     color: #fff; 
 }
 
-/* --- TABLE --- */
+
 .v-table-wrapper { 
     background: #fff; 
-    border-radius: 12px; /* Đồng bộ độ bo góc card danh mục */
+    border-radius: 12px; 
     box-shadow: 0 4px 20px rgba(0,0,0,0.06); 
     overflow: hidden; 
 }
@@ -84,7 +84,7 @@
     font-size: 14px;
 }
 
-/* --- STATUS TAGS --- */
+
 .v-status-tag { 
     padding: 5px 12px; 
     border-radius: 50px; 
@@ -99,12 +99,12 @@
 .v-status-tag.completed { background: #f0fdf4; color: #16a34a; }
 .v-status-tag.cancelled { background: #fef2f2; color: #dc2626; }
 
-/* --- ACTION BUTTONS --- */
+
 .v-btns { display: flex; gap: 8px; }
 .v-btn { 
     width: 36px; 
     height: 36px; 
-    border-radius: 8px; /* Bo góc nhẹ giống icon edit/del */
+    border-radius: 8px;
     border: none; 
     display: flex; 
     align-items: center; 
@@ -187,7 +187,7 @@
     padding: 12px 16px;
     border-radius: 10px;
     margin-top: 15px;
-    grid-column: 1 / -1; /* Chiếm toàn bộ chiều rộng grid nếu có */
+    grid-column: 1 / -1; 
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -203,7 +203,7 @@
     font-weight: 700;
 }
 
-/* Guest Order Styling */
+
 .v-guest-badge {
     background: #fffbeb;
     color: #d97706;
@@ -226,7 +226,7 @@
     line-height: 1.5;
 }
 
-/* PHÂN HỆ HOÀN HÀNG COD */
+
 .v-status-tag.returnrequested { background: #fef3c7; color: #d97706; }
 .v-status-tag.returnapproved { background: #e0f2fe; color: #0369a1; }
 .v-status-tag.returnreceived { background: #f3e8ff; color: #7e22ce; }
@@ -262,4 +262,4 @@
     gap: 10px;
     margin-top: 15px;
     flex-wrap: wrap;
-}
+}

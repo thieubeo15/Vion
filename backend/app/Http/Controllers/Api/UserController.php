@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Order;    // THÊM DÒNG NÀY
-use App\Models\Product;  // THÊM DÒNG NÀY
+use App\Models\Order;    
+use App\Models\Product;  
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -13,13 +13,13 @@ use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
-    // Lấy thông tin user đang đăng nhập
+    
     public function profile() 
     {
         return response()->json(Auth::user());
     }
 
-    // Cập nhật thông tin cá nhân
+    
     public function updateProfile(Request $request) 
     {
         $user = Auth::user();
@@ -34,7 +34,7 @@ class UserController extends Controller
         return response()->json(['success' => true, 'message' => 'Vion đã cập nhật hồ sơ!', 'user' => $user]);
     }
 
-    // Đổi mật khẩu
+    
     public function changePassword(Request $request)
     {
         $user = Auth::user();
@@ -51,7 +51,7 @@ class UserController extends Controller
         return response()->json(['success' => true, 'message' => 'Đổi mật khẩu thành công!']);
     }
 
-    // --- CÁC HÀM QUẢN TRỊ ---
+    
     public function index() { return response()->json(User::all()); }
     
     public function show($id) {
@@ -60,7 +60,7 @@ class UserController extends Controller
     }
 
     public function getStats() {
-        // Kiểm tra quyền Admin
+        
         if (Auth::user()->Role !== 'Admin') {
             return response()->json(['message' => 'Quyền truy cập bị từ chối!'], 403);
         }
@@ -72,20 +72,20 @@ class UserController extends Controller
                 'totalOrders' => Order::count(),
                 'totalCustomers' => User::where('Role', 'User')->count(),
                 'totalProducts' => Product::count(),
-                // Lấy thêm 5 đơn hàng mới nhất để Dashboard nhìn cho xịn
+                
                 'recentOrders' => Order::with('user')->orderBy('created_at', 'desc')->take(5)->get()
             ]
         ]);
     }
 
-    // --- CÁC HÀM QUẢN LÝ USER DÀNH CHO ADMIN ---
+    
 
-    // Lấy danh sách user kèm phân trang và tìm kiếm
+    
     public function indexAdmin(Request $request)
     {
         $query = User::query();
 
-        // Tìm kiếm theo Email, FullName, Phone
+        
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function($q) use ($search) {
@@ -95,12 +95,12 @@ class UserController extends Controller
             });
         }
 
-        // Lọc theo Role
+        
         if ($request->filled('role')) {
             $query->where('Role', $request->input('role'));
         }
 
-        // Phân trang mặc định 10 dòng
+        
         $users = $query->orderBy('UserID', 'desc')->paginate(10);
 
         return response()->json([
@@ -109,7 +109,7 @@ class UserController extends Controller
         ]);
     }
 
-    // Admin tạo tài khoản mới
+    
     public function storeAdmin(Request $request)
     {
         $request->validate([
@@ -148,7 +148,7 @@ class UserController extends Controller
         ], 201);
     }
 
-    // Admin cập nhật thông tin và quyền của user
+    
     public function updateAdmin(Request $request, $id)
     {
         $user = User::find($id);
@@ -179,12 +179,12 @@ class UserController extends Controller
 
         $updateData = $request->only('Email', 'FullName', 'Phone', 'Address', 'Birthday', 'Role');
 
-        // Nếu admin cập nhật mật khẩu mới cho user
+        
         if ($request->filled('Password')) {
             $updateData['Password'] = Hash::make($request->Password);
         }
 
-        // Ngăn Admin tự hạ quyền của chính mình để tránh khóa hệ thống
+        
         if ($user->UserID === Auth::id() && isset($updateData['Role']) && $updateData['Role'] !== 'Admin') {
             return response()->json([
                 'success' => false,
@@ -201,7 +201,7 @@ class UserController extends Controller
         ]);
     }
 
-    // Admin xóa tài khoản
+    
     public function destroyAdmin($id)
     {
         $user = User::find($id);
@@ -212,7 +212,7 @@ class UserController extends Controller
             ], 404);
         }
 
-        // Chặn tự xóa chính mình
+        
         if ($user->UserID === Auth::id()) {
             return response()->json([
                 'success' => false,

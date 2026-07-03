@@ -9,20 +9,20 @@ use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
-    // Lấy danh sách thông báo
+    
     public function index()
     {
         $user = Auth::user();
         $query = Notification::query();
 
         if ($user->Role === 'Admin') {
-            // Admin nhận thông báo chung cho Admin HOẶC gửi riêng cho mình
+            
             $query->where(function($q) use ($user) {
                 $q->where('IsAdminNotification', true)
                   ->orWhere('UserID', $user->UserID);
             });
         } else {
-            // Customer chỉ nhận thông báo của chính mình
+            
             $query->where('UserID', $user->UserID)
                   ->where('IsAdminNotification', false);
         }
@@ -31,7 +31,7 @@ class NotificationController extends Controller
                                ->take(20)
                                ->get();
 
-        // Tính số lượng chưa đọc (phải clone query hoặc xây dựng query mới để tránh bị ảnh hưởng bởi take(20))
+        
         $unreadQuery = Notification::query();
         if ($user->Role === 'Admin') {
             $unreadQuery->where(function($q) use ($user) {
@@ -51,7 +51,7 @@ class NotificationController extends Controller
         ]);
     }
 
-    // Đánh dấu 1 thông báo là đã đọc
+    
     public function markAsRead($id)
     {
         $user = Auth::user();
@@ -64,7 +64,7 @@ class NotificationController extends Controller
             ], 404);
         }
 
-        // Kiểm tra quyền sở hữu thông báo
+        
         if ($notification->IsAdminNotification) {
             if ($user->Role !== 'Admin') {
                 return response()->json([
@@ -89,7 +89,7 @@ class NotificationController extends Controller
         ]);
     }
 
-    // Đánh dấu đọc tất cả
+    
     public function markAllAsRead()
     {
         $user = Auth::user();

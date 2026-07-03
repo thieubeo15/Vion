@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Footer.css';
-// Thay các icon thương hiệu bằng các icon UI cơ bản chắc chắn có
+
 import { Globe, Mail, Phone, MapPin } from 'lucide-react'; 
 
 const Footer = () => {
@@ -12,7 +12,7 @@ const Footer = () => {
                     <h2 className="footer-logo">VION.</h2>
                     <p>Thương hiệu thời trang dẫn đầu xu hướng cho giới trẻ Việt Nam. Tinh tế trong từng đường kim mũi chỉ.</p>
                     <div className="footer-socials">
-                        {/* Tạm thời dùng icon Globe (quả địa cầu) để thay cho mạng xã hội */}
+                        
                         <Globe size={20} /> 
                         <Globe size={20} />
                         <Globe size={20} />

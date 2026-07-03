@@ -1,4 +1,4 @@
-/* Product Price System */
+
 .p-price-container {
     display: flex;
     align-items: center;
@@ -10,7 +10,7 @@
 .p-price-current {
     font-size: 16px;
     font-weight: 800;
-    color: #EE4D2D; /* Premium brand red/orange */
+    color: #EE4D2D; /* orange */
 }
 
 .p-price-original {

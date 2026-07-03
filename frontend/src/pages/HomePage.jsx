@@ -34,7 +34,7 @@ const HomePage = () => {
         fetchHomeData();
     }, []);
 
-    // Auto-slide effect
+    
     useEffect(() => {
         if (banners.length <= 1) return;
         sliderTimerRef.current = setInterval(() => {
@@ -112,11 +112,11 @@ const HomePage = () => {
 
     return (
         <div className="home-page">
-            {/* 1. HERO BANNER SLIDER */}
+            
             <div className="hero-section">
                 {banners.length > 0 ? (
                     <>
-                        {/* Slides */}
+                        
                         {banners.map((banner, idx) => (
                             <div
                                 key={banner.id || idx}
@@ -138,22 +138,22 @@ const HomePage = () => {
                             </div>
                         ))}
 
-                        {/* Arrow prev */}
+                        
                         <button className="hero-arrow hero-arrow-prev" onClick={goPrev} aria-label="Banner trước">
                             &#8249;
                         </button>
 
-                        {/* Arrow next */}
+                        
                         <button className="hero-arrow hero-arrow-next" onClick={goNext} aria-label="Banner sau">
                             &#8250;
                         </button>
 
-                        {/* Số thứ tự banner */}
+                        
                         <div className="hero-counter">
                             {currentSlide + 1} / {banners.length}
                         </div>
 
-                        {/* Dot indicators */}
+                        
                         <div className="hero-dots">
                             {banners.map((_, idx) => (
                                 <button
@@ -179,7 +179,7 @@ const HomePage = () => {
 
 
 
-            {/* 🚀 3. SẢN PHẨM THEO DANH MỤC (ĐÃ FIX LỌC GỘP CHA + CON) */}
+            
             <section className="category-featured-products container mt-5">
                 {categories.slice(0, 3).map((cat) => {
                     // Tạo mảng chứa ID của Cha và tất cả các Con
@@ -210,7 +210,7 @@ const HomePage = () => {
                 })}
             </section>
 
-            {/* 4. GỢI Ý CHO BẠN */}
+            
             <section className="suggested-section py-5" style={{backgroundColor: '#f8f9fa'}}>
                 <div className="container">
                     <div className="section-title-wrapper justify-content-center">

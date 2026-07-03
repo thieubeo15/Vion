@@ -7,5 +7,5 @@ export const productApi = {
     getById(id) {
         return axiosClient.get(`/products/${id}`);
     },
-    // Các thao tác variant, vector, image (Nếu có admin thì post/put/delete)
+    
 };

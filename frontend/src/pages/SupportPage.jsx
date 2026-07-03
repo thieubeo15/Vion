@@ -3,7 +3,7 @@ import './SupportPage.css';
 import { HelpCircle, RefreshCw, Truck, Shield, Phone, Mail, MapPin, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 
 const SupportPage = () => {
-    const [activeTab, setActiveTab] = useState('faq'); // faq, return, shipping, privacy
+    const [activeTab, setActiveTab] = useState('faq'); 
     const [expandedFaq, setExpandedFaq] = useState(null);
 
     const toggleFaq = (index) => {
@@ -46,7 +46,7 @@ const SupportPage = () => {
             </div>
 
             <div className="row g-4">
-                {/* SIDEBAR TABS */}
+                
                 <div className="col-lg-3">
                     <div className="support-sidebar shadow-sm">
                         <button 
@@ -79,7 +79,7 @@ const SupportPage = () => {
                         </button>
                     </div>
 
-                    {/* LIÊN HỆ TRỰC TIẾP */}
+                    
                     <div className="support-contact-box mt-4 shadow-sm">
                         <h5>Liên hệ trực tiếp</h5>
                         <ul className="support-contact-list">
@@ -115,10 +115,10 @@ const SupportPage = () => {
                     </div>
                 </div>
 
-                {/* CONTENT AREA */}
+                
                 <div className="col-lg-9">
                     <div className="support-content shadow-sm">
-                        {/* TAB 1: FAQS */}
+                        
                         {activeTab === 'faq' && (
                             <div>
                                 <h3 className="content-title">Câu Hỏi Thường Gặp (FAQs)</h3>
@@ -140,7 +140,7 @@ const SupportPage = () => {
                             </div>
                         )}
 
-                        {/* TAB 2: RETURN POLICY */}
+                        
                         {activeTab === 'return' && (
                             <div>
                                 <h3 className="content-title">Chính Sách Đổi Trả Sản Phẩm</h3>
@@ -169,7 +169,7 @@ const SupportPage = () => {
                             </div>
                         )}
 
-                        {/* TAB 3: SHIPPING POLICY */}
+                        
                         {activeTab === 'shipping' && (
                             <div>
                                 <h3 className="content-title">Chính Sách Giao Nhận & Vận Chuyển</h3>
@@ -195,7 +195,7 @@ const SupportPage = () => {
                             </div>
                         )}
 
-                        {/* TAB 4: PRIVACY POLICY */}
+                        
                         {activeTab === 'privacy' && (
                             <div>
                                 <h3 className="content-title">Chính Sách Bảo Mật Thông Tin</h3>

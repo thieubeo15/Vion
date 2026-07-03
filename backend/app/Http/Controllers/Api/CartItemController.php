@@ -27,7 +27,7 @@ class CartItemController extends Controller
                             ->first();
 
         if ($cartItem) {
-            // Update quantity
+            
             $newQuantity = $cartItem->Quantity + $request->Quantity;
             if ($variant->Stock < $newQuantity) {
                  return response()->json(['message' => 'Not enough stock for total quantity'], 400);

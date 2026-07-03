@@ -20,22 +20,22 @@ const OrderHistory = () => {
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState('All');
 
-    // Cancel modal state
+    
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelOrderId, setCancelOrderId] = useState(null);
     const [selectedReason, setSelectedReason] = useState('');
     const [customReason, setCustomReason] = useState('');
     const [cancelling, setCancelling] = useState(false);
 
-    // Return modal state
+    
     const [showReturnModal, setShowReturnModal] = useState(false);
     const [returnOrderId, setReturnOrderId] = useState(null);
     const [returnReason, setReturnReason] = useState('');
-    const [refundMethod, setRefundMethod] = useState('Bank'); // Bank, Momo, ZaloPay
+    const [refundMethod, setRefundMethod] = useState('Bank'); 
     const [refundDetails, setRefundDetails] = useState('');
     const [returning, setReturning] = useState(false);
 
-    // Review modal state
+    
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [reviewProductId, setReviewProductId] = useState(null);
     const [reviewProductName, setReviewProductName] = useState('');
@@ -95,7 +95,7 @@ const OrderHistory = () => {
 
     const token = localStorage.getItem('vion_token');
     const API_URL = 'http://127.0.0.1:8000/api';
-    const ASSET_URL = 'http://127.0.0.1:8000/storage/'; // Đường dẫn lấy ảnh
+    const ASSET_URL = 'http://127.0.0.1:8000/storage/'; 
 
     const tabs = [
         { id: 'All', label: 'Tất cả' },
@@ -280,7 +280,7 @@ const OrderHistory = () => {
             </div>
             <h2 className="fw-900 mb-4 text-center">ĐƠN MUA CỦA TÔI</h2>
 
-            {/* THANH TAB PHÂN LOẠI */}
+            
             <div className="v-order-tabs shadow-sm mb-4">
                 {tabs.map(tab => (
                     <div
@@ -308,7 +308,7 @@ const OrderHistory = () => {
                 <div className="v-order-list">
                     {filteredOrders.map(order => (
                         <div key={order.OrderID} className="v-order-card shadow-sm mb-4">
-                            {/* HEADER ĐƠN HÀNG */}
+                            
                             <div className="v-order-header d-flex justify-content-between align-items-center">
                                 <div className="d-flex align-items-center gap-2">
                                     <Package size={18} className="text-muted" />
@@ -319,7 +319,7 @@ const OrderHistory = () => {
                                 </span>
                             </div>
 
-                            {/* DANH SÁCH SẢN PHẨM */}
+                            
                             <div className="v-order-body">
                                 {order.details.map((item, index) => {
                                     const productId = item.variant?.product?.ProductID || item.variant?.product?.id || item.variant?.ProductID;
@@ -371,7 +371,7 @@ const OrderHistory = () => {
                                 })}
                             </div>
 
-                            {/* CHI TIẾT TÍNH TIỀN */}
+                            
                             <div className="v-order-pricing-summary" style={{
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -400,7 +400,7 @@ const OrderHistory = () => {
                                 </div>
                             </div>
 
-                            {/* THÔNG TIN GIAO HÀNG */}
+                            
                             <div className="v-order-shipping-info">
                                 <div className="fw-700 text-dark mb-1">📍 Địa chỉ nhận hàng:</div>
                                 <div><strong>{order.FullName}</strong> | {order.Phone}</div>
@@ -413,7 +413,7 @@ const OrderHistory = () => {
                                 </div>
                             </div>
 
-                            {/* LÝ DO HỦY */}
+                            
                             {(order.Status === 'Cancelled' || order.Status === 'CancelRequested') && order.CancelReason && (
                                 <div className="v-cancel-reason-box" style={{ background: order.Status === 'CancelRequested' ? '#fffbeb' : '#fef2f2', color: order.Status === 'CancelRequested' ? '#b45309' : '#dc2626' }}>
                                     <AlertTriangle size={16} color={order.Status === 'CancelRequested' ? '#b45309' : '#dc2626'} />
@@ -421,7 +421,7 @@ const OrderHistory = () => {
                                 </div>
                             )}
 
-                            {/* LÝ DO HOÀN HÀNG */}
+                            
                             {['ReturnRequested', 'ReturnApproved', 'ReturnReceived', 'Refunded', 'Returned'].includes(order.Status) && (
                                 <div className="v-return-info-box">
                                     <div className="fw-700 fs-14 text-dark mb-1 d-flex align-items-center gap-1">
@@ -438,7 +438,7 @@ const OrderHistory = () => {
                                 </div>
                             )}
 
-                            {/* FOOTER ĐƠN HÀNG */}
+                            
                             <div className="v-order-footer d-flex justify-content-between align-items-center">
                                 <div className="v-order-date text-muted fs-13 d-flex align-items-center gap-1">
                                     <Clock size={14} /> Ngày đặt: {new Date(order.OrderDate).toLocaleDateString('vi-VN')}
@@ -462,7 +462,7 @@ const OrderHistory = () => {
                                         </span>
                                     )}
                                     {order.Status === 'Completed' && (
-                                        isWithin7Days(order.updated_at || order.UpdatedAt) ? (
+                                        isWithin7Days(order.updated_at || order.UpdatedAt || order.OrderDate) ? (
                                             <button
                                                 className="v-btn-return-action"
                                                 onClick={() => openReturnModal(order.OrderID)}
@@ -482,7 +482,7 @@ const OrderHistory = () => {
                 </div>
             )}
 
-            {/* MODAL HỦY ĐƠN */}
+            
             {showCancelModal && (
                 <div className="v-cancel-modal-overlay" onClick={closeCancelModal}>
                     <div className="v-cancel-modal" onClick={e => e.stopPropagation()}>
@@ -556,7 +556,7 @@ const OrderHistory = () => {
                   </div>
               )}
 
-              {/* MODAL HOÀN HÀNG */}
+              
               {showReturnModal && (
                   <div className="v-cancel-modal-overlay" onClick={closeReturnModal}>
                       <div className="v-cancel-modal" onClick={e => e.stopPropagation()}>
@@ -569,7 +569,7 @@ const OrderHistory = () => {
                           </div>
 
                           <div className="v-cancel-modal-body">
-                              {/* LÝ DO HOÀN HÀNG */}
+                              
                               <div className="mb-4">
                                   <label className="fw-700 fs-14 mb-2 d-block text-dark">Lý do hoàn hàng:</label>
                                   <textarea
@@ -582,7 +582,7 @@ const OrderHistory = () => {
                                   />
                               </div>
 
-                              {/* PHƯƠNG THỨC HOÀN TIỀN */}
+                              
                               <div className="mb-4">
                                   <label className="fw-700 fs-14 mb-2 d-block text-dark">Phương thức nhận tiền hoàn:</label>
                                   <div className="d-flex gap-2">
@@ -609,7 +609,7 @@ const OrderHistory = () => {
                                   </div>
                               </div>
 
-                              {/* THÔNG TIN CHI TIẾT HOÀN TIỀN */}
+                              
                               <div className="mb-2">
                                   <label className="fw-700 fs-14 mb-2 d-block text-dark">
                                       {refundMethod === 'Bank' ? 'Thông tin tài khoản ngân hàng:' : 'Thông tin ví điện tử:'}
@@ -645,7 +645,7 @@ const OrderHistory = () => {
                       </div>
                   </div>
                )}
-               {/* MODAL ĐÁNH GIÁ SẢN PHẨM */}
+               
                {showReviewModal && (
                    <div className="v-cancel-modal-overlay" onClick={closeReviewModal}>
                        <div className="v-cancel-modal" onClick={e => e.stopPropagation()}>
@@ -658,7 +658,7 @@ const OrderHistory = () => {
                            </div>
 
                            <div className="v-cancel-modal-body">
-                               {/* THÔNG TIN SẢN PHẨM MINI */}
+                               
                                <div className="d-flex align-items-center gap-3 mb-4 p-3 rounded-3" style={{ background: '#f8f9fa', border: '1px solid #eee' }}>
                                    <img 
                                        src={reviewProductImage ? (reviewProductImage.startsWith('http') ? reviewProductImage : `${ASSET_URL}${reviewProductImage}`) : 'https://via.placeholder.com/80'} 
@@ -670,7 +670,7 @@ const OrderHistory = () => {
                                    </div>
                                </div>
 
-                               {/* CHỌN SỐ SAO */}
+                               
                                <div className="mb-4 text-center">
                                    <label className="fw-700 fs-14 mb-2 d-block text-dark text-start">Điểm chất lượng:</label>
                                    <div className="d-flex justify-content-center gap-2 my-3">
@@ -696,7 +696,7 @@ const OrderHistory = () => {
                                    </span>
                                </div>
 
-                               {/* NỘI DUNG NHẬN XÉT */}
+                               
                                <div className="mb-2">
                                    <label className="fw-700 fs-14 mb-2 d-block text-dark">Viết nhận xét:</label>
                                    <textarea

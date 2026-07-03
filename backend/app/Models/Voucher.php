@@ -31,15 +31,13 @@ class Voucher extends Model
         'IsActive'  => 'boolean',
     ];
 
-    // Quan hệ: Một voucher có nhiều lượt sử dụng
+    
     public function usages()
     {
         return $this->hasMany(VoucherUsage::class, 'VoucherID', 'VoucherID');
     }
 
-    /**
-     * Dọn dẹp mã voucher: không dấu, không cách, viết hoa, không ký tự đặc biệt
-     */
+    
     public static function cleanCode($code)
     {
         if (empty($code)) {
@@ -75,17 +73,13 @@ class Voucher extends Model
         return preg_replace('/[^A-Z0-9]/', '', $code);
     }
 
-    /**
-     * Mutator cho Code của Voucher
-     */
+    
     public function setCodeAttribute($value)
     {
         $this->attributes['Code'] = self::cleanCode($value);
     }
 
-    /**
-     * Lấy mô tả chi tiết giá trị giảm giá của voucher
-     */
+    
     public function getDiscountDescription()
     {
         if ($this->Type === 'fixed') {

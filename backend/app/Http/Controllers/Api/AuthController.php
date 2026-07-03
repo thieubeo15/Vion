@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    // 1. ĐĂNG KÝ TÀI KHOẢN
+    
     public function register(Request $request)
     {
         $request->validate([
@@ -34,15 +34,15 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // 🚀 2. ĐĂNG NHẬP (ĐÃ THÊM VALIDATE CHI TIẾT)
+    
     public function login(Request $request)
     {
-        // Kiểm tra định dạng, để trống, độ dài và sự tồn tại của Email
+        
         $request->validate([
             'Email' => 'required|email|exists:users,Email',
             'Password' => 'required|min:6'
         ], [
-            // Custom thông báo lỗi theo đúng ý bạn
+            
             'Email.required' => 'Email không được để trống!',
             'Email.email' => 'Email sai định dạng!',
             'Email.exists' => 'Email không tồn tại trong hệ thống!',
@@ -51,18 +51,18 @@ class AuthController extends Controller
             'Password.min' => 'Mật khẩu quá ngắn (phải có ít nhất 6 ký tự).'
         ]);
 
-        // Lúc này Email chắc chắn đã đúng định dạng và có tồn tại trong DB rồi
+        
         $user = User::where('Email', $request->Email)->first();
 
-        // Chỉ cần kiểm tra xem Mật khẩu có khớp không
+        
         if (!Hash::check($request->Password, $user->Password)) {
-            // Trả về lỗi 401 Unauthorized nếu sai mật khẩu
+            
             return response()->json([
                 'message' => 'Sai mật khẩu! Vui lòng thử lại.'
             ], 401);
         }
 
-        // Đăng nhập thành công -> Xóa Token cũ (nếu có) và Cấp Token mới
+        
         $user->tokens()->delete();
         $token = $user->createToken('VionToken')->plainTextToken;
 
@@ -73,7 +73,7 @@ class AuthController extends Controller
         ]);
     }
 
-    // 🚀 4. ĐĂNG NHẬP BẰNG GOOGLE
+    
     public function googleLogin(Request $request)
     {
         $request->validate([
@@ -83,7 +83,7 @@ class AuthController extends Controller
         $credential = $request->credential;
 
         try {
-            // Xác thực token bằng cách gọi tới Google OAuth2 tokeninfo endpoint
+            
             $response = \Illuminate\Support\Facades\Http::get("https://oauth2.googleapis.com/tokeninfo", [
                 'id_token' => $credential
             ]);
@@ -97,7 +97,7 @@ class AuthController extends Controller
 
             $payload = $response->json();
 
-            // Xác minh client_id (để chống tấn công giả mạo token từ ứng dụng khác)
+            
             $clientId = config('services.google.client_id');
             if ($clientId && $clientId !== 'your-google-client-id.apps.googleusercontent.com') {
                 if (($payload['aud'] ?? '') !== $clientId && ($payload['azp'] ?? '') !== $clientId) {
@@ -118,21 +118,21 @@ class AuthController extends Controller
                 ], 400);
             }
 
-            // Tìm hoặc tạo User mới
+            
             $user = User::where('Email', $email)->first();
 
             if (!$user) {
-                // Đăng ký mới
+                
                 $user = User::create([
                     'FullName' => $name ?? 'Khách hàng Google',
                     'Email' => $email,
-                    'Password' => Hash::make(\Illuminate\Support\Str::random(16)), // Mật khẩu ngẫu nhiên
+                    'Password' => Hash::make(\Illuminate\Support\Str::random(16)), 
                     'Role' => 'Customer'
                 ]);
             }
 
-            // Đăng nhập thành công -> Tạo Sanctum Token
-            $user->tokens()->delete(); // Xóa các token cũ
+            
+            $user->tokens()->delete(); 
             $token = $user->createToken('VionToken')->plainTextToken;
 
             return response()->json([
@@ -150,7 +150,7 @@ class AuthController extends Controller
         }
     }
 
-    // 3. ĐĂNG XUẤT (Giữ nguyên của bạn)
+    
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();

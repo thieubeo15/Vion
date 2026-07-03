@@ -1,8 +1,8 @@
-// AdminDashboard.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-// 🚀 Nhớ import thêm TrendingUp cho cái icon Lợi nhuận nhé
+
 import { DollarSign, ShoppingBag, Users, Package, Loader2, ArrowRight, Image as ImageIcon, TrendingUp } from 'lucide-react';
 import './AdminDashboard.css';
 
@@ -10,7 +10,7 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
     const [stats, setStats] = useState({
         totalRevenue: 0, 
-        totalProfit: 0, // 🚀 Thêm state Lợi nhuận
+        totalProfit: 0, 
         totalOrders: 0, 
         totalCustomers: 0, 
         totalProducts: 0, 
@@ -32,7 +32,7 @@ const AdminDashboard = () => {
                     const d = res.data.data;
                     setStats({
                         totalRevenue: d.total_revenue || 0,
-                        totalProfit: d.total_profit || 0, // 🚀 Lấy dữ liệu Lợi nhuận từ Backend
+                        totalProfit: d.total_profit || 0, 
                         totalOrders: d.total_orders || 0,
                         totalCustomers: d.total_customers || 0,
                         totalProducts: d.total_products || 0,
@@ -102,7 +102,7 @@ const AdminDashboard = () => {
                         </thead>
                         <tbody>
                             {stats.recentOrders.map(order => {
-                                // 🚀 Tính toán lợi nhuận cho từng đơn hàng hiển thị ở bảng
+                                
                                 const orderRevenue = Number(order.TotalAmount);
                                 const orderCost = order.details?.reduce((sum, d) => sum + (Number(d.ImportPrice || d.import_price || 0) * d.Quantity), 0) || 0;
                                 const orderProfit = orderRevenue - orderCost;
@@ -130,7 +130,7 @@ const AdminDashboard = () => {
                                             {orderRevenue.toLocaleString()}đ
                                         </td>
                                         
-                                        {/* 🚀 HIỂN THỊ LỢI NHUẬN ĐƠN HÀNG Ở ĐÂY */}
+                                        
                                         <td className="fw-800 text-success">
                                             +{orderProfit.toLocaleString()}đ
                                         </td>

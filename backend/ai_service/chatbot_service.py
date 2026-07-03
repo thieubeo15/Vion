@@ -23,7 +23,6 @@ load_dotenv(dotenv_path)
 
 app = FastAPI(title="Vion Era Chatbot AI Service")
 
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,10 +31,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # 2. Định nghĩa hàm truy vấn MySQL
 def search_products_fn(query: str, searched_products_list: list) -> str:
-    # Làm sạch từ khóa phụ trợ tiếng Việt thường gặp để tránh trượt LIKE
     words_to_remove = [
         "còn hàng", "hết hàng", "cần tìm", "tìm kiếm", "tìm cho tôi",
         "tìm", "cho", "tôi", "các", "mẫu", "loại", "kiểu", "bán",
@@ -140,7 +137,6 @@ def search_products_fn(query: str, searched_products_list: list) -> str:
                 print("DEBUG: No rows matched, returning not found string.")
                 return f"Không tìm thấy sản phẩm nào khớp với từ khóa '{query}'."
 
-            # Nhóm kết quả theo ProductID
             products_dict = {}
 
             for row in rows:
@@ -164,14 +160,12 @@ def search_products_fn(query: str, searched_products_list: list) -> str:
                         "Stock": row["Stock"]
                     })
 
-            # Lưu sản phẩm để frontend có thể hiển thị card
             for p_id, p_info in products_dict.items():
                 price = 0
 
                 if p_info["Variants"]:
                     price = min(v["Price"] for v in p_info["Variants"])
 
-                # Tránh trùng sản phẩm
                 if not any(p["id"] == p_id for p in searched_products_list):
                     img_path = p_info["MainImage"]
                     if img_path and not (img_path.startswith("http://") or img_path.startswith("https://")):
@@ -183,7 +177,6 @@ def search_products_fn(query: str, searched_products_list: list) -> str:
                         "price": price
                     })
 
-            # Định dạng dữ liệu trả về cho AI
             result = []
 
             for p_id, p_info in products_dict.items():
@@ -286,7 +279,6 @@ PHONG CÁCH:
 """
 
 
-# 4. Định nghĩa dữ liệu đầu vào API
 class MessageHistory(BaseModel):
     role: str  # 'user' hoặc 'assistant'
     content: str
@@ -301,7 +293,6 @@ class ChatRequest(BaseModel):
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest):
     try:
-        # Lấy API Key từ request hoặc .env
         api_key = request.gemini_api_key or os.environ.get("GEMINI_API_KEY")
         if api_key and "," in api_key:
             import random
@@ -372,10 +363,9 @@ async def chat_endpoint(request: ChatRequest):
             print(f"DEBUG: Tool search_products found {len(searched_products)} products so far.")
             return res
 
-        # Liên kết tool tra cứu sản phẩm vào LLM
         llm_with_tools = llm.bind_tools([search_products])
 
-        # Tạo system prompt
+
         system_prompt_content = SYSTEM_PROMPT
 
         if db_products_info and "Không tìm thấy sản phẩm nào" not in db_products_info:
@@ -394,13 +384,12 @@ QUY TẮC SỬ DỤNG DỮ LIỆU TRÊN:
 
         messages = [SystemMessage(content=system_prompt_content)]
 
-        # Nạp lịch sử hội thoại
         for msg in request.history:
             if msg.role == "user":
                 messages.append(HumanMessage(content=msg.content))
 
             elif msg.role == "assistant":
-                # Loại bỏ PRODUCTS_JSON cũ trước khi đưa vào AI
+
                 import re
                 clean_content = re.sub(
                     r"\n\n\[PRODUCTS_JSON:\s*.*?\]",
@@ -417,7 +406,6 @@ QUY TẮC SỬ DỤNG DỮ LIỆU TRÊN:
 
         response = None
 
-        # Vòng lặp tối đa 5 bước gọi tool nếu AI yêu cầu
         for i in range(5):
             print(f"DEBUG: Agentic loop iteration {i + 1}")
 
@@ -427,7 +415,6 @@ QUY TẮC SỬ DỤNG DỮ LIỆU TRÊN:
             print(f"DEBUG: LLM response content: {repr(response.content)}")
             print(f"DEBUG: LLM response tool_calls: {repr(response.tool_calls)}")
 
-            # Nếu AI không yêu cầu gọi thêm tool thì dừng
             if not response.tool_calls:
                 break
 
@@ -450,7 +437,6 @@ QUY TẮC SỬ DỤNG DỮ LIỆU TRÊN:
         if response is None:
             raise Exception("Không nhận được phản hồi từ mô hình AI.")
 
-        # Lấy nội dung câu trả lời cuối cùng
         final_reply = response.content
 
         if isinstance(final_reply, list):
@@ -467,7 +453,6 @@ QUY TẮC SỬ DỤNG DỮ LIỆU TRÊN:
         elif not isinstance(final_reply, str):
             final_reply = str(final_reply)
 
-        # Lọc lại các sản phẩm thực sự được AI nhắc tới trong câu trả lời để hiển thị thẻ
         mentioned_products = []
         reply_lower = final_reply.lower()
 
@@ -488,7 +473,6 @@ QUY TẮC SỬ DỤNG DỮ LIỆU TRÊN:
             if is_mentioned:
                 mentioned_products.append(p)
 
-        # Nếu có sản phẩm được nhắc tới, đính kèm JSON cho frontend parse
         if mentioned_products:
             import json
             products_json_str = json.dumps(mentioned_products, ensure_ascii=False)
@@ -506,7 +490,6 @@ QUY TẮC SỬ DỤNG DỮ LIỆU TRÊN:
             status_code=500,
             detail=f"Lỗi xử lý AI: {str(e)}"
         )
-
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8002)

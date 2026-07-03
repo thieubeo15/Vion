@@ -59,7 +59,7 @@ const BannerManager = () => {
                 icon: 'success',
                 confirmButtonColor: '#111'
             });
-            // Reset form states
+            
             setFile(null);
             setPreviewUrl('');
             setTitle('');
@@ -111,7 +111,7 @@ const BannerManager = () => {
 
     return (
         <div className="banner-admin-container">
-            {/* Dashboard Welcome Header */}
+            
             <div className="banner-dashboard-header shadow-sm">
                 <div className="banner-header-info">
                     <span className="banner-badge"><Sparkles size={14}/> QUẢN TRỊ GIAO DIỆN</span>
@@ -127,14 +127,14 @@ const BannerManager = () => {
             </div>
 
             <div className="row g-4 mt-1">
-                {/* LEFT COLUMN: Upload Form */}
+                
                 <div className="col-lg-4">
                     <div className="upload-sidebar-card shadow-sm">
                         <div className="sidebar-header">
                             <h5>Tạo Banner Mới</h5>
                         </div>
                         <form onSubmit={handleAddBanner}>
-                            {/* File Upload Zone */}
+                            
                             <div className="upload-zone-wrapper mb-4">
                                 <label className={`upload-dropzone ${previewUrl ? 'has-preview' : ''}`}>
                                     <input 
@@ -161,7 +161,7 @@ const BannerManager = () => {
                                 </label>
                             </div>
 
-                            {/* Inputs Group */}
+                            
                             <div className="form-group-custom mb-3">
                                 <label className="form-label-custom">
                                     <FileText size={16} /> Tiêu đề chính (Title)
@@ -221,7 +221,7 @@ const BannerManager = () => {
                     </div>
                 </div>
 
-                {/* RIGHT COLUMN: Banner Gallery List */}
+                
                 <div className="col-lg-8">
                     <div className="banners-list-container">
                         <div className="list-header mb-3 d-flex justify-content-between align-items-center">

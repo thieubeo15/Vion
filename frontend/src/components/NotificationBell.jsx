@@ -14,7 +14,7 @@ const NotificationBell = () => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
-    // Lấy danh sách thông báo
+    
     const fetchNotifications = async () => {
         if (!token) return;
         try {
@@ -30,21 +30,21 @@ const NotificationBell = () => {
         }
     };
 
-    // Đánh dấu đã đọc 1 thông báo
+    
     const handleMarkAsRead = async (id, redirectUrl) => {
         try {
             await axios.put(`http://127.0.0.1:8000/api/notifications/${id}/read`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            // Cập nhật state ở local
+            
             setNotifications(prev => 
                 prev.map(n => n.NotificationID === id ? { ...n, IsRead: true } : n)
             );
-            // Giảm số đếm
+            
             setUnreadCount(prev => Math.max(0, prev - 1));
             setIsOpen(false);
 
-            // Điều hướng
+            
             if (redirectUrl) {
                 navigate(redirectUrl);
             }
@@ -53,7 +53,7 @@ const NotificationBell = () => {
         }
     };
 
-    // Đánh dấu đã đọc tất cả
+    
     const handleMarkAllAsRead = async () => {
         try {
             const response = await axios.put('http://127.0.0.1:8000/api/notifications/read-all', {}, {
@@ -68,14 +68,14 @@ const NotificationBell = () => {
         }
     };
 
-    // Gọi lần đầu và thiết lập Polling mỗi 30 giây
+    
     useEffect(() => {
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 30000);
         return () => clearInterval(interval);
     }, [token]);
 
-    // Đóng dropdown khi bấm ngoài vùng
+    
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -86,7 +86,7 @@ const NotificationBell = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Helper định dạng thời gian tương đối giản đơn
+    
     const formatTimeAgo = (dateStr) => {
         const now = new Date();
         const date = new Date(dateStr);
@@ -106,7 +106,7 @@ const NotificationBell = () => {
 
     return (
         <div className="v-notification-bell-container" ref={dropdownRef}>
-            {/* Icon Chuông */}
+            
             <button className="v-noti-trigger-btn" onClick={() => setIsOpen(!isOpen)}>
                 <Bell size={21} />
                 {unreadCount > 0 && (
@@ -114,7 +114,7 @@ const NotificationBell = () => {
                 )}
             </button>
 
-            {/* Dropdown thông báo */}
+            
             {isOpen && (
                 <div className="v-noti-dropdown shadow-lg">
                     <div className="v-noti-header d-flex justify-content-between align-items-center">

@@ -6,9 +6,9 @@ use Illuminate\Http\Request;
 
 class ReviewController extends Controller
 {
-   // ReviewController.php
+   
 
-public function index(Request $request, $productId) // Thêm biến $productId
+public function index(Request $request, $productId) 
 {
     $reviews = Review::with(['user'])
         ->where('ProductID', $productId)
@@ -25,7 +25,7 @@ public function store(Request $request)
 {
     $user = $request->user();
 
-    // 1. KIỂM TRA AN TOÀN: Nếu không có user thì báo lỗi ngay, không chạy tiếp
+    
     if (!$user) {
         return response()->json([
             'success' => false,
@@ -34,13 +34,13 @@ public function store(Request $request)
     }
 
     try {
-        // 2. Logic kiểm tra mua hàng và lưu review của bạn...
-        // Bây giờ dùng $user->UserID sẽ không bao giờ bị lỗi "on null" nữa
+        
+        
         
         $hasBought = \App\Models\Order::where('UserID', $user->UserID)
             ->where('Status', 'Completed')
             ->whereHas('details.variant', function($q) use ($request) {
-                // Chú ý: Ở đây nên dùng ProductID từ bảng products nếu details liên kết thẳng
+                
                 $q->where('ProductID', $request->ProductID); 
             })->exists();
 
@@ -55,7 +55,7 @@ public function store(Request $request)
     'ProductID' => $request->ProductID,
     'Rating'    => $request->Rating,
     
-    // QUAN TRỌNG: Phải gán $request->Comment vào đúng cột 'Content'
+    
     'Content'   => $request->Comment, 
     'Image'     => null,
 ]);
@@ -80,7 +80,7 @@ public function store(Request $request)
         return response()->json($r);
     }
 
-  // app/Http/Controllers/Api/ReviewController.php
+  
 
 public function destroy(Request $request, $id)
 {
@@ -90,7 +90,7 @@ public function destroy(Request $request, $id)
         return response()->json(['message' => 'Không tìm thấy đánh giá'], 404);
     }
 
-    // Kiểm tra: Nếu không phải chủ nhân của review thì không cho xóa
+    
     if ($review->UserID !== $request->user()->UserID) {
         return response()->json(['message' => 'Bạn không có quyền xóa đánh giá này!'], 403);
     }

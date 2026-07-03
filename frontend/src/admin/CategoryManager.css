@@ -1,4 +1,4 @@
-/* Import font chữ đồng bộ hệ thống */
+
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 .v-admin-card { 
@@ -6,17 +6,17 @@
     border-radius: 12px; 
     padding: 25px; 
     box-shadow: 0 4px 20px rgba(0,0,0,0.06); 
-    font-family: 'Plus Jakarta Sans', sans-serif; /* Đã đổi phông chữ */
+    font-family: 'Plus Jakarta Sans', sans-serif; 
 }
 
-/* Đảm bảo các input và nút bấm cũng ăn theo font mới */
+
 .v-admin-card input, 
 .v-admin-card select, 
 .v-admin-card button { 
     font-family: 'Plus Jakarta Sans', sans-serif; 
 }
 
-/* Giữ nguyên các phần style cũ của bạn bên dưới */
+
 .v-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
 .v-title-box { display: flex; align-items: center; gap: 10px; }
 .v-brand-icon { color: #EE4D2D; }
@@ -51,7 +51,7 @@
 .v-spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Modal overlay & popup styles */
+
 .v-modal-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px);

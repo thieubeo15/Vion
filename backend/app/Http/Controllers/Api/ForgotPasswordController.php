@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Mail;
 
 class ForgotPasswordController extends Controller
 {
-    // 1. GỬI MÃ OTP KHÔI PHỤC MẬT KHẨU
+    
     public function sendOtp(Request $request)
     {
         $request->validate([
@@ -22,7 +22,7 @@ class ForgotPasswordController extends Controller
             'Email.email' => 'Email không đúng định dạng!'
         ]);
 
-        // Kiểm tra Email tồn tại trong hệ thống
+        
         $user = User::where('Email', $request->Email)->first();
         if (!$user) {
             return response()->json([
@@ -31,21 +31,21 @@ class ForgotPasswordController extends Controller
             ], 404);
         }
 
-        // Sinh mã OTP 6 số
+        
         $otp = (string) rand(100000, 999999);
 
         try {
-            // Xóa các OTP cũ của email này (nếu có)
+            
             PasswordResetOtp::where('Email', $request->Email)->delete();
 
-            // Lưu OTP mới có hiệu lực trong 10 phút
+            
             PasswordResetOtp::create([
                 'Email' => $request->Email,
                 'OTP' => $otp,
                 'ExpiresAt' => now()->addMinutes(10)
             ]);
 
-            // Gửi email chứa OTP
+            
             Mail::to($request->Email)->send(new OtpMail($otp));
 
             return response()->json([
@@ -62,7 +62,7 @@ class ForgotPasswordController extends Controller
         }
     }
 
-    // 2. XÁC NHẬN OTP VÀ ĐỔI MẬT KHẨU MỚI
+    
     public function resetPassword(Request $request)
     {
         $request->validate([
@@ -79,7 +79,7 @@ class ForgotPasswordController extends Controller
             'Password.confirmed' => 'Xác nhận mật khẩu mới không trùng khớp!'
         ]);
 
-        // Tìm bản ghi OTP trùng khớp và còn hiệu lực
+        
         $otpRecord = PasswordResetOtp::where('Email', $request->Email)
             ->where('OTP', $request->OTP)
             ->where('ExpiresAt', '>', now())
@@ -92,7 +92,7 @@ class ForgotPasswordController extends Controller
             ], 400);
         }
 
-        // Tìm User và đổi mật khẩu
+        
         $user = User::where('Email', $request->Email)->first();
         if (!$user) {
             return response()->json([
@@ -101,11 +101,11 @@ class ForgotPasswordController extends Controller
             ], 404);
         }
 
-        // Tiến hành cập nhật
+        
         $user->Password = Hash::make($request->Password);
         $user->save();
 
-        // Xóa mã OTP sau khi sử dụng thành công
+        
         $otpRecord->delete();
 
         return response()->json([

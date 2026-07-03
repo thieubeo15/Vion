@@ -14,7 +14,7 @@ const ProductsPage = () => {
     const [sort, setSort] = useState('latest');
     const API_BASE_URL = 'http://127.0.0.1:8000';
 
-    // Các bộ lọc nâng cao (Áp dụng chính thức)
+    
     const [selectedPriceRange, setSelectedPriceRange] = useState('all');
     const [customMinPrice, setCustomMinPrice] = useState('');
     const [customMaxPrice, setCustomMaxPrice] = useState('');
@@ -24,7 +24,7 @@ const ProductsPage = () => {
     const [availableColors, setAvailableColors] = useState([]);
     const [availableMaterials, setAvailableMaterials] = useState([]);
 
-    // Các bộ lọc tạm thời (Thay đổi khi chọn nhưng chỉ lọc khi ấn Áp dụng)
+    
     const [tempCategoryId, setTempCategoryId] = useState(categoryId || '');
     const [tempPriceRange, setTempPriceRange] = useState('all');
     const [tempMinInput, setTempMinInput] = useState('');
@@ -33,7 +33,7 @@ const ProductsPage = () => {
     const [tempColors, setTempColors] = useState([]);
     const [tempMaterials, setTempMaterials] = useState([]);
 
-    // Đồng bộ tempCategoryId khi URL categoryId thay đổi
+    
     useEffect(() => {
         setTempCategoryId(categoryId || '');
     }, [categoryId]);
@@ -43,7 +43,7 @@ const ProductsPage = () => {
     const handleApplyFilters = (e) => {
         if (e) e.preventDefault();
         
-        // Cập nhật bộ lọc chính thức từ bộ lọc tạm thời
+        
         setSelectedPriceRange(tempPriceRange);
         setCustomMinPrice(tempMinInput);
         setCustomMaxPrice(tempMaxInput);
@@ -51,7 +51,7 @@ const ProductsPage = () => {
         setSelectedColors(tempColors);
         setSelectedMaterials(tempMaterials);
 
-        // Chuyển danh mục thông qua URL
+        
         if (tempCategoryId) {
             navigate(`/category/${tempCategoryId}${location.search}`);
         } else {
@@ -60,7 +60,7 @@ const ProductsPage = () => {
     };
 
     const handleResetFilters = () => {
-        // Reset bộ lọc chính thức
+        
         setSelectedPriceRange('all');
         setCustomMinPrice('');
         setCustomMaxPrice('');
@@ -68,7 +68,7 @@ const ProductsPage = () => {
         setSelectedColors([]);
         setSelectedMaterials([]);
 
-        // Reset bộ lọc tạm thời
+        
         setTempCategoryId('');
         setTempPriceRange('all');
         setTempMinInput('');
@@ -85,16 +85,16 @@ const ProductsPage = () => {
             const isFirstLoad = products.length === 0;
             if (isFirstLoad) setLoading(true);
             try {
-                // 1. Lấy keyword từ URL
+                
                 const queryParams = new URLSearchParams(location.search);
                 const searchKeyword = queryParams.get('search');
 
-                // Lấy toàn bộ danh mục
+                
                 const catRes = await axios.get(`${API_BASE_URL}/api/categories`);
                 const allCats = catRes.data.data || [];
                 setCategories(allCats);
 
-                // 2. Xác định tiêu đề hiển thị
+                
                 if (searchKeyword) {
                     setCurrentCategoryName(`Kết quả tìm kiếm cho: "${searchKeyword}"`);
                 } else if (categoryId) {
@@ -111,13 +111,13 @@ const ProductsPage = () => {
                     setCurrentCategoryName('Tất cả sản phẩm');
                 }
 
-                // 🚀 3. LẤY TOÀN BỘ SẢN PHẨM TRƯỚC
+                
                 const prodRes = await axios.get(`${API_BASE_URL}/api/products`);
                 let rawProducts = prodRes.data.data || [];
 
                 let filteredProducts = [...rawProducts];
 
-                // 🚀 4. LOGIC LỌC GỘP (CHA + CON)
+                
                 if (categoryId) {
                     let validCatIds = [Number(categoryId)];
                     const selectedParentCat = allCats.find(c => c.id == categoryId);
@@ -130,20 +130,20 @@ const ProductsPage = () => {
                     );
                 }
 
-                // 5. Lọc tìm kiếm theo tên
+                
                 if (searchKeyword) {
                     filteredProducts = filteredProducts.filter(p => 
                         (p.name || p.Name || "").toLowerCase().includes(searchKeyword.toLowerCase())
                     );
                 }
 
-                // Trích xuất unique colors & materials trong ngữ cảnh danh mục/tìm kiếm
+                
                 const uniqueColors = [...new Set(filteredProducts.flatMap(p => p.variants?.map(v => v.Color || v.color) || []))].filter(Boolean);
                 const uniqueMaterials = [...new Set(filteredProducts.map(p => p.material || p.Material).filter(Boolean))];
                 setAvailableColors(uniqueColors);
                 setAvailableMaterials(uniqueMaterials);
 
-                // Lọc theo khoảng giá định sẵn
+                
                 if (selectedPriceRange !== 'all' && selectedPriceRange !== 'custom') {
                     filteredProducts = filteredProducts.filter(p => {
                         if (!p.variants || p.variants.length === 0) return false;
@@ -160,7 +160,7 @@ const ProductsPage = () => {
                     });
                 }
 
-                // Lọc theo khoảng giá tùy chỉnh
+                
                 if (selectedPriceRange === 'custom') {
                     if (customMinPrice !== '') {
                         filteredProducts = filteredProducts.filter(p => {
@@ -184,7 +184,7 @@ const ProductsPage = () => {
                     }
                 }
 
-                // Lọc theo size
+                
                 if (selectedSizes.length > 0) {
                     filteredProducts = filteredProducts.filter(p => {
                         const productSizes = p.variants?.map(v => (v.Size || v.size || '').toUpperCase()) || [];
@@ -192,7 +192,7 @@ const ProductsPage = () => {
                     });
                 }
 
-                // Lọc theo màu sắc
+                
                 if (selectedColors.length > 0) {
                     filteredProducts = filteredProducts.filter(p => {
                         const productColors = p.variants?.map(v => (v.Color || v.color || '').toLowerCase()) || [];
@@ -200,7 +200,7 @@ const ProductsPage = () => {
                     });
                 }
 
-                // Lọc theo chất liệu
+                
                 if (selectedMaterials.length > 0) {
                     filteredProducts = filteredProducts.filter(p => {
                         const mat = (p.material || p.Material || '').toLowerCase();
@@ -208,7 +208,7 @@ const ProductsPage = () => {
                     });
                 }
 
-                // 6. Sắp xếp (Sort)
+                
                 filteredProducts.sort((a, b) => {
                     const getSellingPrice = (p) => {
                         if (!p.variants || p.variants.length === 0) return 0;
@@ -252,7 +252,7 @@ const ProductsPage = () => {
 
                 <div className="products-layout">
                     <aside className="products-sidebar">
-                        {/* Section 1: Danh mục */}
+                        
                         <div className="filter-section">
                             <h3 className="filter-title">DANH MỤC</h3>
                             <ul className="category-list">
@@ -294,7 +294,7 @@ const ProductsPage = () => {
                             </ul>
                         </div>
 
-                        {/* Section 2: Khoảng giá */}
+                        
                         <div className="filter-section mt-4">
                             <h3 className="filter-title">KHOẢNG GIÁ</h3>
                             <div className="price-range-presets">
@@ -345,7 +345,7 @@ const ProductsPage = () => {
                                 </label>
                             </div>
 
-                            {/* Tùy chỉnh giá dạng nút kéo (Slider) */}
+                            
                             <div className="custom-price-slider mt-3">
                                 <div className="d-flex justify-content-between font-size-xs mb-1 text-muted" style={{ fontSize: '12px', color: '#888' }}>
                                     <span>100.000đ</span>
@@ -370,7 +370,7 @@ const ProductsPage = () => {
                             </div>
                         </div>
 
-                        {/* Section 3: Kích cỡ */}
+                        
                         <div className="filter-section mt-4">
                             <h3 className="filter-title">KÍCH CỠ</h3>
                             <div className="size-checkbox-group">
@@ -391,7 +391,7 @@ const ProductsPage = () => {
                             </div>
                         </div>
 
-                        {/* Section 4: Màu sắc */}
+                        
                         {availableColors.length > 0 && (
                             <div className="filter-section mt-4">
                                 <h3 className="filter-title">MÀU SẮC</h3>
@@ -414,7 +414,7 @@ const ProductsPage = () => {
                             </div>
                         )}
 
-                        {/* Section 5: Chất liệu */}
+                        
                         {availableMaterials.length > 0 && (
                             <div className="filter-section mt-4">
                                 <h3 className="filter-title">CHẤT LIỆU</h3>
@@ -437,12 +437,12 @@ const ProductsPage = () => {
                             </div>
                         )}
 
-                        {/* Áp dụng bộ lọc */}
+                        
                         <button className="btn-apply-filters mt-4 w-100" onClick={handleApplyFilters}>
                             ÁP DỤNG BỘ LỌC
                         </button>
 
-                        {/* Reset bộ lọc */}
+                        
                         <button className="btn-reset-filters mt-2 w-100" onClick={handleResetFilters}>
                             XÓA BỘ LỌC
                         </button>

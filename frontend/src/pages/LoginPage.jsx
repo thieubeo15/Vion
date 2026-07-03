@@ -74,7 +74,7 @@ const LoginPage = () => {
         e.preventDefault();
         setError('');
 
-        // BẮT LỖI Ở FRONTEND TRƯỚC CHO ĐỠ NẶNG SERVER
+        
         if (!email.trim()) {
             setError('Vui lòng nhập Email!');
             return;
@@ -100,16 +100,16 @@ const LoginPage = () => {
             }
             
         } catch (err) {
-            // 🚀 ĐÂY LÀ CHỖ HỨNG LỖI TỪ LARAVEL BACKEND GỬI VỀ
+            
             if (err.response && err.response.data) {
                 const data = err.response.data;
                 
-                // Trường hợp 1: Lỗi validate từ $request->validate() (Trả về mảng errors)
+                
                 if (data.errors) {
                     const firstErrorKey = Object.keys(data.errors)[0];
-                    setError(data.errors[firstErrorKey][0]); // Lấy câu báo lỗi đầu tiên để hiển thị
+                    setError(data.errors[firstErrorKey][0]); 
                 } 
-                // Trường hợp 2: Lỗi sai mật khẩu tự viết (Trả về trường message)
+                
                 else if (data.message) {
                     setError(data.message);
                 } 
@@ -126,14 +126,14 @@ const LoginPage = () => {
 
     return (
         <div className="login-page">
-            {/* HEADER */}
+            
             <header className="login-header">
                 <Link to="/" className="logo">Vion.</Link>
                 <Link to="/support" className="help-link">Trợ giúp</Link>
             </header>
 
             <main className="login-main">
-                {/* TRÁI: BANNER ẢNH */}
+                
                 <div className="login-left">
                     <div className="overlay"></div>
                     <div className="left-content">
@@ -142,18 +142,18 @@ const LoginPage = () => {
                     </div>
                 </div>
 
-                {/* PHẢI: FORM ĐĂNG NHẬP */}
+                
                 <div className="login-right">
                     <div className="login-box">
                         <h2>Đăng nhập</h2>
 
-                        {/* HỘP LỖI CỐ ĐỊNH CHIỀU CAO - CHỐNG NHẢY FORM */}
+                        
                         <div className="error-box">
                             {error && <div className="error">{error}</div>}
                         </div>
 
                         <form onSubmit={handleLogin} noValidate>
-                            {/* EMAIL INPUT */}
+                            
                             <div className="input-group">
                                 <Mail className="icon" size={18} />
                                 <input
@@ -166,7 +166,7 @@ const LoginPage = () => {
                                 <label>Nhập Email của bạn.</label>
                             </div>
 
-                            {/* PASSWORD INPUT */}
+                            
                             <div className="input-group">
                                 <Lock className="icon" size={18} />
                                 <input

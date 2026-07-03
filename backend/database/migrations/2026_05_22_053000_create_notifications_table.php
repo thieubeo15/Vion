@@ -6,9 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    
     public function up(): void
     {
         Schema::create('notifications', function (Blueprint $table) {
@@ -16,7 +14,7 @@ return new class extends Migration
             $table->unsignedBigInteger('UserID')->nullable();
             $table->string('Title');
             $table->text('Content');
-            $table->string('Type'); // 'order_placed', 'voucher_gifted', 'order_admin'
+            $table->string('Type'); 
             $table->string('RedirectUrl')->nullable();
             $table->boolean('IsRead')->default(false);
             $table->boolean('IsAdminNotification')->default(false);
@@ -26,9 +24,7 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
+    
     public function down(): void
     {
         Schema::dropIfExists('notifications');

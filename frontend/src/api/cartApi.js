@@ -11,13 +11,13 @@ export const cartApi = {
         return axiosClient.get(`/carts/${id}`);
     },
     
-    // Cart Item
+    
     addItem(data) {
-        // data cần có: { CartID, VariantID, Quantity }
+        
         return axiosClient.post('/cart-items', data);
     },
     updateItemQuantity(id, data) {
-        // data: { Quantity }
+        
         return axiosClient.put(`/cart-items/${id}`, data);
     },
     removeItem(id) {

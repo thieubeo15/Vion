@@ -34,17 +34,17 @@ const ProductDetail = () => {
                 setSelectedColor(data.variants[0].Color || data.variants[0].color);
             }
 
-            // Lấy toàn bộ danh sách sản phẩm để lọc hàng tương tự
+            
             const allRes = await axios.get(`${API_BASE_URL}/api/products`);
             
-            // 🚀 BỌC LÓT LẤY ID DANH MỤC & SẢN PHẨM HIỆN TẠI
+            
             const catID = data.CategoryID || data.category_id || data.category?.id || data.category?.CategoryID;
             const currentProdID = data.ProductID || data.id;
             
-            // Đảm bảo bốc đúng mảng dữ liệu dù API trả về dạng nào
+            
             const productsList = Array.isArray(allRes.data) ? allRes.data : (allRes.data.data || []);
             
-            // LỌC CHUẨN XÁC: Lọc sản phẩm cùng danh mục trước
+            
             let related = productsList.filter(p => {
                 const pCatID = p.CategoryID || p.category_id || p.category?.id || p.category?.CategoryID;
                 const pProdID = p.ProductID || p.id;
@@ -52,7 +52,7 @@ const ProductDetail = () => {
                 return String(pCatID) === String(catID) && String(pProdID) !== String(currentProdID);
             });
             
-            // Nếu không đủ 12 sản phẩm cùng danh mục, lấy thêm sản phẩm khác để điền đầy lưới gợi ý
+            
             if (related.length < 12) {
                 const otherProducts = productsList.filter(p => {
                     const pProdID = p.ProductID || p.id;
@@ -118,7 +118,7 @@ const ProductDetail = () => {
         const token = localStorage.getItem('vion_token');
         const variantId = currentVariant.id || currentVariant.VariantID;
 
-        // Xử lý cho KHÁCH VÃNG LAI (không có token)
+        
         if (!token) {
             let guestCart = [];
             try {
@@ -187,7 +187,7 @@ const ProductDetail = () => {
             return;
         }
 
-        // Xử lý cho THÀNH VIÊN ĐÃ ĐĂNG NHẬP
+        
         try {
             await axios.post(`${API_BASE_URL}/api/cart/add`, {
                 VariantID: variantId,
@@ -197,7 +197,7 @@ const ProductDetail = () => {
             window.dispatchEvent(new Event('cartUpdated'));
             
             if (isBuyNow) {
-                // Tải giỏ hàng để lấy CartItemID vừa thêm
+                
                 const res = await axios.get(`${API_BASE_URL}/api/my-cart`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -206,7 +206,7 @@ const ProductDetail = () => {
                 if (matchedItem) {
                     navigate('/checkout', { state: { selectedItems: [matchedItem.CartItemID || matchedItem.id] } });
                 } else {
-                    navigate('/checkout'); // Fallback nếu không tìm thấy
+                    navigate('/checkout'); 
                 }
             } else {
                 Swal.fire('Thành công', 'Đã thêm vào giỏ!', 'success');
@@ -506,7 +506,7 @@ const ProductDetail = () => {
                     </div>
                 </div>
 
-                {/* 🚀 GỢI Ý SẢN PHẨM TƯƠNG TỰ ĐƯỢC THÊM VÀO DƯỚI ĐÂY */}
+                
                 <div className="related-section">
                     <h3 className="section-subtitle" style={{ textAlign: 'center', borderLeft: 'none', paddingLeft: 0 }}>Có thể bạn sẽ thích</h3>
                     
@@ -560,7 +560,7 @@ const ProductDetail = () => {
                         <p style={{ textAlign: 'center', color: '#888', marginTop: '20px' }}>Hiện chưa có sản phẩm cùng danh mục.</p>
                     )}
                 </div>
-                {/* KẾT THÚC GỢI Ý */}
+                
             </div>
         </div>
     );

@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { MessageCircle, Send, X, Bot, User, Loader2, Minus, Trash2 } from 'lucide-react';
+import Swal from 'sweetalert2';
 import './ChatWidget.css';
 
-// Hàm helper để tách phần tin nhắn text và danh sách sản phẩm JSON đính kèm
+
 const parseMessageContent = (content) => {
     if (!content) return { text: '', products: [] };
     const regex = /\[PRODUCTS_JSON:\s*(.*)\]/s;
@@ -32,9 +33,9 @@ const ChatWidget = () => {
     const backendHost = window.location.hostname === 'localhost' ? 'localhost' : '127.0.0.1';
     const API_URL = `http://${backendHost}:8000/api`;
 
-    // 1. Quản lý Session ID & Tải lịch sử chat khi load trang
+    
     useEffect(() => {
-        // Lấy hoặc tạo mới session_id cho khách vãng lai
+        
         let sId = localStorage.getItem('vion_chatbot_session');
         if (!sId) {
             sId = 'sess_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -45,7 +46,7 @@ const ChatWidget = () => {
         fetchChatHistory(sId);
     }, []);
 
-    // Tự động cuộn xuống cuối mỗi khi có tin nhắn mới
+    
     useEffect(() => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -75,7 +76,7 @@ const ChatWidget = () => {
         const userMsg = input.trim();
         setInput('');
 
-        // Thêm tin nhắn của User vào danh sách hiển thị tạm thời
+        
         const tempUserMessage = {
             id: Date.now(),
             Role: 'user',
@@ -95,7 +96,7 @@ const ChatWidget = () => {
             }, { headers });
 
             if (res.data.success) {
-                // Thêm phản hồi của AI vào danh sách hiển thị
+                
                 setMessages(prev => [...prev, res.data.data]);
             } else {
                 setMessages(prev => [...prev, {
@@ -117,7 +118,18 @@ const ChatWidget = () => {
     };
 
     const handleClearHistory = async () => {
-        if (!window.confirm("Bạn có chắc chắn muốn xóa lịch sử trò chuyện không?")) return;
+        const result = await Swal.fire({
+            title: 'Xóa lịch sử trò chuyện?',
+            text: "Hành động này sẽ xóa toàn bộ nội dung trò chuyện hiện tại và không thể hoàn tác!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ee4d2d',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Đồng ý xóa',
+            cancelButtonText: 'Hủy'
+        });
+
+        if (!result.isConfirmed) return;
         
         const token = localStorage.getItem('vion_token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -134,13 +146,21 @@ const ChatWidget = () => {
                     localStorage.setItem('vion_chatbot_session', newSId);
                     setSessionId(newSId);
                 }
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Đã xóa!',
+                    text: 'Lịch sử trò chuyện của bạn đã được dọn sạch.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             }
         } catch (err) {
             console.error('Lỗi khi xóa lịch sử chat:', err);
+            Swal.fire('Lỗi', 'Không thể xóa lịch sử chat, vui lòng thử lại sau!', 'error');
         }
     };
 
-    // Định dạng thời gian gửi tin nhắn
+    
     const formatTime = (timeStr) => {
         if (!timeStr) return '';
         const d = new Date(timeStr);
@@ -149,7 +169,7 @@ const ChatWidget = () => {
 
     return (
         <div className="v-chatbot-wrapper">
-            {/* NÚT BÓNG BÓNG CHAT NỔI (FLOAT BUTTON) */}
+            
             {!isOpen && (
                 <button className="v-chatbot-toggle shadow-lg" onClick={() => setIsOpen(true)}>
                     <MessageCircle size={28} />
@@ -157,10 +177,10 @@ const ChatWidget = () => {
                 </button>
             )}
 
-            {/* KHUNG CỬA SỔ CHAT */}
+            
             {isOpen && (
                 <div className="v-chatbot-window shadow-2xl">
-                    {/* Header */}
+                    
                     <div className="v-chatbot-header d-flex justify-content-between align-items-center">
                         <div className="d-flex align-items-center gap-2">
                             <div className="v-bot-avatar">
@@ -181,7 +201,7 @@ const ChatWidget = () => {
                         </div>
                     </div>
 
-                    {/* Chat Body */}
+                    
                     <div className="v-chatbot-body">
                         {messages.length === 0 && (
                             <div className="v-chatbot-welcome text-center py-4 px-3">
@@ -218,7 +238,7 @@ const ChatWidget = () => {
                                         </div>
                                     </div>
                                     
-                                    {/* HIỂN THỊ DANH SÁCH SẢN PHẨM DẠNG CARD NẾU CÓ */}
+                                    
                                     {msg.Role === 'assistant' && products && products.length > 0 && (
                                         <div className="v-chatbot-products-list d-flex flex-column gap-2 mt-2">
                                             {products.map((prod) => {
@@ -245,8 +265,24 @@ const ChatWidget = () => {
                                                                 );
                                                             })()}
                                                             <div className="v-product-card-info flex-grow-1" style={{ minWidth: 0 }}>
-                                                                <h6 className="v-product-card-title mb-0 text-truncate">{prod.name}</h6>
+                                                                <h6 className="v-product-card-title mb-0 text-truncate" title={prod.name}>{prod.name}</h6>
                                                                 <span className="v-product-card-price">{prod.price ? `${prod.price.toLocaleString('vi-VN')}đ` : 'Liên hệ'}</span>
+                                                                {((prod.sizes && prod.sizes.length > 0) || (prod.colors && prod.colors.length > 0)) && (
+                                                                    <div className="v-product-card-meta mt-1">
+                                                                        {prod.sizes && prod.sizes.length > 0 && (
+                                                                            <div className="v-product-meta-row">
+                                                                                <span className="meta-label">Size:</span>
+                                                                                <span className="meta-value">{prod.sizes.join(', ')}</span>
+                                                                            </div>
+                                                                        )}
+                                                                        {prod.colors && prod.colors.length > 0 && (
+                                                                            <div className="v-product-meta-row">
+                                                                                <span className="meta-label">Màu:</span>
+                                                                                <span className="meta-value">{prod.colors.join(', ')}</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </Link>
                                                         <Link 
@@ -264,7 +300,7 @@ const ChatWidget = () => {
                             );
                         })}
 
-                        {/* AI ĐANG GÕ (TYPING INDICATOR) */}
+                        
                         {isTyping && (
                             <div className="v-chat-msg-row bot-side">
                                 <div className="v-chat-avatar">
@@ -282,7 +318,7 @@ const ChatWidget = () => {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Chat Footer/Input */}
+                    
                     <form className="v-chatbot-footer" onSubmit={handleSendMessage}>
                         <input
                             type="text"

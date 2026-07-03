@@ -14,7 +14,7 @@ class Review extends Model
     'UserID', 
     'ProductID', 
     'Rating', 
-    'Content', // <--- THÊM CHỮ NÀY VÀO, VIẾT HOA CHỮ C
+    'Content', 
     'Image'
 ];
 

@@ -1,22 +1,22 @@
-/* VoucherManager styles - extends admin design system */
 
-/* Voucher code cell */
+
+
 .v-voucher-code-cell {
     font-weight: 800; font-size: 14px; letter-spacing: 1px; color: #111;
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 
-/* Usage badge */
+
 .v-usage-badge {
     display: inline-block; padding: 4px 10px; border-radius: 20px;
     background: #f1f3f5; font-size: 12px; font-weight: 700; color: #555;
 }
 
-/* Date cell */
+
 .v-date-cell { font-size: 12px; color: #666; line-height: 1.6; }
 .v-date-to { color: #999; }
 
-/* Status badges */
+
 .v-status-badge {
     display: inline-block; padding: 4px 12px; border-radius: 20px;
     font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
@@ -26,14 +26,14 @@
 .v-status-inactive { background: #f1f3f5; color: #999; }
 .v-status-pending { background: #fff8e1; color: #f59e0b; }
 
-/* Toggle icon */
+
 .v-toggle-icon {
     background: none; border: none; padding: 6px; cursor: pointer;
     border-radius: 6px; transition: 0.2s; display: inline-flex; vertical-align: middle;
 }
 .v-toggle-icon:hover { background: #f1f3f5; }
 
-/* Modal Overlay */
+
 .v-modal-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px);
@@ -61,7 +61,7 @@
 }
 .v-modal-close:hover { background: #eee; color: #111; }
 
-/* Form grid */
+
 .v-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 .v-form-group label { display: block; font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
 .v-form-group input,
@@ -77,7 +77,7 @@
 .v-form-group select { cursor: pointer; appearance: auto; }
 .v-full-width { margin-bottom: 16px; }
 
-/* Checkbox */
+
 .v-checkbox-group { margin-bottom: 20px; }
 .v-checkbox-label {
     display: flex; align-items: center; gap: 10px; cursor: pointer;
@@ -87,7 +87,7 @@
     width: 18px; height: 18px; accent-color: #111; cursor: pointer;
 }
 
-/* Modal actions */
+
 .v-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
 .v-modal-actions .v-btn-cancel {
     padding: 11px 25px; border-radius: 10px; font-weight: 700; font-size: 13px;
@@ -98,13 +98,13 @@
     padding: 11px 25px; border-radius: 10px; font-weight: 700; font-size: 13px;
 }
 
-/* Responsive */
+
 @media (max-width: 600px) {
     .v-form-grid { grid-template-columns: 1fr; }
     .v-modal-content { padding: 20px; margin: 10px; }
 }
 
-/* Gift button */
+
 .v-gift-icon {
     background: #fff8f6; border: 1px solid #ffd5cb; color: #EE4D2D;
     padding: 6px 8px; border-radius: 6px; cursor: pointer; transition: 0.2s;
@@ -112,7 +112,7 @@
 }
 .v-gift-icon:hover { background: #EE4D2D; color: #fff; border-color: #EE4D2D; }
 
-/* Gift modal grid styles */
+
 .v-gift-modal { max-width: 540px; }
 .v-gift-body { margin-bottom: 24px; }
 
@@ -206,7 +206,7 @@
 .v-gift-count-input:focus { border-color: #EE4D2D; }
 .v-gift-hint { font-size: 12px; color: #999; margin-top: 12px; }
 
-/* Usages modal & badge styles */
+
 .v-usages-modal {
     max-width: 680px;
 }

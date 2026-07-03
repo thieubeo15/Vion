@@ -1,8 +1,8 @@
-/* Import font chữ đồng bộ với hệ thống */
+
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 .admin-dashboard-content {
-    /* Đổi font chữ sang Plus Jakarta Sans */
+    
     font-family: 'Plus Jakarta Sans', sans-serif;
     animation: fadeIn 0.5s ease;
 }
@@ -12,7 +12,7 @@
 }
 
 .dashboard-header h1 {
-    font-size: 26px; /* Tăng nhẹ kích thước cho uy quyền admin */
+    font-size: 26px; 
     font-weight: 800;
     margin: 0;
     color: #111;
@@ -25,7 +25,7 @@
     margin-top: 5px;
 }
 
-/* Stats Grid */
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -35,8 +35,8 @@
 
 .stat-card {
     background: #fff;
-    padding: 24px; /* Tăng padding cho thoáng */
-    border-radius: 16px; /* Bo góc hiện đại hơn */
+    padding: 24px; 
+    border-radius: 16px; 
     display: flex;
     align-items: center;
     gap: 15px;
@@ -74,7 +74,7 @@
     color: #111;
 }
 
-/* Recent Orders Card */
+
 .recent-orders-card {
     background: #fff;
     border-radius: 16px;
@@ -113,7 +113,7 @@
     opacity: 0.8;
 }
 
-/* Table Style */
+
 .admin-table {
     width: 100%;
     border-collapse: collapse;
@@ -138,10 +138,10 @@
     color: #333;
 }
 
-/* Status Pill */
+
 .status-pill {
     padding: 6px 12px;
-    border-radius: 8px; /* Đổi sang bo góc nhẹ cho hiện đại */
+    border-radius: 8px; 
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
@@ -152,7 +152,7 @@
 .status-pill.pending { background: #fffbeb; color: #f59e0b; }
 .status-pill.processing { background: #eff6ff; color: #3b82f6; }
 
-/* Animation & Loading */
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -178,7 +178,7 @@
     to { transform: rotate(360deg); }
 }
 
-/* Tên sản phẩm mini trong bảng đơn hàng */
+
 .order-product-item {
     font-size: 12px;
     color: #444;
@@ -192,8 +192,8 @@
 .fw-700 { font-weight: 700; }
 .fw-800 { font-weight: 800; }
 
-/* Điều chỉnh lại bảng để hiển thị cột sản phẩm rộng hơn */
+
 .admin-table td {
-    vertical-align: top; /* Căn lề trên cho đẹp khi có nhiều sản phẩm */
+    vertical-align: top; 
     padding: 15px 12px;
 }

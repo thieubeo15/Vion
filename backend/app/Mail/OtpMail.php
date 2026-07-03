@@ -12,17 +12,13 @@ class OtpMail extends Mailable
 
     public $otp;
 
-    /**
-     * Create a new message instance.
-     */
+    
     public function __construct($otp)
     {
         $this->otp = $otp;
     }
 
-    /**
-     * Build the message.
-     */
+    
     public function build()
     {
         $htmlContent = '

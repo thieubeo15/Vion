@@ -9,7 +9,7 @@ class ProductVariant extends Model
     protected $table = 'product_variants';
     protected $primaryKey = 'VariantID';
     
-    public $timestamps = false; // Bảng này không có timestamps trong migration
+    public $timestamps = false; 
 
     protected $fillable = [
         'ProductID',
@@ -21,9 +21,7 @@ class ProductVariant extends Model
         'ImportPrice'
     ];
 
-    /**
-     * Biến thể thuộc về một sản phẩm
-     */
+    
     public function product()
     {
         return $this->belongsTo(Product::class, 'ProductID', 'ProductID');

@@ -19,7 +19,7 @@
 .v-pay-card.active { border-color: #EE4D2D; background: #fff8f6; color: #EE4D2D; }
 .v-dot-active { width: 10px; height: 10px; background: #EE4D2D; border-radius: 50%; position: absolute; right: 20px; }
 
-/* Bill Card */
+
 .v-order-bill-card { background: #fff; border: 1px solid #f0f0f0; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
 .v-bill-title { font-weight: 800; font-size: 16px; margin-bottom: 20px; letter-spacing: 1px; }
 .v-bill-divider { height: 1px; background: #eee; }
@@ -37,7 +37,7 @@
 .v-spin { animation: spin 1s linear infinite; color: #EE4D2D; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Helper classes */
+
 .fw-700 { font-weight: 700; }
 .fw-800 { font-weight: 800; }
 .fw-900 { font-weight: 900; }
@@ -46,7 +46,7 @@
 .fs-15 { font-size: 15px; }
 .fs-16 { font-size: 16px; }
 
-/* Voucher Section */
+
 .v-voucher-section { margin-top: 16px; padding-top: 16px; border-top: 1px dashed #eee; }
 .v-voucher-label { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; color: #444; margin-bottom: 10px; }
 .v-voucher-input-wrap { display: flex; gap: 8px; }
@@ -78,7 +78,7 @@
 .v-voucher-error { margin-top: 8px; font-size: 12px; color: #EE4D2D; font-weight: 600; }
 .v-discount-row { color: #1a8a3f; font-weight: 700; font-size: 14px; }
 
-/* Wallet Button + Picker */
+
 .v-voucher-wallet-btn {
     display: flex; align-items: center; gap: 5px; padding: 10px 14px;
     border: 1.5px solid #eee; border-radius: 10px; background: #fff;
@@ -109,7 +109,7 @@
 .v-picker-min { font-size: 11px; color: #aaa; margin-top: 2px; }
 .v-picker-empty { padding: 16px; text-align: center; font-size: 13px; color: #aaa; }
 
-/* Location Dropdowns select styling */
+
 .v-checkout-select {
     width: 100%;
     border: 1.5px solid #eee;
@@ -129,4 +129,4 @@
     background-color: #f5f5f5;
     cursor: not-allowed;
     color: #999;
-}
+}

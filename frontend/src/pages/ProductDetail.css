@@ -1,14 +1,14 @@
-/* Import font chữ hiện đại */
+
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 .product-detail-page { 
     padding: 40px 0; 
     background: #fff; 
-    font-family: 'Plus Jakarta Sans', sans-serif; /* Đã đổi font */
+    font-family: 'Plus Jakarta Sans', sans-serif; 
 }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
 
-/* Breadcrumb */
+
 .v-back-btn {
     cursor: pointer;
     color: #888;
@@ -32,10 +32,10 @@
 .v-breadcrumb a { text-decoration: none; color: inherit; }
 .v-breadcrumb .active { color: #111; font-weight: 600; }
 
-/* Layout Grid 4:6 */
+
 .detail-grid { display: grid; grid-template-columns: 4fr 6fr; gap: 60px; margin-bottom: 60px; }
 
-/* Gallery & Lightbox Trigger */
+
 .main-image-wrap { 
     width: 100%; max-width: 420px; aspect-ratio: 3/4; background: #f9f9f9; 
     overflow: hidden; border-radius: 8px; margin: 0 auto 15px; border: 1px solid #f1f1f1; 
@@ -221,7 +221,7 @@
 .btn-send-review:hover {
     background: #EE4D2D;
 }
-/* Link "Viết đánh giá" trên đầu trang */
+
 .btn-jump-review {
     margin-left: 15px;
     font-size: 13px;
@@ -231,9 +231,9 @@
     font-weight: 500;
 }
 
-/* Khung nhập đánh giá nổi bật */
+
 .add-review-box.highlight-box {
-    border: 2px solid #111; /* Viền đen đậm cho nổi bật */
+    border: 2px solid #111; 
     background: #fff;
     padding: 25px;
     margin-bottom: 30px;
@@ -286,7 +286,7 @@
     padding: 12px 30px;
     font-weight: 800;
     font-size: 13px;
-    border-radius: 0px; /* Kiểu vuông vức cho ngầu */
+    border-radius: 0px; 
     cursor: pointer;
     transition: 0.3s;
     letter-spacing: 1px;
@@ -296,7 +296,7 @@
     background: #EE4D2D;
 }
 
-/* Product Specifications Box styling */
+
 .product-specs-box {
     margin-top: 40px;
     padding: 24px;
@@ -363,7 +363,7 @@
     line-height: 1.7;
 }
 
-/* Hiển thị hết hàng cho từng Biến thể (Size / Màu) */
+/* Out of stock options */
 .btn-options button.out-of-stock {
     opacity: 0.35;
     border-color: #ddd;

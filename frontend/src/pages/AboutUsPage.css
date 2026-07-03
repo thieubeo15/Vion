@@ -1,13 +1,13 @@
-/* src/pages/AboutUsPage.css */
+/* pages/AboutUsPage.css */
 
 .about-us-page {
-    background-color: #faf6f0; /* Đồng bộ tone màu trắng kem của Navbar */
-    color: #2c2722; /* Màu chữ chính nâu đen đậm */
+    background-color: #faf6f0; 
+    color: #2c2722; 
     font-family: 'Plus Jakarta Sans', sans-serif;
     min-height: 100vh;
 }
 
-/* HERO SECTION */
+
 .about-hero {
     position: relative;
     height: 45vh;
@@ -31,7 +31,7 @@
 .about-hero-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(44, 39, 34, 0.7); /* Lớp phủ sẫm màu be đậm */
+    background: rgba(44, 39, 34, 0.7); 
     z-index: 1;
 }
 
@@ -57,7 +57,7 @@
     color: #dfd5c4;
 }
 
-/* STORY SECTION */
+
 .section-subtitle-tag {
     display: inline-block;
     color: #EE4D2D;
@@ -93,9 +93,9 @@
     transform: scale(1.02);
 }
 
-/* GIÁ TRỊ CỐT LÕI */
+
 .about-values {
-    background-color: #f3ede3; /* Nền tối hơn be 1 xíu để phân tách section */
+    background-color: #f3ede3; 
 }
 
 .values-main-title {
@@ -147,7 +147,7 @@
     margin: 0;
 }
 
-/* TẦM NHÌN & SỨ MỆNH */
+
 .vision-img-wrap img {
     box-shadow: 0 15px 35px rgba(44, 39, 34, 0.12);
     border: 8px solid #ffffff;

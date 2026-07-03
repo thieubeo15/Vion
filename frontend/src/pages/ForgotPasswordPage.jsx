@@ -6,7 +6,7 @@ import Swal from 'sweetalert2';
 import './ForgotPasswordPage.css';
 
 const ForgotPasswordPage = () => {
-    const [step, setStep] = useState(1); // Step 1: Nhập email, Step 2: Nhập OTP & mật khẩu mới
+    const [step, setStep] = useState(1); 
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
     const [password, setPassword] = useState('');
@@ -16,7 +16,7 @@ const ForgotPasswordPage = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     
-    // Countdown cho việc gửi lại OTP
+    
     const [countdown, setCountdown] = useState(0);
     const timerRef = useRef(null);
 
@@ -27,7 +27,7 @@ const ForgotPasswordPage = () => {
         return () => clearTimeout(timerRef.current);
     }, [countdown]);
 
-    // BƯỚC 1: YÊU CẦU GỬI OTP
+    
     const handleSendOtp = async (e) => {
         e.preventDefault();
         setError('');
@@ -45,11 +45,11 @@ const ForgotPasswordPage = () => {
 
             if (response.data.success) {
                 setStep(2);
-                setCountdown(60); // Bắt đầu đếm ngược 60s để cho phép gửi lại
+                setCountdown(60); 
                 Swal.fire({
                     icon: 'success',
                     title: 'Đã gửi mã OTP!',
-                    text: 'Mã xác thực đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư (hoặc laravel.log ở local).',
+                    text: 'Mã xác thực đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư .',
                     confirmButtonColor: '#111'
                 });
             }
@@ -60,7 +60,7 @@ const ForgotPasswordPage = () => {
         }
     };
 
-    // GỬI LẠI OTP (khi ở bước 2)
+    
     const handleResendOtp = async () => {
         if (countdown > 0) return;
         setError('');
@@ -87,7 +87,7 @@ const ForgotPasswordPage = () => {
         }
     };
 
-    // BƯỚC 2: XÁC THỰC OTP & ĐẶT LẠI MẬT KHẨU
+    
     const handleResetPassword = async (e) => {
         e.preventDefault();
         setError('');
@@ -145,14 +145,14 @@ const ForgotPasswordPage = () => {
 
     return (
         <div className="forgot-page">
-            {/* HEADER */}
+            
             <header className="forgot-header">
                 <Link to="/" className="logo">Vion.</Link>
                 <Link to="/support" className="help-link">Trợ giúp</Link>
             </header>
 
             <main className="forgot-main">
-                {/* TRÁI: BANNER ẢNH */}
+                
                 <div className="forgot-left">
                     <div className="overlay"></div>
                     <div className="left-content">
@@ -161,7 +161,7 @@ const ForgotPasswordPage = () => {
                     </div>
                 </div>
 
-                {/* PHẢI: FORM QUÊN MẬT KHẨU */}
+                
                 <div className="forgot-right">
                     <div className="forgot-box">
                         {step === 1 ? (
@@ -180,7 +180,7 @@ const ForgotPasswordPage = () => {
                             </>
                         )}
 
-                        {/* HỘP BÁO LỖI */}
+                        
                         <div className="error-box">
                             {error && <div className="error">{error}</div>}
                         </div>
@@ -207,7 +207,7 @@ const ForgotPasswordPage = () => {
                         ) : (
                             /* FORM BƯỚC 2 */
                             <form onSubmit={handleResetPassword} noValidate>
-                                {/* INPUT OTP */}
+                                
                                 <div className="input-group">
                                     <KeyRound className="icon" size={18} />
                                     <input
@@ -221,7 +221,7 @@ const ForgotPasswordPage = () => {
                                     <label>Nhập mã OTP 6 số</label>
                                 </div>
 
-                                {/* INPUT NEW PASSWORD */}
+                                
                                 <div className="input-group">
                                     <Lock className="icon" size={18} />
                                     <input
@@ -237,7 +237,7 @@ const ForgotPasswordPage = () => {
                                     </div>
                                 </div>
 
-                                {/* INPUT CONFIRM PASSWORD */}
+                                
                                 <div className="input-group">
                                     <Lock className="icon" size={18} />
                                     <input

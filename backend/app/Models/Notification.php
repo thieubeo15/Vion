@@ -28,7 +28,7 @@ class Notification extends Model
         'IsAdminNotification' => 'boolean',
     ];
 
-    // Quan hệ với User
+    
     public function user()
     {
         return $this->belongsTo(User::class, 'UserID', 'UserID');

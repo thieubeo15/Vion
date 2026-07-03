@@ -1,4 +1,4 @@
-/* TỔNG QUAN */
+
 .v-order-history {
     max-width: 900px;
 }
@@ -34,7 +34,7 @@
     text-overflow: ellipsis;
 }
 
-/* THANH TAB */
+
 .v-order-tabs {
     display: flex;
     background: #fff;
@@ -76,7 +76,7 @@
     vertical-align: middle;
 }
 
-/* THẺ ĐƠN HÀNG (CARD) */
+
 .v-order-card {
     background: #fff;
     border-radius: 12px;
@@ -96,7 +96,7 @@
     background: #fafafa;
 }
 
-/* SẢN PHẨM TRONG ĐƠN */
+
 .v-order-body {
     padding: 0 20px;
 }
@@ -132,7 +132,7 @@
     object-fit: cover;
 }
 
-/* LÝ DO HỦY ĐƠN TRONG CARD */
+
 .v-cancel-reason-box {
     background: #fef2f2;
     padding: 12px 20px;
@@ -144,14 +144,14 @@
     border-top: 1px dashed #fee2e2;
 }
 
-/* FOOTER ĐƠN HÀNG */
+
 .v-order-footer {
     padding: 16px 20px;
     background: #fff;
     border-top: 1px solid #f0f0f0;
 }
 
-/* BADGE TRẠNG THÁI */
+
 .v-status-label {
     display: flex;
     align-items: center;
@@ -170,7 +170,7 @@
 .v-status-label.completed { background: #f0fdf4; color: #16a34a; }
 .v-status-label.cancelled { background: #fef2f2; color: #dc2626; }
 
-/* NÚT HỦY ĐƠN Ở NGOÀI */
+
 .v-btn-cancel-action {
     padding: 10px 24px;
     font-size: 14px;
@@ -189,9 +189,7 @@
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
-/* =========================================
-   MODAL HỦY ĐƠN - UI MỚI
-========================================= */
+
 .v-cancel-modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -251,7 +249,7 @@
     overflow-y: auto;
 }
 
-/* LÝ DO HỦY DẠNG KHỐI (BLOCK) */
+
 .v-reason-grid {
     display: flex;
     flex-direction: column;
@@ -286,7 +284,7 @@
     transition: all 0.2s ease;
 }
 
-/* Hiệu ứng khi khối lý do được chọn */
+
 .v-reason-block.active .v-reason-content {
     border-color: #EE4D2D;
     background: #fff8f6;
@@ -371,7 +369,7 @@
     cursor: not-allowed;
 }
 
-/* ANIMATIONS */
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -382,7 +380,7 @@
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Reponsive */
+
 @media (max-width: 768px) {
     .v-order-footer {
         flex-direction: column;
@@ -395,7 +393,7 @@
     }
 }
 
-/* Cancel Reason Selection UI */
+
 .v-cancel-subtitle {
     font-size: 14px;
     color: #666;
@@ -438,7 +436,7 @@
     cursor: pointer;
 }
 
-/* THÔNG TIN GIAO HÀNG TRONG CARD */
+
 .v-order-shipping-info {
     background: #fafafa;
     padding: 16px 20px;
@@ -449,7 +447,7 @@
     line-height: 1.6;
 }
 
-/* PHÂN HỆ HOÀN HÀNG COD */
+
 .v-status-label.returnrequested { background: #fef3c7; color: #d97706; }
 .v-status-label.returnapproved { background: #e0f2fe; color: #0369a1; }
 .v-status-label.returnreceived { background: #f3e8ff; color: #7e22ce; }
@@ -488,7 +486,7 @@
     line-height: 1.6;
 }
 
-/* Đánh giá button in order item */
+
 .v-btn-product-review {
     background: #fff;
     border: 1.5px solid #EE4D2D;
@@ -508,4 +506,4 @@
     color: #fff;
     transform: translateY(-1.5px);
     box-shadow: 0 4px 12px rgba(238, 77, 45, 0.2);
-}
+}
