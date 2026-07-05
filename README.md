@@ -96,21 +96,26 @@ Các dịch vụ AI sẽ tự động đọc cấu hình database và khóa API 
     ```
 5.  **Cấu hình API Key cho Chatbot AI :**
         Tải ứng dụng [Ollama](https://ollama.com/), cài đặt và kéo mô hình `qwen2.5:3b` về máy:
+         Vào CMD :
+        ```bash
+        ollama pull qwen2.5:3b
+        ```
         ```bash
         ollama run qwen2.5:3b
         ```
+       
         Sau đó cấu hình trong `.env` (để trống hoặc xóa dòng `GEMINI_API_KEY` đi):
         ```env
         OLLAMA_MODEL=qwen2.5:3b
         OLLAMA_BASE_URL=http://localhost:11434
         ```
 
-6.  **Khởi chạy Dịch vụ tìm kiếm hình ảnh (CLIP Service - Cổng 8001):**
+7.  **Khởi chạy Dịch vụ tìm kiếm hình ảnh (CLIP Service - Cổng 8001):**
     ```bash
     python clip_service.py
     ```
 
-7.  **Khởi chạy Dịch vụ Trợ lý ảo tư vấn (Chatbot Service - Cổng 8002):**
+8.  **Khởi chạy Dịch vụ Trợ lý ảo tư vấn (Chatbot Service - Cổng 8002):**
     Mở thêm một cửa sổ terminal mới, di chuyển vào thư mục `backend/ai_service`, kích hoạt `venv` (`.\venv\Scripts\Activate.ps1`) và chạy:
     ```bash
     python chatbot_service.py
