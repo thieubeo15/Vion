@@ -16,7 +16,6 @@ from langchain_ollama import ChatOllama
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 
-# 1. Tải các biến môi trường từ file .env của Laravel
 dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.env'))
 load_dotenv(dotenv_path)
 
