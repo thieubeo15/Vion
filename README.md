@@ -99,11 +99,8 @@ Các dịch vụ AI sẽ tự động đọc cấu hình database và khóa API 
          Vào CMD :
         ```bash
         ollama pull qwen2.5:3b
-        ```
-        ```bash
         ollama run qwen2.5:3b
         ```
-       
         Sau đó cấu hình trong `.env` (để trống hoặc xóa dòng `GEMINI_API_KEY` đi):
         ```env
         OLLAMA_MODEL=qwen2.5:3b
